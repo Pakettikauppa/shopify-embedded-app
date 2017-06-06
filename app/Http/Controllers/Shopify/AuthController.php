@@ -24,6 +24,8 @@ class AuthController extends Controller
         $shop->shop_origin = $request->shop;
         $shop->nonce = $nonce;
         $shop->token = '';
+        $shop->test_mode = true;
+        $shop->shipping_method_code = 2104; // Kotipaketti is default
         $shop->save();
 
         $callback_url = route('shopify.auth.callback');
@@ -67,8 +69,6 @@ class AuthController extends Controller
         }
 
         $shop->token = $client->getAccessToken($request->code);
-        $shop->test_mode = true;
-        $shop->shipping_method_code = 2104; // Kotipaketti is default
         $shop->save();
 
         session()->put('shop', $request->shop);
