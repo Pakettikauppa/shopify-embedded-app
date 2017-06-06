@@ -13,10 +13,10 @@
                 <div class="section-cell">
                     <div class="cell-container">
                         <div class="cell-column">
-                            <a href="#" class="btn default wizard-btn"><span class="btn-content">I'm a new user</span></a>
+                            <span id="wizard-new-user" class="btn default wizard-btn"><span class="btn-content">I'm a new user</span></span>
                         </div>
                         <div class="cell-column">
-                            <a href="#" class="btn default wizard-btn"><span class="btn-content">I have API credentials</span></a>
+                            <span id="wizard-old-user" class="btn default wizard-btn"><span class="btn-content">I have API credentials</span></span>
                         </div>
                     </div>
                 </div>
@@ -33,46 +33,63 @@
     <div class="section-content">
         <div class="section-row">
                 <div class="section-cell">
+                    <form method="POST" action="{{route('shopify.update-preferences')}}">
+                        {{ csrf_field() }}
+
+                    @if(isset($shop->api_key) && isset($shop->api_secret))
+                        <span class="tag green" style="color: white; margin-bottom: 15px;">{{trans('app.messages.ready')}}</span>
+
+                        <div class="section-row">
+                        <label class="bold">API key</label>: {{$shop->api_key}}
+                        </div>
+
+                        <div class="section-row">
+                            <label class="bold">API secret</label>: {{$shop->api_secret}}
+                        </div>
+                    @else
+
+                        <div class="box warning" style="margin-bottom: 20px;"><i class="ico-warning"></i>{{trans('app.messages.no_api')}}</div>
+
+                    @endif
+
                     <label class="bold">Shipping method</label>
-                    <select name="select1">
-                        <option value="opt1">Option 1</option>
-                        <option value="opt2">Option 2</option>
-                        <option value="opt3">Option 3</option>
-                        <option value="opt4">Option 4</option>
+                    <select name="shipping_method">
+                        {{--<option value="" disabled selected hidden>{{ trans('app.shipping_method.choose_sending_method') }}</option>--}}
+                        @foreach($shipping_methods as $key => $service_provider)
+                            @if(count($service_provider) > 0)
+                                <optgroup label="{{$key}}">
+                                    @foreach($service_provider as $product)
+                                        <option value="{{ $product['shipping_method_code'] }}"
+                                            @if($shop->shipping_method_code == $product['shipping_method_code']) selected @endif>
+                                            {{ $product['name'] }}
+                                            </option>
+                                    @endforeach
+                                </optgroup>
+                            @endif
+                        @endforeach
                     </select>
 
-                    <label class="bold">Return label type</label>
-                    <select name="select1">
-                        <option value="opt1">Option 1</option>
-                        <option value="opt2">Option 2</option>
-                        <option value="opt3">Option 3</option>
-                        <option value="opt4">Option 4</option>
-                    </select>
 
-                    <label class="bold">API key</label>
-                    <input type="text" placeholder="" value="00000000-0000-0000-0000-000000000000">
+                    {{--<label class="bold">API key</label>--}}
+                    {{--<input type="text" placeholder="" value="00000000-0000-0000-0000-000000000000">--}}
 
-                    <label class="bold">API secret</label>
-                    <input type="text" placeholder="" value="1234567890ABCDEF">
+                    {{--<label class="bold">API secret</label>--}}
+                    {{--<input type="text" placeholder="" value="1234567890ABCDEF">--}}
 
                     <div class="input-wrapper inline">
-                        <div class="checkbox-wrapper"><input class="checkbox pointer" type="checkbox" id="autoprint" name="autoprint" value=""><span class="checkbox-styled"></span></div>
-                        <label for="autoprint" class="pointer">Print return labels automaticly during printing the shipping label</label>
-                    </div>
-
-                    <div class="input-wrapper inline">
-                        <div class="checkbox-wrapper"><input class="checkbox pointer" type="checkbox" id="test_mode" name="test_mode" value=""><span class="checkbox-styled"></span></div>
+                        <div class="checkbox-wrapper">
+                            <input class="checkbox pointer" type="checkbox" id="test_mode" name="test_mode"
+                                 @if($shop->test_mode) checked @endif>
+                            <span class="checkbox-styled"></span></div>
                         <label for="test_mode" class="pointer">Test mode</label>
                     </div>
 
                     <div>
-                        <a href="#" class="btn primary">Save settings</a>
+                        <button type="submit" class="btn primary">Save settings</button>
                         <a href="#" class="btn default">View instructions</a>
                     </div>
 
-                    <div>
-
-                    </div>
+                    </form>
 
                 </div>
         </div>
@@ -98,7 +115,6 @@
             width: 100%;
             padding-left: 10px;
             height: 1.8em;
-            margin-bottom: 15px;
         }
         .pointer{
             cursor: pointer;
@@ -114,7 +130,7 @@
         apiKey: '{{ENV('SHOPIFY_API_KEY')}}',
         shopOrigin: 'https://{{session()->get('shop')}}',
         debug: true,
-        forceRedirect: true
+        forceRedirect: false
     });
 
     btn_href = "{{route('shopify.preferences', request()->all())}}";
@@ -134,6 +150,24 @@
             title: "Settings"
         });
     });
+
+    $('#wizard-new-user').click(function(){
+        ShopifyApp.Modal.open({
+            src: 'https://hallinta.pakettikauppa.fi/register',
+            title: 'Enter API credentials',
+            width: 'small',
+            height: 300,
+            buttons: {
+                primary: { label: "Submit" },
+                secondary: [
+                    { label: "Cancel", callback: function (label) { ShopifyApp.Modal.close(); } }
+                ]
+            }
+        }, function(result, data){
+            console.log("result: " + result + "   data: " + data);
+        });
+    });
+
 
 </script>
 

@@ -17,8 +17,8 @@ return [
     ],
 
     '422' => [
-        'title' => 'Unprocessable Entity',
-        'description' => 'Input data is invalid.',
+        'title' => 'Server error',
+        'description' => 'Invalid input data',
     ],
 
     '503' => [

@@ -67,6 +67,8 @@ class AuthController extends Controller
         }
 
         $shop->token = $client->getAccessToken($request->code);
+        $shop->test_mode = true;
+        $shop->shipping_method_code = 2104; // Kotipaketti is default
         $shop->save();
 
         session()->put('shop', $request->shop);

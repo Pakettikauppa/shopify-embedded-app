@@ -77,19 +77,17 @@ class ShopifyClient {
     public function validateSignature($query)
     {
         $expectedHmac = isset($query['hmac']) ? $query['hmac'] : '';
+
         // First step: remove HMAC and signature keys
         unset($query['hmac'], $query['signature']);
+
         // Second step: keys are sorted lexicographically
         ksort($query);
-
-//        $query['array'] = [
-//          '123123123'
-//        ];
 
         // arrays to string
         foreach($query as &$item){
             if(is_array($item)){
-                $item = '["' . implode('","', $item). '"]';
+                $item = '["' . implode('", "', $item). '"]';
             }
         }
 
@@ -97,41 +95,16 @@ class ShopifyClient {
         foreach ($query as $key => $value) {
             // Third step: "&" and "%" are replaced by "%26" and "%25" in keys and values, and in addition
             // "=" is replaced by "%3D" in keys
-
             $key   = strtr($key, ['&' => '%26', '%' => '%25', '=' => '%3D']);
             $value = strtr($value, ['&' => '%26', '%' => '%25']);
             $pairs[] = $key . '=' . $value;
         }
-//        echo '<pre>';
-//        var_dump($query);
-//        exit;
+
         $key = implode('&', $pairs);
 
-        return hash_equals($expectedHmac, hash_hmac('sha256', $key, $this->secret));
-//        if(!is_array($query) || empty($query['hmac']) || !is_string($query['hmac']))
-//            return false;
-//
-//        $dataString = array();
-//        foreach ($query as $key => $value) {
-//            if(!in_array($key, array('shop', 'timestamp', 'code'))) continue;
-//
-//            $key = str_replace('=', '%3D', $key);
-//            $key = str_replace('&', '%26', $key);
-//            $key = str_replace('%', '%25', $key);
-//
-//            $value = str_replace('&', '%26', $value);
-//            $value = str_replace('%', '%25', $value);
-//
-//            $dataString[] = $key . '=' . $value;
-//        }
-//        sort($dataString);
-//
-//        $string = implode("&", $dataString);
-//
-//        $signatureBin = mhash(MHASH_SHA256, $string, $this->secret);
-//        $signature = bin2hex($signatureBin);
-//
-//        return $query['hmac'] == $signature;
+        $result = hash_equals($expectedHmac, hash_hmac('sha256', $key, $this->secret));
+
+        return $result;
     }
 
     private function curlHttpApiRequest($method, $url, $query='', $payload='', $request_headers=array())

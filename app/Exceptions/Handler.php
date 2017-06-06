@@ -5,8 +5,10 @@ namespace App\Exceptions;
 use Exception;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
+use Symfony\Component\Debug\Exception\FatalErrorException;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Component\Process\Exception\RuntimeException;
 
 class Handler extends ExceptionHandler
 {
@@ -46,11 +48,14 @@ class Handler extends ExceptionHandler
      */
     public function render($request, Exception $exception)
     {
-        if ($exception instanceof NotFoundHttpException) {
+        if($exception instanceof NotFoundHttpException){
             return response()->view('errors.404', [], 404);
         }
-        if ($exception instanceof UnprocessableEntityHttpException) {
+        if($exception instanceof UnprocessableEntityHttpException){
             return response()->view('errors.422', [], 422);
+        }
+        if($exception instanceof FatalErrorException){
+            return response()->view('errors.500', [], 500);
         }
 
         return parent::render($request, $exception);
