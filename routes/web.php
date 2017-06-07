@@ -15,10 +15,9 @@
 Route::group(['namespace' => 'Shopify'], function () {
     Route::get('/auth/', 'AuthController@index')->name('shopify.auth.index');
     Route::get('/auth/callback', 'AuthController@callback')->name('shopify.auth.callback');
-    Route::get('/auth/refresh', 'AuthController@refreshToken')->name('shopify.auth.refresh');
 
     Route::get('/preferences', 'AppController@preferences')->name('shopify.preferences');
-    Route::post('/preferences', 'AppController@updatePreferences')->name('shopify.update-preferences');
+    Route::get('/preferences/update', 'AppController@updatePreferences')->name('shopify.update-preferences');
 
     Route::get('/print-orders', 'AppController@printOrders')->name('shopify.print-orders');
     Route::get('/get-label/{order_id}', 'AppController@getLabel')->name('shopify.label');

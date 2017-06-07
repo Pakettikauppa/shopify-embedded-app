@@ -33,8 +33,7 @@
     <div class="section-content">
         <div class="section-row">
                 <div class="section-cell">
-                    <form method="POST" action="{{route('shopify.update-preferences')}}">
-                        {{ csrf_field() }}
+                    <form method="GET" action="{{route('shopify.update-preferences')}}">
 
                     @if(isset($shop->api_key) && isset($shop->api_secret))
                         <span class="tag green" style="color: white; margin-bottom: 15px;">{{trans('app.messages.ready')}}</span>

@@ -18,36 +18,22 @@ class AuthController extends Controller
             throw new UnprocessableEntityHttpException();
         }
 
-        $shop = Shop::where('shop_origin', $request->shop)->first() ?: new Shop();
+        $found_shop = Shop::where('shop_origin', $request->shop)->first();
+        if(isset($found_shop)){
+            $shop = $found_shop;
+        }else{
+            $shop = new Shop();
+            // default values
+            $shop->test_mode = true;
+            $shop->shipping_method_code = 2104; // Kotipaketti is default
+        }
 
         $nonce = str_random(20);
         $shop->shop_origin = $request->shop;
         $shop->nonce = $nonce;
         $shop->token = '';
-        $shop->test_mode = true;
-        $shop->shipping_method_code = 2104; // Kotipaketti is default
+
         $shop->save();
-
-        $callback_url = route('shopify.auth.callback');
-        $redirect_url =  $client->getAuthorizeUrl(ENV('SHOPIFY_SCOPE'), $callback_url, $nonce);
-
-        return redirect($redirect_url);
-    }
-
-    public function refreshToken(Request $request){
-        $shop_origin = $request->session()->get('shop');
-
-        $shop = Shop::where('shop_origin', $shop_origin)->first();
-        if(!isset($shop)) {
-            throw new UnprocessableEntityHttpException();
-        }
-
-        $nonce = str_random(20);
-        $shop->nonce = $nonce;
-        $shop->token = '';
-        $shop->save();
-
-        $client = new ShopifyClient($shop->shop_origin, '', ENV('SHOPIFY_API_KEY'), ENV('SHOPIFY_SECRET'));
 
         $callback_url = route('shopify.auth.callback');
         $redirect_url =  $client->getAuthorizeUrl(ENV('SHOPIFY_SCOPE'), $callback_url, $nonce);
@@ -72,6 +58,12 @@ class AuthController extends Controller
         $shop->save();
 
         session()->put('shop', $request->shop);
+
+        if(session()->has('init_request')){
+            $init_request = session()->get('init_request');
+            session()->forget('init_request');
+            return redirect($init_request);
+        }
 
         return redirect()->route('shopify.preferences');
     }

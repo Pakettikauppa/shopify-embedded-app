@@ -16,7 +16,6 @@ use Pakettikauppa\Shipment\Receiver;
 use Pakettikauppa\Shipment\Sender;
 use Psy\Exception\FatalErrorException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
-use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 
 class AppController extends Controller
 {
@@ -24,47 +23,29 @@ class AppController extends Controller
     private $shop;
     public function __construct(Request $request)
     {
-        if(isset($request->hmac) && isset($request->shop)){
-            // request from shopify
-            $this->middleware(function ($request, $next) {
-                $shop_origin = $request->shop;
-                $shop = Shop::where('shop_origin', $shop_origin)->first();
-                if(!isset($shop)){
-                    throw new UnprocessableEntityHttpException();
-                }
-                $this->shop = $shop;
-                $this->client = new ShopifyClient($shop->shop_origin, $shop->token, ENV('SHOPIFY_API_KEY'), ENV('SHOPIFY_SECRET'));
+        $this->middleware(function ($request, $next) {
 
-                if(!$this->client->validateSignature($request->all())){
-                    throw new UnprocessableEntityHttpException();
-                }
+            if(!session()->has('shop')){
+                session()->put('init_request', $request->fullUrl());
+                return redirect()->route('shopify.auth.index', request()->all());
+            }
 
-                if(!session()->has('shop')){
-                    session()->put('shop', $request->shop);
-                }
-                return $next($request);
-            });
-        }else{
-            // request from the app
-            $this->middleware(function ($request, $next) {
-                if(!session()->has('shop')){
-                    throw new UnprocessableEntityHttpException();
-                }
+            $shop_origin = session()->get('shop');
+            $shop = Shop::where('shop_origin', $shop_origin)->first();
+            if(!isset($shop)){
+                session()->put('init_request', $request->fullUrl());
+                return redirect()->route('shopify.auth.index', request()->all());
+            }
 
-                $shop_origin = session()->get('shop');
-                $shop = Shop::where('shop_origin', $shop_origin)->first();
-                if(!isset($shop)){
-                    throw new UnprocessableEntityHttpException();
-                }
-                $this->shop = $shop;
-                $this->client = new ShopifyClient($shop->shop_origin, $shop->token, ENV('SHOPIFY_API_KEY'), ENV('SHOPIFY_SECRET'));
+            $this->shop = $shop;
+            $this->client = new ShopifyClient($shop->shop_origin, $shop->token, ENV('SHOPIFY_API_KEY'), ENV('SHOPIFY_SECRET'));
 
-                return $next($request);
-            });
-        }
+            return $next($request);
+        });
     }
 
-    public function preferences(Request $request){
+    public function preferences()
+    {
         $pk_client = new Client(array('test_mode' => true));
 
         try {
@@ -83,7 +64,8 @@ class AppController extends Controller
         ]);
     }
 
-    public function updatePreferences(Request $request){
+    public function updatePreferences(Request $request)
+    {
         $this->shop->shipping_method_code = $request->shipping_method;
         $this->shop->test_mode = $request->test_mode;
         $this->shop->save();
@@ -91,8 +73,8 @@ class AppController extends Controller
         return redirect()->route('shopify.preferences');
     }
 
-    public function printOrders(Request $request){
-
+    public function printOrders(Request $request)
+    {
         $orders = $this->client->call('GET', '/admin/orders.json', ['ids' => implode(',', $request->ids), 'status' => 'any']);
         $settings = $this->client->call('GET', '/admin/shop.json');
 
@@ -181,7 +163,8 @@ class AppController extends Controller
         ]);
     }
 
-    public function getLabel($order_id){
+    public function getLabel($order_id)
+    {
         $shipment = ShopifyShipment::where('shop_id', $this->shop->id)->where('order_id', $order_id)->first();
 
         if(!isset($shipment)){
