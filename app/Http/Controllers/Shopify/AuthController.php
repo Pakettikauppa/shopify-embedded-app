@@ -65,6 +65,6 @@ class AuthController extends Controller
             return redirect($init_request);
         }
 
-        return redirect()->route('shopify.preferences');
+        return redirect()->route('shopify.settings');
     }
 }

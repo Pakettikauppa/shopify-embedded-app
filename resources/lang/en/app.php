@@ -19,10 +19,85 @@ return [
         ],
     ],
     'settings' => [
+        'settings' => 'Settings',
+        'company_name' => 'Pakettikauppa',
+        'instructions' => 'Learn more about the application at the <a href=":instruction_url">:company_name Help Center</a>.',
+        'shipping_method' => 'Shipping method',
+        'test_mode' => 'Test mode',
+        'save_settings' => 'Save settings',
+        'api_key' => 'API key',
+        'api_secret' => 'API secret',
     ],
 
     'messages' => [
         'no_api' => 'No API credentials are set',
         'ready' => 'Everything is ready',
+        'only_test_mode' => 'Without API credentials you can use the application only in test mode',
+        'no_api_set_error' => 'Setup API credentials or turn on the test mode in <a href=":settings_url">Settings</a>.',
+        'invalid_credentials' => 'API credentials are not valid',
+        'no_tracking_info' => 'Tracking information for the order is not available',
+    ],
+    'tracking_info' => [
+        'transaction' => 'Transaction',
+        'title' => 'Tracking information',
+        'status' => 'Status',
+        'postcode' => 'Postcode',
+        'post_office' => 'Post office',
+        'timestamp' => 'Event timestamp',
+    ],
+
+    'status_codes' => [
+        "31" => [
+            "full" => "Item is in transport",
+            "short" => "In transport"
+        ],
+        "22" => [
+            "full" => "Item has been handed over to the recipient",
+            "short" => "Delivered",
+        ],
+        "56" => [
+            "full" => "Item not delivered – delivery attempt made",
+            "short" => "Not delivered",
+        ],
+        "48" => [
+            "full" => "Item is loaded onto a means of transport",
+            "short" => "In transit",
+        ],
+        "71" => [
+            "full" => "Item is ready for delivery transportation",
+            "short" => "In delivery",
+        ],
+        "91" => [
+            "full" => "Item is arrived to a post office",
+            "short" => "In post office",
+        ],
+        "77" => [
+            "full" => "Item is returning to the sender",
+            "short" => "Returning",
+        ],
+        "38" => [
+            "full" => "C.O.D payment is paid to the sender",
+            "short" => "Paid",
+        ],
+        "68" => [
+            "full" => "Pre-information is received from sender",
+            "short" => "Pre-informed",
+        ],
+        "13" => [
+            "full" => "Item is collected from sender - picked up",
+            "short" => "Collected",
+        ],
+        "99" => [
+            "full" => "Outbound",
+            "short" => "Outbound",
+        ],
+        "45" => [
+            "full" => "Informed consignee of arrival",
+            "short" => "Informed",
+        ],
+        "20" => [
+            "full" => "Exception",
+            "short" => "Exception",
+        ],
     ],
 ];

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Shopify;
 
 use App\Http\Controllers\Controller;
+use App\Models\Shopify\ShopifyApiException;
 use App\Models\Shopify\ShopifyClient;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Response;
@@ -21,6 +22,8 @@ class AppController extends Controller
 {
     private $client;
     private $shop;
+    private $pk_client;
+    private $shop_info;
     public function __construct(Request $request)
     {
         $this->middleware(function ($request, $next) {
@@ -40,43 +43,114 @@ class AppController extends Controller
             $this->shop = $shop;
             $this->client = new ShopifyClient($shop->shop_origin, $shop->token, ENV('SHOPIFY_API_KEY'), ENV('SHOPIFY_SECRET'));
 
+            // check shopify API
+            try{
+                $this->shop_info = $this->client->call('GET', '/admin/shop.json');
+            }catch(ShopifyApiException $e){
+                session()->put('init_request', $request->fullUrl());
+                return redirect()->route('shopify.auth.index', request()->all());
+            }
+
+            // set pk_client
+            if($this->shop->test_mode){
+                $pk_client_params = [
+                    'test_mode' => true,
+                ];
+            }else{
+                if(isset($this->shop->api_key) && isset($this->shop->api_secret)){
+                    $pk_client_params = [
+                        'api_key' => $this->shop->api_key,
+                        'secret' => $this->shop->api_secret,
+                    ];
+                }else{
+                    $pk_client_params = false;
+                }
+            }
+
+            if(is_array($pk_client_params)){
+                $this->pk_client = new Client($pk_client_params);
+            }
+
             return $next($request);
         });
     }
 
-    public function preferences()
+    public function settings()
     {
-        $pk_client = new Client(array('test_mode' => true));
+        $grouped_services = [];
 
-        try {
-            $resp = $pk_client->listShippingMethods();
-            $products = json_decode($resp, true);
-        } catch (\Exception $ex)  {
-            throw new FatalErrorException();
+        if(isset($this->pk_client)){
+            try {
+                $resp = $this->pk_client->listShippingMethods();
+                $products = json_decode($resp, true);
+            } catch (\Exception $ex)  {
+                throw new FatalErrorException();
+            }
+            $grouped_services = array_group_by($products, function($i){  return $i['service_provider']; });
+            ksort($grouped_services);
         }
 
-        $grouped_services = array_group_by($products, function($i){  return $i['service_provider']; });
-        ksort($grouped_services);
-
-        return view('app.preferences', [
+        return view('app.settings', [
             'shipping_methods' => $grouped_services,
             'shop' => $this->shop
         ]);
     }
 
-    public function updatePreferences(Request $request)
+    public function updateSettings(Request $request)
     {
+        if(isset($request->api_key) && isset($request->api_secret)){
+            $client = new Client([
+                'api_key' => $request->api_key,
+                'secret' => $request->api_secret,
+            ]);
+
+            // api check
+            $result = json_decode($client->listShippingMethods());
+            if(!is_array($result)){
+                session()->flash('error', trans('app.messages.invalid_credentials'));
+                return redirect()->route('shopify.settings');
+            }
+
+            $this->shop->api_key = $request->api_key;
+            $this->shop->api_secret = $request->api_secret;
+            $this->shop->test_mode = $request->test_mode;
+        }
         $this->shop->shipping_method_code = $request->shipping_method;
-        $this->shop->test_mode = $request->test_mode;
         $this->shop->save();
 
-        return redirect()->route('shopify.preferences');
+        return redirect()->route('shopify.settings');
     }
 
-    public function printOrders(Request $request)
+    public function printLabels(Request $request)
     {
-        $orders = $this->client->call('GET', '/admin/orders.json', ['ids' => implode(',', $request->ids), 'status' => 'any']);
-        $settings = $this->client->call('GET', '/admin/shop.json');
+        if(!isset($this->pk_client)){
+            return view('app.alert', [
+                'type' => 'error',
+                'title' => trans('app.messages.no_api'),
+                'message' => trans('app.messages.no_api_set_error', ['settings_url' => route('shopify.settings')]),
+            ]);
+        }
+
+        $pk_client = $this->pk_client;
+
+        // api check
+        $result = json_decode($pk_client->listShippingMethods());
+        if(!is_array($result)){
+            return view('app.alert', [
+                'type' => 'error',
+                'title' => trans('app.messages.no_api'),
+                'message' => trans('app.messages.no_api_set_error', ['settings_url' => route('shopify.settings')]),
+            ]);
+        }
+
+        if(isset($request->ids)){
+            $order_ids = $request->ids;
+        }else{
+            $order_ids = [$request->id];
+        }
+
+        $orders = $this->client->call('GET', '/admin/orders.json', ['ids' => implode(',', $order_ids), 'status' => 'any']);
+        $settings = $this->shop_info;
 
         foreach($orders as &$order){
             $order['admin_order_url'] = 'https://' . $this->shop->shop_origin . '/admin/orders/' . $order['id'];
@@ -131,11 +205,10 @@ class AppController extends Controller
     //$additional_service = new AdditionalService();
     //$additional_service->setServiceCode(3104); // fragile
     //$shipment->addAdditionalService($additional_service);
-            $client = new Client(array('test_mode' => true));
 
             try {
-                $client->createTrackingCode($shipment);
-                $client->fetchShippingLabel($shipment);
+                $pk_client->createTrackingCode($shipment);
+                $pk_client->fetchShippingLabel($shipment);
 
                 $tracking_code = $shipment->getTrackingCode();
                 $reference = $shipment->getReference();
@@ -175,8 +248,7 @@ class AppController extends Controller
         $pk_shipment->setTrackingCode($shipment->tracking_code);
         $pk_shipment->setReference($shipment->reference);
 
-        $client = new Client(array('test_mode' => true));
-        $client->fetchShippingLabel($pk_shipment);
+        $this->pk_client->fetchShippingLabel($pk_shipment);
 
         $pdf_content = base64_decode($pk_shipment->getPdf());
 
@@ -184,5 +256,38 @@ class AppController extends Controller
             'Content-Type' => 'application/pdf',
             'Content-Disposition' => 'inline; filename="'.$shipment->tracking_code.'.pdf"'
         ]);
+    }
+
+    public function trackShipment(Request $request){
+        $shipment = ShopifyShipment::where('shop_id', $this->shop->id)->where('order_id', $request->id)->first();
+
+        if(!isset($shipment)){
+            return view('app.alert', [
+                'type' => 'error',
+                'title' => trans('app.messages.no_tracking_info'),
+                'message' => '',
+            ]);
+        }
+
+        $tracking_code = $this->shop->test_mode ? 'JJFITESTLABEL100' : $shipment->tracking_code;
+
+        $statuses = json_decode($this->pk_client->getShipmentStatus($tracking_code));
+
+        if(!is_array($statuses) || count($statuses) == 0){
+            return view('app.alert', [
+                'type' => 'error',
+                'title' => trans('app.messages.no_tracking_info'),
+                'message' => '',
+            ]);
+        }
+
+        $admin_order_url = 'https://' . $this->shop->shop_origin . '/admin/orders/' . $shipment->order_id;
+
+        return view('app.shipment-status', [
+            'statuses' => $statuses,
+            'current_shipment' => $shipment,
+            'order_url' => $admin_order_url,
+        ]);
+
     }
 }

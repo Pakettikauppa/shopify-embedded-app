@@ -12,7 +12,7 @@
     <link href="https://fonts.googleapis.com/css?family=Lato:100,300,400,700" rel='stylesheet' type='text/css'>
 
     <!-- Styles -->
-    <link href="{{url('css/seaff.css')}}" rel='stylesheet' type='text/css'>
+    <link href="{{url('css/uptown.css')}}" rel='stylesheet' type='text/css'>
     @yield('after-style-end')
 
     <!-- JavaScripts -->

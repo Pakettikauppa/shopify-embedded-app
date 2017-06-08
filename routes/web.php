@@ -16,10 +16,12 @@ Route::group(['namespace' => 'Shopify'], function () {
     Route::get('/auth/', 'AuthController@index')->name('shopify.auth.index');
     Route::get('/auth/callback', 'AuthController@callback')->name('shopify.auth.callback');
 
-    Route::get('/preferences', 'AppController@preferences')->name('shopify.preferences');
-    Route::get('/preferences/update', 'AppController@updatePreferences')->name('shopify.update-preferences');
+    Route::get('/settings', 'AppController@settings')->name('shopify.settings');
+    Route::get('/settings/update', 'AppController@updateSettings')->name('shopify.update-settings');
 
-    Route::get('/print-orders', 'AppController@printOrders')->name('shopify.print-orders');
+    Route::get('/print-labels', 'AppController@printLabels')->name('shopify.print-labels');
+
     Route::get('/get-label/{order_id}', 'AppController@getLabel')->name('shopify.label');
+    Route::get('/track-shipment', 'AppController@trackShipment')->name('shopify.track-shipment');
 });
 

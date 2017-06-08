@@ -2,15 +2,11 @@
 
 @section('content')
 
-<div class="section">
-    <div class="section-summary">
-        <h1>{{trans('app.print_labels.title')}}</h1>
-        <p>{{trans('app.print_labels.description')}}</p>
-    </div>
-    <div class="section-content">
-        <div class="section-row">
-            <div class="section-cell">
-                <table class="table-section">
+<section>
+    <div class="column">
+        <div class="card" style="margin-top: 1em">
+            <div class="row">
+                <table>
                     <thead>
                     <tr>
                         <th>{{trans('app.print_labels.order_id')}}</th>
@@ -22,18 +18,20 @@
                     <tbody>
                     @foreach($orders as $order)
                         <tr>
-                            <td><a href="{{$order['admin_order_url']}}">{{$order['id']}}</a></td>
+                            <td><a href="{{$order['admin_order_url']}}" target="_blank">{{$order['id']}}</a></td>
                             <td>
                                 @if($order['status'] == 'created')
                                     <span class="tag green">{{trans('app.print_labels.statuses.created')}}</span>
                                 @elseif($order['status'] == 'sent')
                                     <span class="tag yellow">{{trans('app.print_labels.statuses.sent')}}</span>
                                 @elseif($order['status'] == 'need_shipping_address')
-                                    <span class="tag pink">{{trans('app.print_labels.statuses.need_shipping_address')}}</span>
+                                    <span class="tag red">{{trans('app.print_labels.statuses.need_shipping_address')}}</span>
                                 @endif
                             </td>
                             <td>
-                                {{$order['tracking_code'] or ''}}
+                                @if(isset($order['tracking_code']))
+                                <a href="{{route('shopify.track-shipment', ['id' => $order['id']])}}">{{$order['tracking_code']}}</a>
+                                @endif
                             </td>
                             <td>
                                 @if($order['status'] != 'need_shipping_address')
@@ -47,7 +45,7 @@
             </div>
         </div>
     </div>
-</div>
+</section>
 
 @endsection
 
@@ -63,7 +61,7 @@
         apiKey: '{{ENV('SHOPIFY_API_KEY')}}',
         shopOrigin: 'https://{{session()->get('shop')}}',
         debug: true,
-        forceRedirect: false
+        forceRedirect: true
     });
 
 </script>

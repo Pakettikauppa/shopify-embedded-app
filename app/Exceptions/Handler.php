@@ -54,9 +54,9 @@ class Handler extends ExceptionHandler
         if($exception instanceof UnprocessableEntityHttpException){
             return response()->view('errors.422', [], 422);
         }
-//        if($exception instanceof FatalErrorException){
-//            return response()->view('errors.500', [], 500);
-//        }
+        if($exception instanceof FatalErrorException){
+            return response()->view('errors.500', [], 500);
+        }
 
         return parent::render($request, $exception);
     }
