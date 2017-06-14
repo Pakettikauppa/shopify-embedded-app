@@ -1,0 +1,49 @@
+header.card-header{
+    background: url('/img/bg-PK2.jpg');
+    background-repeat: no-repeat;
+    background-size: 100%;
+    color: white;
+    min-height: 150px;
+    padding-top: 35px;
+}
+
+.inline-labels label{
+    display: inline-block;
+    margin-right: 1em;
+}
+
+.wizard-page{
+    margin-bottom: 1em;
+}
+
+.wizard-navigation .icon{
+    vertical-align: 25%;
+}
+.hidden{
+    display: none;
+}
+
+.everything-is-ready .icon-checkmark:after{
+    background-size: 100% 100%;
+    width: 1em;
+    height: 1em;
+    top: -7px;
+    left: 15px;
+    background-image: url("data:image/svg+xml;charset=utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' enable-background='new 0 0 24 24'><path fill='rgb(72, 171, 67)' d='M23.6 5L22 3.4c-.5-.4-1.2-.4-1.7 0L8.5 15l-4.8-4.7c-.5-.4-1.2-.4-1.7 0L.3 11.9c-.5.4-.5 1.2 0 1.6l7.3 7.1c.5.4 1.2.4 1.7 0l14.3-14c.5-.4.5-1.1 0-1.6z'/></svg>");
+}
+
+.loading{
+    background-color: white;
+    position: absolute;
+    top: 0;
+    height: 100%;
+    width: 100%;
+    z-index: 999;
+    opacity: 0.7;
+}
+
+.loading .spinner{
+    position: absolute;
+    left: calc(50% - 33px);
+    top: 35%;
+}

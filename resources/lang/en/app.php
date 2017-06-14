@@ -27,6 +27,18 @@ return [
         'save_settings' => 'Save settings',
         'api_key' => 'API key',
         'api_secret' => 'API secret',
+        'setup_wizard' => 'Wizard setup',
+        'wizard' => [
+            'is_new_user' => 'Do you have Pakettikauppa API credentials?',
+            'register' => 'Register',
+            'sign_contract' => 'Sign the contract',
+            'enter_api_credentials' => 'Enter API credentials',
+            'sign_contract_now' => 'Sign contract now',
+            'yes' => 'Yes',
+            'no_new' => 'No, I\'m a new user',
+            'back_to_settings' => 'Back to settings',
+            'next' => 'Next',
+        ],
     ],
 
     'messages' => [
@@ -36,6 +48,11 @@ return [
         'no_api_set_error' => 'Setup API credentials or turn on the test mode in <a href=":settings_url">Settings</a>.',
         'invalid_credentials' => 'API credentials are not valid',
         'no_tracking_info' => 'Tracking information for the order is not available',
+        'success' => 'Task was successful!',
+        'fail' => 'Procedure has failed',
+        'api_credentials_saved' => 'API credentials have been successfully saved. Go to the next step.',
+        'wait_for_email' => 'Wait for an email from our sales team',
+        'register_first' => 'You must register first',
     ],
     'tracking_info' => [
         'transaction' => 'Transaction',

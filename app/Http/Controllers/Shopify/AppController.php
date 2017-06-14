@@ -44,11 +44,13 @@ class AppController extends Controller
             $this->client = new ShopifyClient($shop->shop_origin, $shop->token, ENV('SHOPIFY_API_KEY'), ENV('SHOPIFY_SECRET'));
 
             // check shopify API
-            try{
-                $this->shop_info = $this->client->call('GET', '/admin/shop.json');
-            }catch(ShopifyApiException $e){
-                session()->put('init_request', $request->fullUrl());
-                return redirect()->route('shopify.auth.index', request()->all());
+            if(\Route::currentRouteName() == 'shopify.settings'){
+                try{
+                    $this->shop_info = $this->client->call('GET', '/admin/shop.json');
+                }catch(ShopifyApiException $e){
+                    session()->put('init_request', $request->fullUrl());
+                    return redirect()->route('shopify.auth.index', request()->all());
+                }
             }
 
             // set pk_client
@@ -98,27 +100,54 @@ class AppController extends Controller
 
     public function updateSettings(Request $request)
     {
-        if(isset($request->api_key) && isset($request->api_secret)){
-            $client = new Client([
-                'api_key' => $request->api_key,
-                'secret' => $request->api_secret,
-            ]);
-
-            // api check
-            $result = json_decode($client->listShippingMethods());
-            if(!is_array($result)){
-                session()->flash('error', trans('app.messages.invalid_credentials'));
-                return redirect()->route('shopify.settings');
-            }
-
-            $this->shop->api_key = $request->api_key;
-            $this->shop->api_secret = $request->api_secret;
+        if(isset($this->shop->api_key) && isset($this->shop->api_secret)){
             $this->shop->test_mode = $request->test_mode;
         }
         $this->shop->shipping_method_code = $request->shipping_method;
         $this->shop->save();
 
         return redirect()->route('shopify.settings');
+    }
+
+    public function setApiCredentials(Request $request){
+        if(!isset($request->api_key) || !isset($request->api_secret)) {
+            $result = [
+                'status' => 'error',
+                'message' => trans('app.messages.invalid_credentials'),
+            ];
+
+            return response()->json($result);
+        }
+
+        $client = new Client([
+            'api_key' => $request->api_key,
+            'secret' => $request->api_secret,
+        ]);
+
+        // api check
+        // @todo uncomment on production to check api credentials
+//        $result = json_decode($client->listShippingMethods());
+//        if(!is_array($result)){
+//
+//            $result = [
+//                'status' => 'error',
+//                'message' => trans('app.messages.invalid_credentials'),
+//            ];
+//            return response()->json($result);
+//        }
+
+        $this->shop->api_key = $request->api_key;
+        $this->shop->api_secret = $request->api_secret;
+        if(isset($request->customer_id)){
+            $this->shop->customer_id = $request->customer_id;
+        }
+        $this->shop->save();
+
+        $result = [
+            'status' => 'ok'
+        ];
+
+        return response()->json($result);
     }
 
     public function printLabels(Request $request)
@@ -288,6 +317,35 @@ class AppController extends Controller
             'current_shipment' => $shipment,
             'order_url' => $admin_order_url,
         ]);
+
+    }
+
+    public function setupWizard(){
+
+        return view('app.setup-wizard', [
+            'shop' => $this->shop
+        ]);
+    }
+
+    public function signContractLink(Request $request){
+        if(!isset($this->shop->customer_id)){
+            throw new FatalErrorException();
+        }
+
+        $base_url = 'https://oak.dev/sign-contract?';
+
+        $timestamp = time();
+        $hash = hash_hmac('sha256', $this->shop->customer_id . "&" . $timestamp, env('CHECKOUT_TOKEN_API_SECRET'));
+
+        $args = [
+            'customer'   => $this->shop->customer_id,
+            'timestamp'     => $timestamp,
+            'hash'          => $hash,
+        ];
+
+        $link = $base_url . http_build_query($args);
+
+        return  response($link);
 
     }
 }

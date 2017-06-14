@@ -13,16 +13,28 @@
 
     <!-- Styles -->
     <link href="{{url('css/uptown.css')}}" rel='stylesheet' type='text/css'>
+    <link href="{{url('css/style.css')}}" rel='stylesheet' type='text/css'>
     @yield('after-style-end')
 
     <!-- JavaScripts -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
     <script src="https://cdn.shopify.com/s/assets/external/app.js"></script>
+    <script>
+        ShopifyApp.init({
+            apiKey: '{{ENV('SHOPIFY_API_KEY')}}',
+            shopOrigin: 'https://{{session()->get('shop')}}',
+            debug: true,
+            forceRedirect: false
+        });
+    </script>
     @yield('after-scripts-end')
 </head>
 <body id="app-layout">
 
     @yield('content')
 
+    <div class="loading hidden">
+        <img class="spinner" src="{{url('/img/ajax-loader.gif')}}">
+    </div>
 </body>
 </html>
