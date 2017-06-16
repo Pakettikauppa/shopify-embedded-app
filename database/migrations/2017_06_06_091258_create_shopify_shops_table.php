@@ -23,14 +23,14 @@ class CreateShopifyShopsTable extends Migration
             $table->integer('shipping_method_code');
             $table->text('additional_services');
             $table->boolean('test_mode');
-            $table->integer('customer_id');
-            $table->string('business_name');
-            $table->string('address');
-            $table->string('postcode');
-            $table->string('city');
-            $table->string('country');
-            $table->string('email');
-            $table->string('phone');
+            $table->integer('customer_id')->nullable();
+            $table->string('business_name')->nullable();
+            $table->string('address')->nullable();
+            $table->string('postcode')->nullable();
+            $table->string('city')->nullable();
+            $table->string('country')->nullable();
+            $table->string('email')->nullable();
+            $table->string('phone')->nullable();
             $table->timestamps();
         });
     }
