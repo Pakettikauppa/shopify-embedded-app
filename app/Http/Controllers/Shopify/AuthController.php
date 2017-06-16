@@ -25,6 +25,7 @@ class AuthController extends Controller
             $shop = new Shop();
             // default values
             $shop->test_mode = true;
+            $shop->additional_services = serialize([]);
             $shop->shipping_method_code = 2104; // Kotipaketti is default
         }
 

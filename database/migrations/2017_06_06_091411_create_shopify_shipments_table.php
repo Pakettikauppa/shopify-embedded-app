@@ -18,9 +18,10 @@ class CreateShopifyShipmentsTable extends Migration
             $table->integer('shop_id');
             $table->foreign('shop_id')->references('id')->on('shopify_shops');
             $table->string('order_id');
-            $table->string('status', 20);
             $table->string('tracking_code', 200);
             $table->string('reference', 50);
+            $table->boolean('test_mode');
+            $table->boolean('return');
             $table->timestamps();
         });
     }

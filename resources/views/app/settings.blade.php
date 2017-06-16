@@ -4,13 +4,21 @@
     <form id="setting-form" method="GET" action="{{route('shopify.update-settings')}}">
 
         <div class="info">
-            @if(isset($shop->api_key) && isset($shop->api_secret))
-                <span class="tag green" style="margin-bottom: 15px;">{{trans('app.messages.ready')}}</span>
-            @else
+            @if(!isset($shop->api_key))
                 <div class="alert notification">
                     <dl>
                         <dt>{{trans('app.messages.no_api')}}</dt>
                         <dd>{{trans('app.messages.only_test_mode')}}</dd>
+                    </dl>
+                </div>
+            @endif
+
+            @if($api_valid)
+                <span class="tag green" style="margin-bottom: 15px;">{{trans('app.messages.ready')}}</span>
+            @else
+                <div class="alert error">
+                    <dl>
+                        <dt>{{trans('app.messages.invalid_credentials')}}</dt>
                     </dl>
                 </div>
             @endif
@@ -33,7 +41,7 @@
                         @if(count($service_provider) > 0)
                             <optgroup label="{{$key}}">
                                 @foreach($service_provider as $product)
-                                    <option value="{{ $product['shipping_method_code'] }}"
+                                    <option value="{{ $product['shipping_method_code'] }}" data-services="{{json_encode($product['additional_services'])}}"
                                             @if($shop->shipping_method_code == $product['shipping_method_code']) selected @endif>
                                         {{ $product['name'] }}
                                     </option>
@@ -44,8 +52,78 @@
                 </select>
             </div>
         </div>
+        <div class="row additional-services">
+            <label class="title-label" style="font-weight: bold">{{trans('app.settings.additional_services')}}</label>
+            <?php
+                $services = [];
+            ?>
+
+            <div class="label-group" style="margin-left: 1em; margin-top: 0.5em">
+            @foreach($shipping_methods as $service_provider)
+                @foreach($service_provider as $product)
+                    @foreach($product['additional_services'] as $service)
+                        @if(!in_array($service['service_code'], $services))
+                        <label class="checkbox-label"><input type="checkbox" disabled
+                             @if(in_array($service['service_code'], $additional_services)) checked @endif
+                             name="additional_services[]" value="{{$service['service_code']}}">{{$service['name']}}</label>
+                        <?php  $services[] = $service['service_code'];?>
+                        @endif
+                    @endforeach
+                @endforeach
+            @endforeach
+            </div>
+        </div>
         <div class="row">
-            <label><input type="checkbox" name="test_mode" @if($shop->test_mode) checked @endif>{{trans('app.settings.test_mode')}}</label>
+            <div class="input-group">
+                <span class="append">{{trans('app.settings.business_name')}}</span>
+                <input type="text" name="business_name" value="{{$shop->business_name}}">
+            </div>
+        </div>
+        <div class="row">
+            <div class="input-group">
+                <span class="append">{{trans('app.settings.address')}}</span>
+                <input type="text" name="address" value="{{$shop->address}}">
+            </div>
+        </div>
+        <div class="row">
+            <div class="input-group">
+                <span class="append">{{trans('app.settings.postcode')}}</span>
+                <input type="text" name="postcode" value="{{$shop->postcode}}">
+            </div>
+        </div>
+        <div class="row">
+            <div class="input-group">
+                <span class="append">{{trans('app.settings.city')}}</span>
+                <input type="text" name="city" value="{{$shop->city}}">
+            </div>
+        </div>
+        <div class="row">
+            <div class="input-group">
+                <span class="append">{{trans('app.settings.country')}}</span>
+                <select name="country">
+                    {{--<option value="" disabled selected hidden>{{ trans('app.shipping_method.choose_sending_method') }}</option>--}}
+                    @foreach(getCountryList() as $code => $country)
+                        <option value="{{$code}}"  @if($shop->country == $code) selected @endif>
+                            {{$country}}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+        </div>
+        <div class="row">
+            <div class="input-group">
+                <span class="append">{{trans('app.settings.email')}}</span>
+                <input type="email" name="email" value="{{$shop->email}}">
+            </div>
+        </div>
+        <div class="row">
+            <div class="input-group">
+                <span class="append">{{trans('app.settings.phone')}}</span>
+                <input type="text" name="phone" value="{{$shop->phone}}">
+            </div>
+        </div>
+        <div class="row">
+            <label><input type="checkbox" name="test_mode" @if($shop->test_mode) checked @endif value="1">{{trans('app.settings.test_mode')}}</label>
         </div>
     </form>
 
@@ -77,6 +155,51 @@
             }
         });
     });
+
+    document.addEventListener('DOMContentLoaded', ready);
+    function ready(){
+        showServices();
+        function showServices(){
+            services = $('select[name=shipping_method] option:selected').data('services');
+            $checkboxes = $('.additional-services input[type=checkbox]').prop('disabled', true);
+            $('.additional-services .checkbox-label').hide();
+
+            $.each(services, function(index, service){
+                $checkboxes.each(function(){
+                    $this = $(this);
+                    if(service.service_code == $this.val()){
+                        $this.prop('disabled', false).closest('label').show();
+                    }
+                });
+            });
+
+            if($('.additional-services .checkbox-label:visible').length == 0){
+                $('.additional-services .title-label').hide();
+            }else{
+                $('.additional-services .title-label').show();
+            }
+        }
+        $('select[name=shipping_method]').change(showServices);
+//    .each(function(){
+//            $this = $(this);
+//            var included = true;
+//            $.each(services, function(service){
+//                if(service.service_code == $this.val()){
+//                    included = true;
+//                }
+//            });
+//
+//            console.log(included);
+//
+//            if(included){
+//                $this.attr('disabled', false).show();
+//            }else{
+//                $this.attr('disabled', true).hide();
+//            }
+//
+//        });
+//        console.log(services);
+    }
 
 </script>
 

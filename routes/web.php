@@ -24,6 +24,8 @@ Route::group(['namespace' => 'Shopify'], function () {
     Route::get('/setup-wizard', 'AppController@setupWizard')->name('shopify.setup-wizard');
 
     Route::get('/print-labels', 'AppController@printLabels')->name('shopify.print-labels');
+    Route::get('/print-labels-fulfill', 'AppController@printLabelsFulfill')->name('shopify.print-labels-fulfill');
+    Route::get('/return-label', 'AppController@returnLabel')->name('shopify.return-label');
 
     Route::get('/get-label/{order_id}', 'AppController@getLabel')->name('shopify.label');
     Route::get('/track-shipment', 'AppController@trackShipment')->name('shopify.track-shipment');

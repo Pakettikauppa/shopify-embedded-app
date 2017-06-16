@@ -21,7 +21,16 @@ class CreateShopifyShopsTable extends Migration
             $table->string('api_key', 80)->nullable();
             $table->string('api_secret', 80)->nullable();
             $table->integer('shipping_method_code');
+            $table->text('additional_services');
             $table->boolean('test_mode');
+            $table->integer('customer_id');
+            $table->string('business_name');
+            $table->string('address');
+            $table->string('postcode');
+            $table->string('city');
+            $table->string('country');
+            $table->string('email');
+            $table->string('phone');
             $table->timestamps();
         });
     }

@@ -24,7 +24,7 @@
             apiKey: '{{ENV('SHOPIFY_API_KEY')}}',
             shopOrigin: 'https://{{session()->get('shop')}}',
             debug: true,
-            forceRedirect: false
+            forceRedirect: true
         });
     </script>
     @yield('after-scripts-end')

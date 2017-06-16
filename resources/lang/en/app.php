@@ -5,7 +5,9 @@ return [
         'choose_sending_method' => 'Choose sending method',
     ],
     'print_labels' => [
-        'title' => 'Print labels',
+        'print_label' => 'Print labels',
+        'print_label_fulfill' => 'Print labels & Fulfill',
+        'return_label' => 'Print return label',
         'description' => 'List of created shipments',
         'order_id' => 'Order ID',
         'tracking_code' => 'Tracking code',
@@ -23,6 +25,14 @@ return [
         'company_name' => 'Pakettikauppa',
         'instructions' => 'Learn more about the application at the <a href=":instruction_url">:company_name Help Center</a>.',
         'shipping_method' => 'Shipping method',
+        'additional_services' => 'Additional services',
+        'business_name' => 'Business name',
+        'address' => 'Address',
+        'postcode' => 'Postcode',
+        'city' => 'City',
+        'country' => 'Country',
+        'email' => 'Email',
+        'phone' => 'Phone',
         'test_mode' => 'Test mode',
         'save_settings' => 'Save settings',
         'api_key' => 'API key',
@@ -42,6 +52,7 @@ return [
     ],
 
     'messages' => [
+        'error' => 'Error',
         'no_api' => 'No API credentials are set',
         'ready' => 'Everything is ready',
         'only_test_mode' => 'Without API credentials you can use the application only in test mode',

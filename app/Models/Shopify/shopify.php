@@ -68,6 +68,7 @@ class ShopifyClient {
         $response = $this->curlHttpApiRequest($method, $url, $query, $payload, $request_headers);
         $response = json_decode($response, true);
 
+
         if (isset($response['errors']) or ($this->last_response_headers['http_status_code'] >= 400))
             throw new ShopifyApiException($method, $path, $params, $this->last_response_headers, $response);
 

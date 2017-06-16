@@ -5,7 +5,7 @@
     <section>
         <div class="column">
             <div class="card" style="margin-top: 1em">
-                <h1>{{trans('app.tracking_info.title')}}</h1>
+                {{--<h1>{{trans('app.tracking_info.title')}}</h1>--}}
                 <div class="row">
                     {{trans('app.print_labels.order_id')}}: <a href="{{$order_url}}" target="_blank">{{$current_shipment->order_id}}</a>
                 </div>
@@ -48,11 +48,11 @@
 
     <script type='text/javascript'>
 
-        ShopifyApp.init({
-            apiKey: '{{ENV('SHOPIFY_API_KEY')}}',
-            shopOrigin: 'https://{{session()->get('shop')}}',
-            debug: true,
-            forceRedirect: true
+        ShopifyApp.ready(function(){
+            ShopifyApp.Bar.initialize({
+                title: '{{trans('app.tracking_info.title')}}',
+                icon: '{{url('/img/favicon-96x96.png')}}'
+            });
         });
 
     </script>
