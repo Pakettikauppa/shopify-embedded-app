@@ -13,15 +13,14 @@
                 </div>
             @endif
 
-            @if($api_valid)
-                <span class="tag green" style="margin-bottom: 15px;">{{trans('app.messages.ready')}}</span>
-            @else
+            @if(!$api_valid)
                 <div class="alert error">
                     <dl>
                         <dt>{{trans('app.messages.invalid_credentials')}}</dt>
                     </dl>
                 </div>
             @endif
+                {{--<span class="tag green" style="margin-bottom: 15px;">{{trans('app.messages.ready')}}</span>--}}
 
             @if(session()->has('error'))
                 <div class="alert error">
@@ -180,25 +179,6 @@
             }
         }
         $('select[name=shipping_method]').change(showServices);
-//    .each(function(){
-//            $this = $(this);
-//            var included = true;
-//            $.each(services, function(service){
-//                if(service.service_code == $this.val()){
-//                    included = true;
-//                }
-//            });
-//
-//            console.log(included);
-//
-//            if(included){
-//                $this.attr('disabled', false).show();
-//            }else{
-//                $this.attr('disabled', true).hide();
-//            }
-//
-//        });
-//        console.log(services);
     }
 
 </script>
