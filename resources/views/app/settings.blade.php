@@ -122,6 +122,18 @@
             </div>
         </div>
         <div class="row">
+            <div class="input-group">
+                <span class="append">{{trans('app.settings.iban')}}</span>
+                <input type="email" name="iban" value="{{$shop->iban}}">
+            </div>
+        </div>
+        <div class="row">
+            <div class="input-group">
+                <span class="append">{{trans('app.settings.bic')}}</span>
+                <input type="text" name="bic" value="{{$shop->bic}}">
+            </div>
+        </div>
+        <div class="row">
             <label><input type="checkbox" name="test_mode" @if($shop->test_mode) checked @endif value="1">{{trans('app.settings.test_mode')}}</label>
         </div>
     </form>

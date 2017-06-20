@@ -118,6 +118,8 @@ class AppController extends Controller
         $this->shop->country= $request->country;
         $this->shop->email = $request->email;
         $this->shop->phone= $request->phone;
+        $this->shop->iban = $request->iban;
+        $this->shop->bic= $request->bic;
         $this->shop->save();
 
         return redirect()->route('shopify.settings');

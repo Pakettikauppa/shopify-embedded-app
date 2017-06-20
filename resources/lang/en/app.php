@@ -33,6 +33,8 @@ return [
         'country' => 'Country',
         'email' => 'Email',
         'phone' => 'Phone',
+        'iban' => 'Bank account number',
+        'bic' => 'BIC code',
         'test_mode' => 'Test mode',
         'save_settings' => 'Save settings',
         'api_key' => 'API key',

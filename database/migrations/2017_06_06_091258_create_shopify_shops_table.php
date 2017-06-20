@@ -31,6 +31,8 @@ class CreateShopifyShopsTable extends Migration
             $table->string('country')->nullable();
             $table->string('email')->nullable();
             $table->string('phone')->nullable();
+            $table->string('iban')->nullable();
+            $table->string('bic')->nullable();
             $table->timestamps();
         });
     }
