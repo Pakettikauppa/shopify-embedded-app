@@ -27,6 +27,7 @@ class AuthController extends Controller
             $shop->test_mode = true;
             $shop->additional_services = serialize([]);
             $shop->shipping_method_code = 2104; // Kotipaketti is default
+            $shop->country = 'FI';
         }
 
         $nonce = str_random(20);

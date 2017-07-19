@@ -2,16 +2,9 @@
 
 @section('content')
 
-    {{--<header class="card-header">--}}
-        {{--<img src="{{url('/img/logo-1.png')}}">--}}
-    {{--</header>--}}
     <section>
-        <div class="column">
-            <article>
-                <div class="card" style="margin-top: 0.5em">
-                    @yield('card-content')
-                </div>
-            </article>
+        <div class="column" style="margin-top: 2rem;">
+            @yield('card-content')
         </div>
     </section>
     <footer>

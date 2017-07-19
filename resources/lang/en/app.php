@@ -22,6 +22,9 @@ return [
     ],
     'settings' => [
         'settings' => 'Settings',
+        'shipment_settings' => 'Shipment settings',
+        'company_info' => 'Company information',
+        'testing' => 'Testing',
         'company_name' => 'Pakettikauppa',
         'instructions' => 'Learn more about the application at the <a href=":instruction_url">:company_name Help Center</a>.',
         'shipping_method' => 'Shipping method',
@@ -35,7 +38,7 @@ return [
         'phone' => 'Phone',
         'iban' => 'Bank account number',
         'bic' => 'BIC code',
-        'test_mode' => 'Test mode',
+        'test_mode' => 'Enable test mode',
         'save_settings' => 'Save settings',
         'api_key' => 'API key',
         'api_secret' => 'API secret',
