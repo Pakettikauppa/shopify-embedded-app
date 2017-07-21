@@ -26,6 +26,8 @@
                                     <span class="tag yellow">{{trans('app.print_labels.statuses.sent')}}</span>
                                 @elseif($order['status'] == 'need_shipping_address')
                                     <span class="tag red">{{trans('app.print_labels.statuses.need_shipping_address')}}</span>
+                                @elseif($order['status'] == 'no_shipping_service')
+                                    <span class="tag red">{{trans('app.print_labels.statuses.no_shipping_service')}}</span>
                                 @endif
                             </td>
                             <td>
@@ -34,7 +36,7 @@
                                 @endif
                             </td>
                             <td>
-                                @if($order['status'] != 'need_shipping_address')
+                                @if($order['status'] == 'created' || $order['status'] == 'sent')
                                     <a href="{{route('shopify.label', ['order_id' => $order['id']])}}" target="_blank">{{trans('app.print_labels.get_label_link')}}</a>
                                 @endif
                             </td>

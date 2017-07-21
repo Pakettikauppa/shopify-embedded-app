@@ -77,6 +77,26 @@ class AppController extends Controller
 
     public function settings()
     {
+        $shipping_zones = $this->client->call('GET', '/admin/shipping_zones.json');
+
+//        dd($shipping_zones);
+
+        $shipping_rates = $shipping_zones[0]['weight_based_shipping_rates'];
+        $shipping_settings = unserialize($this->shop->shipping_settings);
+
+        $result_rates = [];
+        foreach($shipping_rates as $rate){
+            $arr = [];
+            $arr['id'] = $rate['id'];
+            $arr['name'] = $rate['name'];
+            $arr['product_code'] = '';
+            foreach($shipping_settings as $item){
+                if($item['shipping_rate_id'] == $rate['name']){
+                    $arr['product_code'] = $item['product_code'];
+                }
+            }
+            $result_rates[] = $arr;
+        }
         $grouped_services = [];
 
         try {
@@ -91,26 +111,39 @@ class AppController extends Controller
             ksort($grouped_services);
         }
 
+//        dd($result_rates);
+
         return view('app.settings', [
             'shipping_methods' => $grouped_services,
             'shop' => $this->shop,
             'additional_services' => unserialize($this->shop->additional_services),
             'api_valid' => $api_valid,
+            'shipping_rates' => $result_rates
         ]);
     }
 
     public function updateSettings(Request $request)
     {
-        $additional_services = [];
-        if(isset($request->additional_services)){
-            $additional_services = $request->additional_services;
+//        dd($request->all());
+//        $additional_services = [];
+
+        $shipping_settings = [];
+        foreach($request->shipping_method as $key => $code){
+            $shipping_settings[] = [
+                'shipping_rate_id' => $key,
+                'product_code' => $code
+             ];
         }
-        $this->shop->additional_services = serialize($additional_services);
+//        if(isset($request->additional_services)){
+//            $additional_services = $request->additional_services;
+//        }
+//        $this->shop->additional_services = serialize($additional_services);
 
         if(isset($this->shop->api_key) && isset($this->shop->api_secret)){
             $this->shop->test_mode = $request->test_mode;
         }
-        $this->shop->shipping_method_code = $request->shipping_method;
+//        $this->shop->shipping_method_code = $request->shipping_method;
+        $this->shop->shipping_settings = serialize($shipping_settings);
         $this->shop->business_name = $request->business_name;
         $this->shop->address = $request->address;
         $this->shop->postcode = $request->postcode;
@@ -135,13 +168,14 @@ class AppController extends Controller
             return response()->json($result);
         }
 
-        $client = new Client([
-            'api_key' => $request->api_key,
-            'secret' => $request->api_secret,
-        ]);
-
         // api check
         // @todo uncomment on production to check api credentials
+
+//        $client = new Client([
+//            'api_key' => $request->api_key,
+//            'secret' => $request->api_secret,
+//        ]);
+
 //        $result = json_decode($client->listShippingMethods());
 //        if(!is_array($result)){
 //
@@ -191,6 +225,8 @@ class AppController extends Controller
         }
 
         $orders = $this->client->call('GET', '/admin/orders.json', ['ids' => implode(',', $order_ids), 'status' => 'any']);
+
+//        dd($orders);
 
         foreach($orders as &$order){
             $order['admin_order_url'] = 'https://' . $this->shop->shop_origin . '/admin/orders/' . $order['id'];

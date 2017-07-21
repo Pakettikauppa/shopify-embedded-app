@@ -47,3 +47,9 @@ header.card-header{
     left: calc(50% - 33px);
     top: 35%;
 }
+
+.rate-name-column{
+    min-height: 3.4rem;
+    display: flex;
+    align-items: center;
+}

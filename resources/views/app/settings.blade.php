@@ -4,14 +4,14 @@
 
 <article>
     <div class="info column">
-    {{--    @if(!isset($shop->api_key))--}}
+        @if(!isset($shop->api_key))
             <div class="alert notification">
                 <dl>
                     <dt>{{trans('app.messages.no_api')}}</dt>
                     <dd>{{trans('app.messages.only_test_mode')}}</dd>
                 </dl>
             </div>
-        {{--@endif--}}
+        @endif
 
         @if(!$api_valid)
             <div class="alert error">
@@ -38,48 +38,47 @@
         <div class="card">
             <h2>{{trans('app.settings.shipment_settings')}}</h2>
 
+            <div>
+                <div class="columns four">
+                    <h5>Shipping method from shopify</h5>
+                </div>
+                <div class="columns eight">
+                    <h5>Shipping method in PK</h5>
+                </div>
+            </div>
+
+            @foreach($shipping_rates as $rate)
+
             <div class="row">
-                <div class="input-group">
-                    <span class="append">{{trans('app.settings.shipping_method')}}</span>
-                    <select name="shipping_method">
-                        {{--<option value="" disabled selected hidden>{{ trans('app.shipping_method.choose_sending_method') }}</option>--}}
-                        @foreach($shipping_methods as $key => $service_provider)
-                            @if(count($service_provider) > 0)
-                                <optgroup label="{{$key}}">
-                                    @foreach($service_provider as $product)
-                                        <option value="{{ $product['shipping_method_code'] }}" data-services="{{json_encode($product['additional_services'])}}"
-                                                @if($shop->shipping_method_code == $product['shipping_method_code']) selected @endif>
-                                            {{ $product['name'] }}
-                                        </option>
-                                    @endforeach
-                                </optgroup>
-                            @endif
-                        @endforeach
-                    </select>
+                <div class="columns four rate-name-column">
+                    {{$rate['name']}}
+                </div>
+                <div class="columns eight">
+                    <div class="row">
+                        {{--<div class="input-group">--}}
+                            {{--<span class="append">{{trans('app.settings.shipping_method')}}</span>--}}
+                            <select name="shipping_method[{{$rate['name']}}]">
+                                <option value="">—</option>
+                                @foreach($shipping_methods as $key => $service_provider)
+                                    @if(count($service_provider) > 0)
+                                        <optgroup label="{{$key}}">
+                                            @foreach($service_provider as $product)
+                                                <option value="{{ $product['shipping_method_code'] }}" data-services="{{json_encode($product['additional_services'])}}"
+                                                        @if($rate['product_code'] == $product['shipping_method_code']) selected @endif>
+                                                    {{ $product['name'] }}
+                                                </option>
+                                            @endforeach
+                                        </optgroup>
+                                    @endif
+                                @endforeach
+                            </select>
+                        {{--</div>--}}
+                    </div>
                 </div>
             </div>
 
+            @endforeach
 
-            <div class="row additional-services">
-                <label class="title-label" style="font-weight: bold">{{trans('app.settings.additional_services')}}</label>
-                <?php
-                    $services = [];
-                ?>
-                <div class="label-group" style="margin-left: 1em; margin-top: 0.5em">
-                @foreach($shipping_methods as $service_provider)
-                    @foreach($service_provider as $product)
-                        @foreach($product['additional_services'] as $service)
-                            @if(!in_array($service['service_code'], $services))
-                            <label class="checkbox-label"><input type="checkbox" disabled
-                                 @if(in_array($service['service_code'], $additional_services)) checked @endif
-                                 name="additional_services[]" value="{{$service['service_code']}}">{{$service['name']}}</label>
-                            <?php  $services[] = $service['service_code'];?>
-                            @endif
-                        @endforeach
-                    @endforeach
-                @endforeach
-                </div>
-            </div>
         </div>
     </article>
 

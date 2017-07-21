@@ -46,19 +46,37 @@ class Shop extends Model
         $parcel->setVolume($order['total_weight'] * 0.001); // m3
         $parcel->setContents('');
 
+
+        $shipping_settings = unserialize($this->shipping_settings);
+        $service_name = $order['shipping_lines'][0]['title'];
+        $method_code = null;
+
+        foreach($shipping_settings as $item){
+            if($item['shipping_rate_id'] == $service_name){
+                $method_code = $item['product_code'];
+            }
+        }
+
+//        dd($shipping_settings);
+
+        if(!isset($method_code)){
+            $order['status'] = 'no_shipping_service';
+            return $order;
+        }
+
         $shipment = new Shipment();
-        $shipment->setShippingMethod($this->shipping_method_code);
+        $shipment->setShippingMethod($method_code);
         $shipment->setSender($sender);
         $shipment->setReceiver($receiver);
         $shipment->setShipmentInfo($info);
         $shipment->addParcel($parcel);
 
-        $add_services = unserialize($this->additional_services);
-        foreach($add_services as $service_code){
-            $additional_service = new AdditionalService();
-            $additional_service->setServiceCode($service_code);
-            $shipment->addAdditionalService($additional_service);
-        }
+//        $add_services = unserialize($this->additional_services);
+//        foreach($add_services as $service_code){
+//            $additional_service = new AdditionalService();
+//            $additional_service->setServiceCode($service_code);
+//            $shipment->addAdditionalService($additional_service);
+//        }
 
         try {
             $pk_client->createTrackingCode($shipment);

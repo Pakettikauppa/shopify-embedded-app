@@ -18,6 +18,7 @@ return [
             'created' => 'Shipping has been created',
             'sent' => 'Shipping for the order already exists',
             'need_shipping_address' => 'Failed due to absence of shipping address',
+            'no_shipping_service' => 'Shipping service for the rate is not set',
         ],
     ],
     'settings' => [
