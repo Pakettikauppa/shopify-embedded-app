@@ -42,8 +42,8 @@ class Shop extends Model
 
         $parcel = new Parcel();
         $parcel->setReference($order['id']);
-        $parcel->setWeight($order['total_weight']); // kg
-        $parcel->setVolume($order['total_weight'] * 0.001); // m3
+        $parcel->setWeight($order['total_weight'] * 0.001); // kg
+        $parcel->setVolume($order['total_weight'] * 0.000001); // m3
         $parcel->setContents('');
 
 
