@@ -20,6 +20,7 @@ class CreateShopifyShopsTable extends Migration
             $table->string('token');
             $table->string('api_key', 80)->nullable();
             $table->string('api_secret', 80)->nullable();
+            $table->integer('default_service_code');
             $table->text('shipping_settings');
             $table->boolean('test_mode');
             $table->integer('customer_id')->nullable();

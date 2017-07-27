@@ -24,6 +24,9 @@ return [
     'settings' => [
         'settings' => 'Settings',
         'shipment_settings' => 'Shipment settings',
+        'default_shipping_method' => 'Default shipping method',
+        'shopify_method' => 'Shipping method from shopify',
+        'pk_method' => 'Shipping method in PK',
         'company_info' => 'Company information',
         'testing' => 'Testing',
         'company_name' => 'Pakettikauppa',

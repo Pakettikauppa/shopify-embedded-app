@@ -46,29 +46,23 @@ class Shop extends Model
         $parcel->setVolume($order['total_weight'] * 0.001); // m3
         $parcel->setContents('');
 
-//        dd(isset($order['shipping_lines'][0]['title']));
+
         $method_code = null;
 
-        if(!isset($order['shipping_lines'][0]['title'])){   // use default shipping method
-            $order['status'] = 'no_shipping_service';
-            return $order;
-        }
+        if(isset($order['shipping_lines'][0]['title'])){
+            $shipping_settings = unserialize($this->shipping_settings);
+            $service_name = $order['shipping_lines'][0]['title'];
 
-        $shipping_settings = unserialize($this->shipping_settings);
-//        if(isset($order['shipping_lines'][0]))
-        $service_name = $order['shipping_lines'][0]['title'];
-
-        foreach($shipping_settings as $item){
-            if($item['shipping_rate_id'] == $service_name){
-                $method_code = $item['product_code'];
+            foreach($shipping_settings as $item){
+                if($item['shipping_rate_id'] == $service_name){
+                    $method_code = $item['product_code'];
+                }
             }
         }
 
-//        dd($shipping_settings);
-
-        if(!isset($method_code)){
-            $order['status'] = 'no_shipping_service';
-            return $order;
+        if(!isset($method_code)){                                  // use default shipping method
+            $method_code = $this->default_service_code;
+//            $order['status'] = 'no_shipping_service';
         }
 
         $shipment = new Shipment();

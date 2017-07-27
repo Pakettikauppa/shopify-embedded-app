@@ -38,12 +38,40 @@
         <div class="card">
             <h2>{{trans('app.settings.shipment_settings')}}</h2>
 
-            <div>
-                <div class="columns four">
-                    <h5>Shipping method from shopify</h5>
+            <div class="row" style="margin-bottom: 2em">
+                <div class="columns four rate-name-column">
+                    {{trans('app.settings.default_shipping_method')}}
                 </div>
                 <div class="columns eight">
-                    <h5>Shipping method in PK</h5>
+                    <div class="row">
+                        {{--<div class="input-group">--}}
+                        {{--<span class="append">{{trans('app.settings.shipping_method')}}</span>--}}
+                        <select name="default_shipping_method">
+                            <option value="">—</option>
+                            @foreach($shipping_methods as $key => $service_provider)
+                                @if(count($service_provider) > 0)
+                                    <optgroup label="{{$key}}">
+                                        @foreach($service_provider as $product)
+                                            <option value="{{ $product['shipping_method_code'] }}" data-services="{{json_encode($product['additional_services'])}}"
+                                                    @if($shop->default_service_code == $product['shipping_method_code']) selected @endif>
+                                                {{ $product['name'] }}
+                                            </option>
+                                        @endforeach
+                                    </optgroup>
+                                @endif
+                            @endforeach
+                        </select>
+                        {{--</div>--}}
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <div class="columns four">
+                    <h5>{{trans('app.settings.shopify_method')}}</h5>
+                </div>
+                <div class="columns eight">
+                    <h5>{{trans('app.settings.pk_method')}}</h5>
                 </div>
             </div>
 
