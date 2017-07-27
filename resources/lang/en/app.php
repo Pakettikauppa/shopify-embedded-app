@@ -37,6 +37,7 @@ return [
         'country' => 'Country',
         'email' => 'Email',
         'phone' => 'Phone',
+        'cash_on_delivery' => 'Cash on delivery settings',
         'iban' => 'Bank account number',
         'bic' => 'BIC code',
         'test_mode' => 'Enable test mode',

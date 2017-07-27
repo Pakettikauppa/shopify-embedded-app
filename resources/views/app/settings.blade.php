@@ -134,6 +134,12 @@
                     <input type="text" name="phone" value="{{$shop->phone}}">
                 </div>
             </div>
+        </div>
+    </article>
+
+    <article>
+        <div class="card">
+            <h2>{{trans('app.settings.cash_on_delivery')}}</h2>
             <div class="row">
                 <div class="input-group">
                     <span class="append">{{trans('app.settings.iban')}}</span>
@@ -147,6 +153,7 @@
                 </div>
             </div>
         </div>
+
     </article>
 
     <article>

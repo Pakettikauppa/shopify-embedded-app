@@ -140,7 +140,7 @@ class AppController extends Controller
 //        $this->shop->additional_services = serialize($additional_services);
 
         if(isset($this->shop->api_key) && isset($this->shop->api_secret)){
-            $this->shop->test_mode = $request->test_mode;
+            $this->shop->test_mode = (bool) $request->test_mode;
         }
 //        $this->shop->shipping_method_code = $request->shipping_method;
         $this->shop->shipping_settings = serialize($shipping_settings);
