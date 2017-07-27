@@ -79,8 +79,6 @@ class AppController extends Controller
     {
         $shipping_zones = $this->client->call('GET', '/admin/shipping_zones.json');
 
-//        dd($shipping_zones);
-
         $shipping_rates = $shipping_zones[0]['weight_based_shipping_rates'];
         $shipping_settings = unserialize($this->shop->shipping_settings);
 
@@ -154,6 +152,8 @@ class AppController extends Controller
         $this->shop->iban = $request->iban;
         $this->shop->bic= $request->bic;
         $this->shop->save();
+
+        session()->flash('success', trans('app.settings.saved'));
 
         return redirect()->route('shopify.settings');
     }
@@ -321,7 +321,7 @@ class AppController extends Controller
     }
 
     public function printLabelsFulfill(Request $request){
-        // unfulfill
+//         unfulfill
 //        foreach($request->ids as $order_id) {
 //            $fulfillment = $this->client->call('GET', '/admin/orders/' . $order_id . '/fulfillments.json');
 //

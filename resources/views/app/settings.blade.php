@@ -4,6 +4,14 @@
 
 <article>
     <div class="info column">
+        @if(session()->has('success'))
+            <div class="alert success">
+                <dl>
+                    <dt>{{session()->get('success')}}</dt>
+                </dl>
+            </div>
+        @endif
+
         @if(!isset($shop->api_key))
             <div class="alert notification">
                 <dl>
@@ -20,7 +28,6 @@
                 </dl>
             </div>
         @endif
-        {{--<span class="tag green" style="margin-bottom: 15px;">{{trans('app.messages.ready')}}</span>--}}
 
         @if(session()->has('error'))
             <div class="alert error">

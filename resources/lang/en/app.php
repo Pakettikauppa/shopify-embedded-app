@@ -47,6 +47,7 @@ return [
         'save_settings' => 'Save settings',
         'api_key' => 'API key',
         'api_secret' => 'API secret',
+        'saved' => 'Settings have been saved',
         'setup_wizard' => 'Wizard setup',
         'wizard' => [
             'is_new_user' => 'Do you have Pakettikauppa API credentials?',
