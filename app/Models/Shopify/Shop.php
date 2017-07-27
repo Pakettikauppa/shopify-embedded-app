@@ -46,10 +46,17 @@ class Shop extends Model
         $parcel->setVolume($order['total_weight'] * 0.001); // m3
         $parcel->setContents('');
 
+//        dd(isset($order['shipping_lines'][0]['title']));
+        $method_code = null;
+
+        if(!isset($order['shipping_lines'][0]['title'])){   // use default shipping method
+            $order['status'] = 'no_shipping_service';
+            return $order;
+        }
 
         $shipping_settings = unserialize($this->shipping_settings);
+//        if(isset($order['shipping_lines'][0]))
         $service_name = $order['shipping_lines'][0]['title'];
-        $method_code = null;
 
         foreach($shipping_settings as $item){
             if($item['shipping_rate_id'] == $service_name){
@@ -95,11 +102,10 @@ class Shop extends Model
             $shopify_shipment->save();
 
         } catch (\Exception $ex)  {
-//                echo $ex->getMessage();
-//                exit;
-            throw new FatalErrorException();
+            $order['status'] = 'custom_error';
+            $order['error_message'] = $ex->getMessage();
+            return $order;
         }
-//        dd('123');
 
         $order['status'] = 'created';
         $order['tracking_code'] = $tracking_code;
