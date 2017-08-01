@@ -173,23 +173,22 @@ class AppController extends Controller
             return response()->json($result);
         }
 
-        // api check
-        // @todo uncomment on production to check api credentials
+        // api check for production
 
-//        $client = new Client([
-//            'api_key' => $request->api_key,
-//            'secret' => $request->api_secret,
-//        ]);
+        $client = new Client([
+            'api_key' => $request->api_key,
+            'secret' => $request->api_secret,
+        ]);
 
-//        $result = json_decode($client->listShippingMethods());
-//        if(!is_array($result)){
-//
-//            $result = [
-//                'status' => 'error',
-//                'message' => trans('app.messages.invalid_credentials'),
-//            ];
-//            return response()->json($result);
-//        }
+        $result = json_decode($client->listShippingMethods());
+        if(!is_array($result)){
+
+            $result = [
+                'status' => 'error',
+                'message' => trans('app.messages.invalid_credentials'),
+            ];
+            return response()->json($result);
+        }
 
         $this->shop->api_key = $request->api_key;
         $this->shop->api_secret = $request->api_secret;
