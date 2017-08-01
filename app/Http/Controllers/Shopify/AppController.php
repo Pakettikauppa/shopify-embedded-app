@@ -71,6 +71,8 @@ class AppController extends Controller
                 $this->pk_client = new Client($pk_client_params);
             }
 
+            \App::setLocale($this->shop->locale);
+
             return $next($request);
         });
     }
@@ -146,12 +148,15 @@ class AppController extends Controller
         $this->shop->address = $request->address;
         $this->shop->postcode = $request->postcode;
         $this->shop->city = $request->city;
-        $this->shop->country= $request->country;
+        $this->shop->country = $request->country;
         $this->shop->email = $request->email;
-        $this->shop->phone= $request->phone;
+        $this->shop->phone = $request->phone;
         $this->shop->iban = $request->iban;
-        $this->shop->bic= $request->bic;
+        $this->shop->bic = $request->bic;
+        $this->shop->locale = $request->language;
         $this->shop->save();
+
+        \App::setLocale($this->shop->locale);
 
         session()->flash('success', trans('app.settings.saved'));
 

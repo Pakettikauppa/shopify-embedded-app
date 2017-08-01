@@ -23,6 +23,7 @@ class CreateShopifyShopsTable extends Migration
             $table->integer('default_service_code');
             $table->text('shipping_settings');
             $table->boolean('test_mode');
+            $table->string('locale', 2);
             $table->integer('customer_id')->nullable();
             $table->string('business_name')->nullable();
             $table->string('address')->nullable();

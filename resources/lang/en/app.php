@@ -23,6 +23,7 @@ return [
     ],
     'settings' => [
         'settings' => 'Settings',
+        'language' => 'Language',
         'shipment_settings' => 'Shipment settings',
         'default_shipping_method' => 'Default shipping method',
         'shopify_method' => 'Shipping method from shopify',

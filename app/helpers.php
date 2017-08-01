@@ -303,3 +303,16 @@ if (! function_exists('getCountryList'))
         }
     }
 }
+
+if (! function_exists('getLanguageList'))
+{
+    function getLanguageList()
+    {
+        $list = [
+            'fi' => 'Finnish',
+            'en' => 'English',
+        ];
+
+        return $list;
+    }
+}

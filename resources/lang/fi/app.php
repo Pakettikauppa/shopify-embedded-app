@@ -23,6 +23,7 @@ return [
     ],
     'settings' => [
         'settings' => 'Asetukset',
+        'language' => 'Kieli',
         'shipment_settings' => 'Lähetysasetukset',
         'default_shipping_method' => 'Oletus lähetystapa',
         'shopify_method' => 'Toimitustapa Shopifystä',

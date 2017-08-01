@@ -48,17 +48,11 @@ class Handler extends ExceptionHandler
      */
     public function render($request, Exception $exception)
     {
-        if(ENV('APP_ENV') == 'production'){
-            return response()->view('errors.500', [], 500);
-        }
-
         if($exception instanceof NotFoundHttpException){
             return response()->view('errors.404', [], 404);
         }
-        if($exception instanceof UnprocessableEntityHttpException){
-            return response()->view('errors.422', [], 422);
-        }
-        if($exception instanceof FatalErrorException){
+
+        if(ENV('APP_ENV') == 'production'){
             return response()->view('errors.500', [], 500);
         }
 

@@ -11,6 +11,9 @@
 |
 */
 
+Route::get('/', function () {
+    return redirect('https://www.pakettikauppa.fi');
+});
 
 Route::group(['namespace' => 'Shopify'], function () {
     Route::get('/auth/', 'AuthController@index')->name('shopify.auth.index');

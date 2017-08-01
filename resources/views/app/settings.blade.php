@@ -193,7 +193,19 @@
 
     <article>
         <div class="card">
-            <h2>{{trans('app.settings.testing')}}</h2>
+            <h2>{{trans('app.settings.settings')}}</h2>
+            <div class="row">
+                <div class="input-group">
+                    <span class="append">{{trans('app.settings.language')}}</span>
+                    <select name="language">
+                        @foreach(getLanguageList() as $code => $language)
+                            <option value="{{$code}}"  @if($shop->locale == $code) selected @endif>
+                                {{$language}}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+            </div>
             <div class="row">
                 <label><input type="checkbox" name="test_mode" @if($shop->test_mode) checked @endif value="1">{{trans('app.settings.test_mode')}}</label>
             </div>

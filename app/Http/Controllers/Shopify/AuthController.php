@@ -25,6 +25,7 @@ class AuthController extends Controller
             $shop = new Shop();
             // default values
             $shop->test_mode = true;
+            $shop->locale = 'fi';
             $shop->shipping_settings = serialize([]);
             $shop->default_service_code = 2103;
             $shop->country = 'FI';
