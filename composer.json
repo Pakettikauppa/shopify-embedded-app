@@ -4,15 +4,10 @@
     "keywords": ["shopify", "pakettikauppa", "laravel"],
     "license": "MIT",
     "type": "project",
-    "repositories": [{
-        "type": "git",
-        "url": "git@bitbucket.org:kompassi/shared-library.git"
-    }],
     "require": {
         "php": ">=5.6.4",
         "laravel/framework": "5.4.*",
         "laravel/tinker": "~1.0",
-        "oak/shared-lib": "dev-master",
         "pakettikauppa/api-library": "dev-master"
     },
     "require-dev": {
