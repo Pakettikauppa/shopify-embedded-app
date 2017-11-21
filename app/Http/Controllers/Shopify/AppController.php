@@ -124,25 +124,30 @@ class AppController extends Controller
 
     public function updateSettings(Request $request)
     {
-//        dd($request->all());
-//        $additional_services = [];
+        try {
+            $resp = $this->pk_client->listShippingMethods();
+            $products = json_decode($resp, true);
+        } catch (\Exception $ex)  {
+            throw new FatalErrorException();
+        }
+
+        $productProviderByCode = array();
+        foreach($products as $_product) {
+            $productProviderByCode[$_product->shipping_method_code] = $_product->service_provider;
+        }
 
         $shipping_settings = [];
         foreach($request->shipping_method as $key => $code){
             $shipping_settings[] = [
                 'shipping_rate_id' => $key,
-                'product_code' => $code
+                'product_code' => $code,
+                'service_provider' => $productProviderByCode[$code]
              ];
         }
-//        if(isset($request->additional_services)){
-//            $additional_services = $request->additional_services;
-//        }
-//        $this->shop->additional_services = serialize($additional_services);
-
         if(isset($this->shop->api_key) && isset($this->shop->api_secret)){
             $this->shop->test_mode = (bool) $request->test_mode;
         }
-//        $this->shop->shipping_method_code = $request->shipping_method;
+
         $this->shop->shipping_settings = serialize($shipping_settings);
         $this->shop->business_name = $request->business_name;
         $this->shop->address = $request->address;
