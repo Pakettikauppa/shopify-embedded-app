@@ -172,6 +172,29 @@
         </div>
     </article>
 
+
+    <article>
+        <div class="card">
+            <h2>{{trans('app.settings.pickuppoints')}}</h2>
+            <div class="row">
+                <div class="input-group">
+                    <span class="append">{{trans('app.settings.pickuppoints_count')}}</span>
+                    <select name="pickuppoints_count">
+                     @for($i=0; $i<10; $i++)
+                        <option value="{{$i}}" @if($shop->pickuppoints_count == $i) selected @endif>
+                            @if($i == 0)
+                                {{trans('app.settings.pickuppoints_count_0')}}
+                            @else
+                                {{$shop->pickuppoints_count}}
+                            @endif
+                        </option>
+                     @endfor
+                    </select>
+                </div>
+            </div>
+        </div>
+    </article>
+
     <article>
         <div class="card">
             <h2>{{trans('app.settings.cash_on_delivery')}}</h2>

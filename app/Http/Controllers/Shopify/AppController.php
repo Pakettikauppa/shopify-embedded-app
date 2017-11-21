@@ -73,6 +73,47 @@ class AppController extends Controller
 
             \App::setLocale($this->shop->locale);
 
+            if($this->shop->settings->carrier_service_id == null) {
+                $carrierServiceName = 'Pakettikauppa: Noutopisteet / Pickup points';
+
+                $carrierServiceData = array(
+                        'carrier_service' => array(
+                                'name' => $carrierServiceName,
+                                'callback_url' => route('shopify.pickuppoints.list');,
+                                'service_discovery' => true,
+                        )
+                );
+
+                try {
+                    $carrierService = $this->client->call('POST', '/admin/carrier_services.json' , $carrierServiceData);
+
+                    // set carrier_service_id and set it's default count value
+                    $shop->carrier_service_id = $carrierService->id;
+                    $shop->pickuppoints_count = 10;
+
+                    $shop->save();
+
+                } catch(\Exception $e) {
+                    // it failed, why? Did carrier service already exists but our db shows that it is not active?
+                    $carrierServices = $this->client->call('GET', '/admin/carrier_services.json');
+
+                    if(count($carrierServices['carrier_services']) > 1) {
+                        // yes, we have a carrier service!
+                        foreach($carrierServices['carrier_services'] as $_service) {
+
+                            if($_service['name'] ==  $carrierServiceName) {
+
+                                $shop->carrier_service_id = $_service['id'];
+                                $shop->pickuppoints_count = 10;
+
+                                $shop->save();
+                            }
+                        }
+                    } else {
+                        // we just don't know why it failed
+                    }
+                }
+            }
             return $next($request);
         });
     }
@@ -144,7 +185,7 @@ class AppController extends Controller
                 'service_provider' => $productProviderByCode[$code]
              ];
         }
-        
+
         if(isset($this->shop->api_key) && isset($this->shop->api_secret)){
             $this->shop->test_mode = (bool) $request->test_mode;
         }
@@ -159,6 +200,7 @@ class AppController extends Controller
         $this->shop->phone = $request->phone;
         $this->shop->iban = $request->iban;
         $this->shop->bic = $request->bic;
+        $this->shop->pickuppoints_count = $request->pickuppoints_count;
         $this->shop->locale = $request->language;
         $this->shop->save();
 
