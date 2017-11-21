@@ -144,6 +144,7 @@ class AppController extends Controller
                 'service_provider' => $productProviderByCode[$code]
              ];
         }
+        
         if(isset($this->shop->api_key) && isset($this->shop->api_secret)){
             $this->shop->test_mode = (bool) $request->test_mode;
         }
