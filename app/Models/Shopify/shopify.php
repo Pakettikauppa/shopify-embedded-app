@@ -1,5 +1,7 @@
 <?php
 /*
+The MIT License (MIT)
+
 Copyright (C) 2011 by Sandeep Shetty
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -227,5 +229,3 @@ class ShopifyApiException extends \Exception
     function getResponse() { return $this->response; }
 }
 
-
-?>
