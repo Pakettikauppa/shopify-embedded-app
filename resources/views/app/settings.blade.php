@@ -185,7 +185,7 @@
                             @if($i == 0)
                                 {{trans('app.settings.pickuppoints_count_0')}}
                             @else
-                                {{$shop->pickuppoints_count}}
+                                {{$i}}
                             @endif
                         </option>
                      @endfor
