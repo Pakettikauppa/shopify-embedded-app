@@ -99,7 +99,7 @@ class AppController extends Controller
                     // it failed, why? Did carrier service already exists but our db shows that it is not active?
                     $carrierServices = $this->client->call('GET', '/admin/carrier_services.json');
 
-                    if(count($carrierServices) > 1) {
+                    if(count($carrierServices) > 0) {
                         // yes, we have a carrier service!
                         foreach($carrierServices as $_service) {
 
