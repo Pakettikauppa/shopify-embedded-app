@@ -73,7 +73,7 @@ class AppController extends Controller
 
             \App::setLocale($this->shop->locale);
 
-            if($this->shop->settings->carrier_service_id == null) {
+            if($this->shop->carrier_service_id == null) {
                 $carrierServiceName = 'Pakettikauppa: Noutopisteet / Pickup points';
 
                 $carrierServiceData = array(
