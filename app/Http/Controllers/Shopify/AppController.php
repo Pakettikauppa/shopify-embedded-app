@@ -72,14 +72,13 @@ class AppController extends Controller
             }
 
             \App::setLocale($this->shop->locale);
-
             if($this->shop->carrier_service_id == null) {
                 $carrierServiceName = 'Pakettikauppa: Noutopisteet / Pickup points';
 
                 $carrierServiceData = array(
                         'carrier_service' => array(
                                 'name' => $carrierServiceName,
-                                'callback_url' => 'https://shopifytest.pakettikauppa.fi/api/pickup-points',//route('shopify.pickuppoints.list'),
+                                'callback_url' => route('shopify.pickuppoints.list'),
                                 'service_discovery' => true,
                         )
                 );
@@ -107,8 +106,11 @@ class AppController extends Controller
 
                                 $shop->carrier_service_id = $_service['id'];
                                 $shop->pickuppoints_count = 10;
-
                                 $shop->save();
+
+                                if($_service['callback_url'] != route('shopify.pickuppoints.list')) {
+                                    $this->client->call('PUT', '/admin/carrier_services/'.$shop->carrier_service_id.'.json', $carrierServiceData);
+                                }
                             }
                         }
                     } else {
