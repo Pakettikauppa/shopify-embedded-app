@@ -7,6 +7,7 @@ use App\Models\Shopify\ShopifyClient;
 use Illuminate\Http\Request;
 use App\Models\Shopify\Shop;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
+use Psy\Exception\FatalErrorException;
 
 class PickupPointsController extends Controller
 {
