@@ -13,7 +13,7 @@ use Pakettikauppa\Client;
 use Pakettikauppa\Shipment;
 use Psy\Exception\FatalErrorException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
-
+use Log;
 
 /**
  * @property \App\Models\Shopify\Shop $shop
@@ -345,8 +345,20 @@ class AppController extends Controller
                         'line_items' => $line_items,
                     ];
 
-                    $this->client->call('POST', '/admin/orders/'. $order['id'] . '/fulfillments.json', ['fulfillment' => $fulfillment]);
-                }
+                    try {
+                        $this->client->call('POST', '/admin/orders/'. $order['id'] . '/fulfillments.json', ['fulfillment' => $fulfillment]);
+                    } catch(ShopifyApiException $sae) {
+                        $exceptionData = array(
+                            var_export($sae->getMethod(), true),
+                            var_export($sae->getPath(), true),
+                            var_export($sae->getParams(), true),
+                            var_export($sae->getResponseHeaders(), true),
+                            var_export($sae->getResponse(), true)
+                        );
+
+                        Log::debug('ShopiApiException: '.var_export($exceptionData));
+                    } 
+               }
             }
         }
 
