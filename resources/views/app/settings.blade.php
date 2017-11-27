@@ -180,7 +180,7 @@
                 <div class="input-group">
                     <span class="append">{{trans('app.settings.pickuppoints_count')}}</span>
                     <select name="pickuppoints_count">
-                     @for($i=0; $i<10; $i++)
+                     @for($i=0; $i<11; $i++)
                         <option value="{{$i}}" @if($shop->pickuppoints_count == $i) selected @endif>
                             @if($i == 0)
                                 {{trans('app.settings.pickuppoints_count_0')}}
