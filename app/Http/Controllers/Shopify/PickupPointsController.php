@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Shopify;
 use App\Http\Controllers\Controller;
 use App\Models\Shopify\ShopifyClient;
 use Illuminate\Http\Request;
-use Oak\Models\Shopify\Shop;
+use App\Models\Shopify\Shop;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 
 class PickupPointsController extends Controller
