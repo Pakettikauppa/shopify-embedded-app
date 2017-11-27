@@ -79,7 +79,7 @@ class AppController extends Controller
                 $carrierServiceData = array(
                         'carrier_service' => array(
                                 'name' => $carrierServiceName,
-                                'callback_url' => route('shopify.pickuppoints.list'),
+                                'callback_url' => 'https://shopifytest.pakettikauppa.fi/api/pickup-points',//route('shopify.pickuppoints.list'),
                                 'service_discovery' => true,
                         )
                 );
