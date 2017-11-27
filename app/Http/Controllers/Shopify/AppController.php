@@ -94,6 +94,8 @@ class AppController extends Controller
                     $shop->save();
 
                 } catch(\Exception $e) {
+                    Log::debug($e->getTraceAsString());
+
                     // it failed, why? Did carrier service already exists but our db shows that it is not active?
                     $carrierServices = $this->client->call('GET', '/admin/carrier_services.json');
 
