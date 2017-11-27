@@ -176,7 +176,7 @@ class AppController extends Controller
 
         $productProviderByCode = array();
         foreach($products as $_product) {
-            $productProviderByCode[$_product->shipping_method_code] = $_product->service_provider;
+            $productProviderByCode[$_product['shipping_method_code']] = $_product['service_provider'];
         }
 
         $shipping_settings = [];
