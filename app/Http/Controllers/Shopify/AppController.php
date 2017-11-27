@@ -184,7 +184,7 @@ class AppController extends Controller
             $shipping_settings[] = [
                 'shipping_rate_id' => $key,
                 'product_code' => $code,
-                'service_provider' => $productProviderByCode[(string) $code]
+                'service_provider' => ($code == null ? '' : $productProviderByCode[(string) $code])
              ];
         }
 
