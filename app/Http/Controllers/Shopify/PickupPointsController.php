@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Shopify\ShopifyClient;
 use Illuminate\Http\Request;
 use App\Models\Shopify\Shop;
+use Pakettikauppa\Client;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 use Psy\Exception\FatalErrorException;
 use Log;
