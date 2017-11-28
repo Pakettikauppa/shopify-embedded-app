@@ -62,7 +62,7 @@ class Shop extends Model
             if(isset($order['shipping_lines'][0]['code']) && $order['shipping_lines'][0]['code'] != null) {
                 $pickupPoint = explode(":",$order['shipping_lines'][0]['code']);
 
-                if(count($pickupPoint) == 2 && is_int($pickupPoint[1])) {
+                if(count($pickupPoint) == 2) {
 
                     $pickupPointId = $pickupPoint[1];
 
