@@ -19,7 +19,7 @@ class PickupPointsController extends Controller
 
         // SETUP EVERYTHING
         // setup and validate Shop
-        $found_shop = Shop::where('shop_origin', $request->header('HTTP_X_SHOPIFY_SHOP_DOMAIN'))->first();
+        $found_shop = Shop::where('shop_origin', $request->header('x-shopify-shop-domain'))->first();
 
         if(isset($found_shop)){
             $shop = $found_shop;
@@ -27,11 +27,13 @@ class PickupPointsController extends Controller
             throw new FatalErrorException();
         }
 
-        $client = new ShopifyClient($request->shop, '', ENV('SHOPIFY_API_KEY'), ENV('SHOPIFY_SECRET'));
+        $client = new ShopifyClient($request->header('x-shopify-shop-domain'), '', ENV('SHOPIFY_API_KEY'), ENV('SHOPIFY_SECRET'));
 
+/*
         if(!$client->validateSignature($request->all())){
             throw new UnprocessableEntityHttpException();
         }
+*/
 
         // setup Pakettikauppa Client
         if($shop->test_mode){
@@ -54,7 +56,7 @@ class PickupPointsController extends Controller
         }
 
         // test if pickup points are available in settings
-        if (!(isset($shop->settings->pickuppoints_count) && $shop->settings->pickuppoints_count > 0)) {
+        if (!(isset($shop->pickuppoints_count) && $shop->pickuppoints_count > 0)) {
             return;
         }
 
@@ -68,6 +70,7 @@ class PickupPointsController extends Controller
         }
 
         // get destination address
+        $requestBody = $request->getContent();
         $destination = json_decode($requestBody)->rate->destination;
 
         // search nearest pickup locations
