@@ -163,7 +163,8 @@ class AppController extends Controller
             'shop' => $this->shop,
             'additional_services' => unserialize($this->shop->additional_services),
             'api_valid' => $api_valid,
-            'shipping_rates' => $result_rates
+            'shipping_rates' => $result_rates,
+            'pickuppoint_providers' => explode(";", $this->shop->pickuppoint_providers)
         ]);
     }
 
@@ -205,6 +206,7 @@ class AppController extends Controller
         $this->shop->iban = $request->iban;
         $this->shop->bic = $request->bic;
         $this->shop->pickuppoints_count = $request->pickuppoints_count;
+        $this->shop->pickuppoint_providers = implode(";", $request->pickuppoint_providers);
         $this->shop->locale = $request->language;
         $this->shop->save();
 

@@ -42,6 +42,7 @@ return [
         'email' => 'Email',
         'phone' => 'Phone',
         'pickuppoints' => 'Pickup point settings',
+        'pickuppoint_providers' => 'Which service providers are used?',
         'pickuppoints_count' => 'How many pickup points are shown as result?',
         'pickuppoints_count_0' => 'Don\'t show pickup points',
         'cash_on_delivery' => 'Cash on delivery settings',

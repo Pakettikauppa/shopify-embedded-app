@@ -16,6 +16,7 @@ class AlterShopsTableForPickups extends Migration
         Schema::table('shopify_shops', function (Blueprint $table) {
             $table->integer('pickuppoints_count')->nullable();
             $table->string('carrier_service_id')->nullable();
+            $table->string('pickuppoint_providers')->nullable();
         });
     }
 
@@ -29,6 +30,7 @@ class AlterShopsTableForPickups extends Migration
         Schema::table('shopify_shops', function (Blueprint $table) {
             $table->dropColumn('pickuppoints_count');
             $table->dropColumn('carrier_service_id');
+            $table->dropColumn('pickuppoint_providers');
         });
     }
 }

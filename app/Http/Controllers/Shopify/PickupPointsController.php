@@ -63,21 +63,17 @@ class PickupPointsController extends Controller
         // fetch shipping providers
         $shipping_settings = unserialize($shop->shipping_settings);
 
-        $providers = array();
-        foreach($shipping_settings as $_setting) {
-            $providers[$_setting['service_provider']] = $_setting['service_provider'];
-        }
-
-        // get destination address
-        $requestBody = $request->getContent();
-        $destination = json_decode($requestBody)->rate->destination;
-
-        // search nearest pickup locations
-        $pickupPoints = json_decode($pk_client->searchPickupPoints($destination->postal_code, $destination->address1, $destination->country, implode(',', $providers), $shop->pickuppoints_count ));
-
-        // generate custom carrier service response
         $rates = array();
-        foreach($pickupPoints as $_pickupPoint) {
+        if(count($providers) > 0) {
+            // get destination address
+            $requestBody = $request->getContent();
+            $destination = json_decode($requestBody)->rate->destination;
+
+            // search nearest pickup locations
+            $pickupPoints = json_decode($pk_client->searchPickupPoints($destination->postal_code, $destination->address1, $destination->country, $shop->pickuppoint_providers, $shop->pickuppoints_count ));
+
+            // generate custom carrier service response
+            foreach($pickupPoints as $_pickupPoint) {
                 $rates[] = array(
                         'service_name' => "{$_pickupPoint->name}, {$_pickupPoint->street_address}, {$_pickupPoint->postcode}, {$_pickupPoint->city}",
                         'description' => ($_pickupPoint->description==null?'':$_pickupPoint->description),
@@ -85,8 +81,9 @@ class PickupPointsController extends Controller
                         'currency' => 'EUR',
                         'total_price' => 0
                 );
+            }
         }
-
+        
         $customCarrierServices = array('rates' => $rates);
 
         echo json_encode($customCarrierServices);

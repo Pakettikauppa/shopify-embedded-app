@@ -42,6 +42,7 @@ return [
         'email' => 'Sähköposti',
         'phone' => 'Puhelinnumero',
         'pickuppoints' => 'Noutopisteiden asetukset',
+        'pickuppoint_providers' => 'Minkä toimittajan noutopisteet haetaan?',
         'pickuppoints_count' => 'Kuinka monta lähintä noutopistettä näytetään ostajalle?',
         'pickuppoints_count_0' => 'Älä näytä noutopisteitä',
         'cash_on_delivery' => 'Postiennakon asetukset',
