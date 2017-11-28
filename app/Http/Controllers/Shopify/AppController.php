@@ -322,16 +322,13 @@ class AppController extends Controller
                 'email' => $order['email'],
             ];
 
-            $pickupPoint = null;
-
             if($is_return){
                 $tmp = $receiverInfo;
                 $receiverInfo = $senderInfo;
                 $senderInfo = $tmp;
-                $pickupPoint = null;
             }
 
-            $order = $this->shop->sendShipment($this->pk_client, $order, $senderInfo, $receiverInfo, $pickupPoint, $is_return);
+            $order = $this->shop->sendShipment($this->pk_client, $order, $senderInfo, $receiverInfo, $is_return);
         }
 
         if($fulfill_order){
