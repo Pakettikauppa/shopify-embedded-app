@@ -29,11 +29,10 @@ class PickupPointsController extends Controller
 
         $client = new ShopifyClient($request->header('x-shopify-shop-domain'), '', ENV('SHOPIFY_API_KEY'), ENV('SHOPIFY_SECRET'));
 
-/*
-        if(!$client->validateSignature($request->all())){
+        $calculatedMac = base64_encode(hash_hmac('sha256', $request->getContent(), ENV('SHOPIFY_SECRET'), true));
+        if(!hash_equals($calculatedMac, $request->header('x-shopify-hmac-sha256'))) {
             throw new UnprocessableEntityHttpException();
         }
-*/
 
         // setup Pakettikauppa Client
         if($shop->test_mode){
