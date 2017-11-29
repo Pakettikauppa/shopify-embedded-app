@@ -85,15 +85,24 @@ class AppController extends Controller
 
                 try {
                     $carrierService = $this->client->call('POST', '/admin/carrier_services.json' , $carrierServiceData);
+                    Log::error(var_e;
 
                     // set carrier_service_id and set it's default count value
-                    $shop->carrier_service_id = $carrierService->id;
+                    $shop->carrier_service_id = $carrierService['id'];
                     $shop->pickuppoints_count = 10;
 
                     $shop->save();
 
-                } catch(\Exception $e) {
-                    Log::error($e->getTraceAsString());
+                } catch(ShopifyApiException $sae) {
+                    $exceptionData = array(
+                        var_export($sae->getMethod(), true),
+                        var_export($sae->getPath(), true),
+                        var_export($sae->getParams(), true),
+                        var_export($sae->getResponseHeaders(), true),
+                        var_export($sae->getResponse(), true)
+                    );
+
+                    Log::debug('ShopiApiException: '.var_export($exceptionData, true));
 
                     // it failed, why? Did carrier service already exists but our db shows that it is not active?
                     $carrierServices = $this->client->call('GET', '/admin/carrier_services.json');
@@ -205,8 +214,10 @@ class AppController extends Controller
         $this->shop->phone = $request->phone;
         $this->shop->iban = $request->iban;
         $this->shop->bic = $request->bic;
-        $this->shop->pickuppoints_count = $request->pickuppoints_count;
-        $this->shop->pickuppoint_providers = implode(";", $request->pickuppoint_providers);
+        if(isset($request->pickuppoints_count)) {
+            $this->shop->pickuppoints_count = $request->pickuppoints_count;
+            $this->shop->pickuppoint_providers = implode(";", $request->pickuppoint_providers);
+        }
         $this->shop->locale = $request->language;
         $this->shop->save();
 
@@ -362,7 +373,7 @@ class AppController extends Controller
                             var_export($sae->getResponse(), true)
                         );
 
-                        Log::error('ShopiApiException: '.var_export($exceptionData));
+                        Log::debug('ShopiApiException: '.var_export($exceptionData));
                     } 
                }
             }
