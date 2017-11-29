@@ -87,13 +87,13 @@ class AppController extends Controller
                     $carrierService = $this->client->call('POST', '/admin/carrier_services.json' , $carrierServiceData);
 
                     // set carrier_service_id and set it's default count value
-                    $shop->carrier_service_id = $carrierService->id;
+                    $shop->carrier_service_id = $carrierService['id'];
                     $shop->pickuppoints_count = 10;
 
                     $shop->save();
 
                 } catch(\Exception $e) {
-                    Log::error($e->getTraceAsString());
+                    Log::debug($e->getTraceAsString());
 
                     // it failed, why? Did carrier service already exists but our db shows that it is not active?
                     $carrierServices = $this->client->call('GET', '/admin/carrier_services.json');
@@ -362,7 +362,7 @@ class AppController extends Controller
                             var_export($sae->getResponse(), true)
                         );
 
-                        Log::error('ShopiApiException: '.var_export($exceptionData));
+                        Log::debug('ShopiApiException: '.var_export($exceptionData));
                     } 
                }
             }
