@@ -93,7 +93,7 @@ class AppController extends Controller
                     $shop->save();
 
                 } catch(\Exception $e) {
-                    Log::debug($e->getTraceAsString());
+                    Log::error($e->getTraceAsString());
 
                     // it failed, why? Did carrier service already exists but our db shows that it is not active?
                     $carrierServices = $this->client->call('GET', '/admin/carrier_services.json');
@@ -362,7 +362,7 @@ class AppController extends Controller
                             var_export($sae->getResponse(), true)
                         );
 
-                        Log::debug('ShopiApiException: '.var_export($exceptionData));
+                        Log::error('ShopiApiException: '.var_export($exceptionData));
                     } 
                }
             }

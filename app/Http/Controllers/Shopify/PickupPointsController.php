@@ -15,8 +15,6 @@ class PickupPointsController extends Controller
 {
     public function list(Request $request)
     {
-        Log::error(var_export($request, true));
-
         // SETUP EVERYTHING
         // setup and validate Shop
         $found_shop = Shop::where('shop_origin', $request->header('x-shopify-shop-domain'))->first();
