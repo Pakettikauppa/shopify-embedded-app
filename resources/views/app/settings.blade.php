@@ -119,6 +119,40 @@
 
     <article>
         <div class="card">
+            <h2>{{trans('app.settings.pickuppoints')}}</h2>
+            <div class="row">
+                <div class="input-group">
+                    <span class="append">{{trans('app.settings.pickuppoint_providers')}}</span>
+                    <select name="pickuppoint_providers" multiple>
+                            @foreach($shipping_methods as $key => $_service_provider)
+                                <option value="{{$key}}" @if(in_array($key, $pickuppoint_providers)) echo 'selected' @endif>
+                                    {{$key}}
+                                </option>
+                            @endforeach
+                    </select>
+                </div>
+            </div>
+            <div class="row">
+                <div class="input-group">
+                    <span class="append">{{trans('app.settings.pickuppoints_count')}}</span>
+                    <select name="pickuppoints_count">
+                     @for($i=0; $i<11; $i++)
+                        <option value="{{$i}}" @if($shop->pickuppoints_count == $i) selected @endif>
+                            @if($i == 0)
+                                {{trans('app.settings.pickuppoints_count_0')}}
+                            @else
+                                {{$i}}
+                            @endif
+                        </option>
+                     @endfor
+                    </select>
+                </div>
+            </div>
+        </div>
+    </article>
+
+    <article>
+        <div class="card">
             <h2>{{trans('app.settings.company_info')}}</h2>
             <div class="row">
                 <div class="input-group">
@@ -172,40 +206,6 @@
         </div>
     </article>
 
-
-    <article>
-        <div class="card">
-            <h2>{{trans('app.settings.pickuppoints')}}</h2>
-            <div class="row">
-                <div class="input-group">
-                    <span class="append">{{trans('app.settings.pickuppoint_providers')}}</span>
-                    <select name="pickuppoint_providers" multiple>
-                            @foreach($shipping_methods as $key => $_service_provider)
-                                <option value="{{$key}}" @if(in_array($key, $pickuppoint_providers)) echo 'selected' @endif>
-                                    {{$key}}
-                                </option>
-                            @endforeach
-                    </select>
-                </div>
-            </div>
-            <div class="row">
-                <div class="input-group">
-                    <span class="append">{{trans('app.settings.pickuppoints_count')}}</span>
-                    <select name="pickuppoints_count">
-                     @for($i=0; $i<11; $i++)
-                        <option value="{{$i}}" @if($shop->pickuppoints_count == $i) selected @endif>
-                            @if($i == 0)
-                                {{trans('app.settings.pickuppoints_count_0')}}
-                            @else
-                                {{$i}}
-                            @endif
-                        </option>
-                     @endfor
-                    </select>
-                </div>
-            </div>
-        </div>
-    </article>
 
     <article>
         <div class="card">
