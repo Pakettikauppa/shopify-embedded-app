@@ -85,7 +85,6 @@ class AppController extends Controller
 
                 try {
                     $carrierService = $this->client->call('POST', '/admin/carrier_services.json' , $carrierServiceData);
-                    Log::error(var_e;
 
                     // set carrier_service_id and set it's default count value
                     $shop->carrier_service_id = $carrierService['id'];
