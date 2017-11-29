@@ -123,12 +123,14 @@
             <div class="row">
                 <div class="input-group">
                     <span class="append">{{trans('app.settings.pickuppoint_providers')}}</span>
-                    <select name="pickuppoint_providers" multiple>
+                       <ul style='list-style: none;'>
                             @foreach($shipping_methods as $key => $_service_provider)
-                                <option value="{{$key}}" @if(in_array($key, $pickuppoint_providers)) echo 'selected' @endif>
+                                <li>
+                                    <input type="checkbox" name="pickuppoint_providers[]" value="{{$key}}" @if(in_array($key, $pickuppoint_providers)) checked @endif>
                                     {{$key}}
-                                </option>
+                                </li>
                             @endforeach
+                        </ul>
                     </select>
                 </div>
             </div>
