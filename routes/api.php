@@ -13,6 +13,6 @@ use Illuminate\Http\Request;
 |
 */
 
-//Route::middleware('auth:api')->get('/user', function (Request $request) {
-//    return $request->user();
-//});
+Route::group(['namespace' => 'Shopify'], function () {
+    Route::post('/pickup-points', 'PickupPointsController@list')->name('shopify.pickuppoints.list');
+});

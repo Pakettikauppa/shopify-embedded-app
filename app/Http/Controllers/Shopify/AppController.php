@@ -13,7 +13,7 @@ use Pakettikauppa\Client;
 use Pakettikauppa\Shipment;
 use Psy\Exception\FatalErrorException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
-
+use Log;
 
 /**
  * @property \App\Models\Shopify\Shop $shop
@@ -72,7 +72,52 @@ class AppController extends Controller
             }
 
             \App::setLocale($this->shop->locale);
+            if($this->shop->carrier_service_id == null) {
+                $carrierServiceName = 'Pakettikauppa: Noutopisteet / Pickup points';
 
+                $carrierServiceData = array(
+                        'carrier_service' => array(
+                                'name' => $carrierServiceName,
+                                'callback_url' => route('shopify.pickuppoints.list'),
+                                'service_discovery' => true,
+                        )
+                );
+
+                try {
+                    $carrierService = $this->client->call('POST', '/admin/carrier_services.json' , $carrierServiceData);
+
+                    // set carrier_service_id and set it's default count value
+                    $shop->carrier_service_id = $carrierService->id;
+                    $shop->pickuppoints_count = 10;
+
+                    $shop->save();
+
+                } catch(\Exception $e) {
+                    Log::error($e->getTraceAsString());
+
+                    // it failed, why? Did carrier service already exists but our db shows that it is not active?
+                    $carrierServices = $this->client->call('GET', '/admin/carrier_services.json');
+
+                    if(count($carrierServices) > 0) {
+                        // yes, we have a carrier service!
+                        foreach($carrierServices as $_service) {
+
+                            if($_service['name'] ==  $carrierServiceName) {
+
+                                $shop->carrier_service_id = $_service['id'];
+                                $shop->pickuppoints_count = 10;
+                                $shop->save();
+
+                                if($_service['callback_url'] != route('shopify.pickuppoints.list')) {
+                                    $this->client->call('PUT', '/admin/carrier_services/'.$shop->carrier_service_id.'.json', $carrierServiceData);
+                                }
+                            }
+                        }
+                    } else {
+                        // we just don't know why it failed
+                    }
+                }
+            }
             return $next($request);
         });
     }
@@ -118,7 +163,8 @@ class AppController extends Controller
             'shop' => $this->shop,
             'additional_services' => unserialize($this->shop->additional_services),
             'api_valid' => $api_valid,
-            'shipping_rates' => $result_rates
+            'shipping_rates' => $result_rates,
+            'pickuppoint_providers' => explode(";", $this->shop->pickuppoint_providers)
         ]);
     }
 
@@ -133,7 +179,7 @@ class AppController extends Controller
 
         $productProviderByCode = array();
         foreach($products as $_product) {
-            $productProviderByCode[$_product->shipping_method_code] = $_product->service_provider;
+            $productProviderByCode[(string) $_product['shipping_method_code']] = $_product['service_provider'];
         }
 
         $shipping_settings = [];
@@ -141,10 +187,10 @@ class AppController extends Controller
             $shipping_settings[] = [
                 'shipping_rate_id' => $key,
                 'product_code' => $code,
-                'service_provider' => $productProviderByCode[$code]
+                'service_provider' => ($code == null ? '' : $productProviderByCode[(string) $code])
              ];
         }
-        
+
         if(isset($this->shop->api_key) && isset($this->shop->api_secret)){
             $this->shop->test_mode = (bool) $request->test_mode;
         }
@@ -159,6 +205,8 @@ class AppController extends Controller
         $this->shop->phone = $request->phone;
         $this->shop->iban = $request->iban;
         $this->shop->bic = $request->bic;
+        $this->shop->pickuppoints_count = $request->pickuppoints_count;
+        $this->shop->pickuppoint_providers = implode(";", $request->pickuppoint_providers);
         $this->shop->locale = $request->language;
         $this->shop->save();
 
@@ -303,8 +351,20 @@ class AppController extends Controller
                         'line_items' => $line_items,
                     ];
 
-                    $this->client->call('POST', '/admin/orders/'. $order['id'] . '/fulfillments.json', ['fulfillment' => $fulfillment]);
-                }
+                    try {
+                        $this->client->call('POST', '/admin/orders/'. $order['id'] . '/fulfillments.json', ['fulfillment' => $fulfillment]);
+                    } catch(ShopifyApiException $sae) {
+                        $exceptionData = array(
+                            var_export($sae->getMethod(), true),
+                            var_export($sae->getPath(), true),
+                            var_export($sae->getParams(), true),
+                            var_export($sae->getResponseHeaders(), true),
+                            var_export($sae->getResponse(), true)
+                        );
+
+                        Log::error('ShopiApiException: '.var_export($exceptionData));
+                    } 
+               }
             }
         }
 

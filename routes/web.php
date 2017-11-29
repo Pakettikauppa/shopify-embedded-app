@@ -32,7 +32,5 @@ Route::group(['namespace' => 'Shopify'], function () {
 
     Route::get('/get-label/{order_id}', 'AppController@getLabel')->name('shopify.label');
     Route::get('/track-shipment', 'AppController@trackShipment')->name('shopify.track-shipment');
-
-
 });
 

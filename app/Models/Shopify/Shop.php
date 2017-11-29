@@ -46,7 +46,7 @@ class Shop extends Model
         $parcel->setVolume($order['total_weight'] * 0.000001); // m3
         $parcel->setContents('');
 
-
+        $pickupPointId = null;
         $method_code = null;
 
         if(isset($order['shipping_lines'][0]['title'])){
@@ -56,6 +56,29 @@ class Shop extends Model
             foreach($shipping_settings as $item){
                 if($item['shipping_rate_id'] == $service_name){
                     $method_code = $item['product_code'];
+                }
+            }
+
+            if(isset($order['shipping_lines'][0]['code']) && $order['shipping_lines'][0]['code'] != null) {
+                $pickupPoint = explode(":",$order['shipping_lines'][0]['code']);
+
+                if(count($pickupPoint) == 2) {
+
+                    $pickupPointId = $pickupPoint[1];
+
+                    switch($pickupPoint[0]) {
+                        case 'Posti':
+                            $method_code = 2103;
+                            break;
+                        case 'Matkahuolto':
+                            $method_code = 90080;
+                            break;
+                        case 'DB Schenker':
+                            $method_code = 80010;
+                            break;
+                        default:
+                            $pickupPointId = null;
+                    }
                 }
             }
         }
@@ -72,6 +95,12 @@ class Shop extends Model
         $shipment->setShipmentInfo($info);
         $shipment->addParcel($parcel);
 
+        if($pickupPointId != null) {
+            $additional_service = new AdditionalService();
+            $additional_service->setServiceCode(2106);
+            $additional_service->addSpecifier('pickup_point_id', $pickupPointId);
+            $shipment->addAdditionalService($additional_service);
+        }
 //        $add_services = unserialize($this->additional_services);
 //        foreach($add_services as $service_code){
 //            $additional_service = new AdditionalService();
