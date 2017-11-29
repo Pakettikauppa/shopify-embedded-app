@@ -120,6 +120,9 @@
     <article>
         <div class="card">
             <h2>{{trans('app.settings.pickuppoints')}}</h2>
+            @if ($shop->customer_carrier_id == null)
+            {{trans('app.settings.enable_carrier_api')}}
+            @else
             <div class="row">
                 <div class="input-group">
                     <span class="append">{{trans('app.settings.pickuppoint_providers')}}</span>
@@ -151,6 +154,7 @@
                 </div>
             </div>
         </div>
+        @endif
     </article>
 
     <article>
