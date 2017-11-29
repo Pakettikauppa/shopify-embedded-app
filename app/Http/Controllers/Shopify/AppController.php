@@ -191,14 +191,16 @@ class AppController extends Controller
         }
 
         $shipping_settings = [];
-        foreach($request->shipping_method as $key => $code){
-            $shipping_settings[] = [
-                'shipping_rate_id' => $key,
-                'product_code' => $code,
-                'service_provider' => ($code == null ? '' : $productProviderByCode[(string) $code])
-             ];
+        if(isset($request->shipping_method)) {
+            foreach($request->shipping_method as $key => $code){
+                $shipping_settings[] = [
+                    'shipping_rate_id' => $key,
+                    'product_code' => $code,
+                    'service_provider' => ($code == null ? '' : $productProviderByCode[(string) $code])
+                 ];
+            }
         }
-
+        
         if(isset($this->shop->api_key) && isset($this->shop->api_secret)){
             $this->shop->test_mode = (bool) $request->test_mode;
         }
