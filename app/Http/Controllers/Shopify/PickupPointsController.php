@@ -64,7 +64,7 @@ class PickupPointsController extends Controller
         $shipping_settings = unserialize($shop->shipping_settings);
 
         $rates = array();
-        if(count($providers) > 0) {
+        if(count($shop->pickuppoint_providers) > 0) {
             // get destination address
             $requestBody = $request->getContent();
             $destination = json_decode($requestBody)->rate->destination;

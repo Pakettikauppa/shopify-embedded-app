@@ -181,9 +181,9 @@
                     <span class="append">{{trans('app.settings.pickuppoint_providers')}}</span>
                     <select name="pickuppoint_providers" multiple>
                             @foreach($shipping_methods as $key => $_service_provider)
-                                <option value="{{$key}}" @if(in_array($_service_provider, $pickuppoint_providers)) selected @endif>
-                                >{{$key}}</option>
-                                @endif
+                                <option value="{{$key}}" @if(in_array($key, $pickuppoint_providers)) echo 'selected' @endif>
+                                    {{$key}}
+                                </option>
                             @endforeach
                     </select>
                 </div>
