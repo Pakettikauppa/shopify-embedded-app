@@ -135,6 +135,8 @@ class AppController extends Controller
         $shipping_zones = $this->client->call('GET', '/admin/shipping_zones.json');
 
         $shipping_rates = $shipping_zones[0]['weight_based_shipping_rates'];
+        $shipping_rates = array_merge($shipping_rates, $shipping_zones[0]['price_based_shipping_rates']);
+
         $shipping_settings = unserialize($this->shop->shipping_settings);
 
         $result_rates = [];
