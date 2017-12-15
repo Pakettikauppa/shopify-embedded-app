@@ -14,6 +14,7 @@ return [
         'status' => 'Tila',
         'get_the_label' => 'Hae osoitetarra',
         'get_label_link' => 'Linkki',
+        'back_to_orders' => 'Takaisin tilauksiin',
         'statuses' => [
             'created' => 'Lähetys on luotu',
             'sent' => 'Lähetys on jo luotu tilaukselle',

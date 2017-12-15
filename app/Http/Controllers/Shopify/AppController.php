@@ -297,6 +297,7 @@ class AppController extends Controller
         }
 
         $orders = $this->client->call('GET', '/admin/orders.json', ['ids' => implode(',', $order_ids), 'status' => 'any']);
+        $order['admin_orders_url'] = 'https://' . $this->shop->shop_origin . '/admin/orders;
 
         foreach($orders as &$order){
             $order['admin_order_url'] = 'https://' . $this->shop->shop_origin . '/admin/orders/' . $order['id'];
@@ -361,7 +362,7 @@ class AppController extends Controller
                     $fulfillment = [
                         'tracking_number' => $order['tracking_code'],
                         'tracking_company' => trans('app.settings.company_name'),
-                        'tracking_url' => route('shopify.track-shipment', ['id' => $order['id']]),
+                        'tracking_url' => 'https://www.pakettikauppa.fi/seuranta/?'.$order['tracking_code'],
                         'line_items' => $line_items,
                     ];
 
@@ -387,6 +388,7 @@ class AppController extends Controller
         if($fulfill_order) $page_title = 'print_label_fulfill';
 
         return view('app.print-labels', [
+            'shop' => $this->shop->shop_origin,
             'orders' => $orders,
             'page_title' => $page_title,
             'is_return' => $is_return,
@@ -473,11 +475,13 @@ class AppController extends Controller
         }
 
         $admin_order_url = 'https://' . $this->shop->shop_origin . '/admin/orders/' . $shipment->order_id;
+        $admin_orders_url = 'https://' . $this->shop->shop_origin . '/admin/orders';
 
         return view('app.shipment-status', [
             'statuses' => $statuses,
             'current_shipment' => $shipment,
             'order_url' => $admin_order_url,
+            'orders_url' => $admin_orders_url,
         ]);
     }
 

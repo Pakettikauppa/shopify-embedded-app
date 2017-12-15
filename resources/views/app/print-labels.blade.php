@@ -34,7 +34,7 @@
                             </td>
                             <td>
                                 @if(isset($order['tracking_code']))
-                                <a href="{{route('shopify.track-shipment', ['id' => $order['id']])}}">{{$order['tracking_code']}}</a>
+                                <a href="https://www.pakettikauppa.fi/seuranta/?{{$order['tracking_code']}}" target="pakettikauppa-seuranta">{{$order['tracking_code']}}</a>
                                 @endif
                             </td>
                             <td>
@@ -46,6 +46,7 @@
                     @endforeach
                     </tbody>
                 </table>
+                <td><a href="{{$order['admin_orders_url']}}" target="_blank">{{trans('app.print_labels.back_to_orders')}}</a></td>
             </div>
         </div>
     </div>

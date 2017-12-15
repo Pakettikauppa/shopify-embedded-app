@@ -14,6 +14,7 @@ return [
         'status' => 'Status',
         'get_the_label' => 'Get the shipping label',
         'get_label_link' => 'Link',
+        'back_to_orders' => 'Back to orders list',
         'statuses' => [
             'created' => 'Shipping has been created',
             'sent' => 'Shipping for the order already exists',

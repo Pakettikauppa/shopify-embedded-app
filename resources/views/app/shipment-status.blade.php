@@ -5,7 +5,7 @@
     <section>
         <div class="column">
             <div class="card" style="margin-top: 1em">
-                {{--<h1>{{trans('app.tracking_info.title')}}</h1>--}}
+                {{--<h1>{{!!trans('app.tracking_info.title')!!}}</h1>--}}
                 <div class="row">
                     {{trans('app.print_labels.order_id')}}: <a href="{{$order_url}}" target="_blank">{{$current_shipment->order_id}}</a>
                 </div>
