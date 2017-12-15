@@ -297,7 +297,6 @@ class AppController extends Controller
         }
 
         $orders = $this->client->call('GET', '/admin/orders.json', ['ids' => implode(',', $order_ids), 'status' => 'any']);
-        $order['admin_orders_url'] = 'https://' . $this->shop->shop_origin . '/admin/orders;
 
         foreach($orders as &$order){
             $order['admin_order_url'] = 'https://' . $this->shop->shop_origin . '/admin/orders/' . $order['id'];
@@ -390,6 +389,7 @@ class AppController extends Controller
         return view('app.print-labels', [
             'shop' => $this->shop->shop_origin,
             'orders' => $orders,
+            'orders_url' => 'https://' . $this->shop->shop_origin . '/admin/orders',
             'page_title' => $page_title,
             'is_return' => $is_return,
         ]);
