@@ -34,7 +34,7 @@ class Shop extends Model
         $receiver->setPostcode($receiverInfo['postcode']);
         $receiver->setCity($receiverInfo['city']);
         $receiver->setCountry($receiverInfo['country']);
-        $receiver->setEmail($receiverInfo['country']);
+        $receiver->setEmail($receiverInfo['email']);
         $receiver->setPhone($receiverInfo['phone']);
 
         $info = new Info();
