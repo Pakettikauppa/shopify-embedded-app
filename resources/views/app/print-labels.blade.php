@@ -46,7 +46,7 @@
                     @endforeach
                     </tbody>
                 </table>
-                <td><a href="{{$order['admin_orders_url']}}" target="_blank">{{trans('app.print_labels.back_to_orders')}}</a></td>
+                <td><a href="{{$orders_url}}" target="_blank">{{trans('app.print_labels.back_to_orders')}}</a></td>
             </div>
         </div>
     </div>
