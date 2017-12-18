@@ -4,6 +4,9 @@ return [
     'shipping_method' => [
         'choose_sending_method' => 'Valitse lähetystapa',
     ],
+    'error' => [
+        'error_page' => 'Tapahtui virhe',
+    ],
     'print_labels' => [
         'print_label' => 'Tulosta Osoitetarra',
         'print_label_fulfill' => 'Tulosta osoitetarra & Fulfill',

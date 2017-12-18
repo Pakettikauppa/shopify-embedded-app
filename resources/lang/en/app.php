@@ -4,6 +4,9 @@ return [
     'shipping_method' => [
         'choose_sending_method' => 'Choose sending method',
     ],
+    'error' => [
+        'error_page' => 'Tapahtui virhe',
+    ],
     'print_labels' => [
         'print_label' => 'Print labels',
         'print_label_fulfill' => 'Print labels & Fulfill',

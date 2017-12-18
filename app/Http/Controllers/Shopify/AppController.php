@@ -347,6 +347,19 @@ class AppController extends Controller
             $order = $this->shop->sendShipment($this->pk_client, $order, $senderInfo, $receiverInfo, $is_return);
         }
 
+        if (isset($order['custom_error'])) {
+            Log::debug(var_export($receiverInfo, true));
+            
+            $page_title = 'error_page';
+
+            return view('app.error', [
+                'shop' => $this->shop->shop_origin,
+                'orders_url' => 'https://' . $this->shop->shop_origin . '/admin/orders',
+                'page_title' => $page_title,
+                'error_message' => $order['error_message']
+            ]);
+        }
+
         if($fulfill_order){
             foreach($orders as &$order){
                 if($order['fulfillment_status'] == 'fulfilled') continue;
