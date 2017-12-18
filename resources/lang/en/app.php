@@ -5,7 +5,7 @@ return [
         'choose_sending_method' => 'Choose sending method',
     ],
     'error' => [
-        'error_page' => 'Tapahtui virhe',
+        'error_page' => 'There was an error',
     ],
     'print_labels' => [
         'print_label' => 'Print labels',

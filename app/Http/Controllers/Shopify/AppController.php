@@ -317,6 +317,8 @@ class AppController extends Controller
                 continue;
             }
             $shipping_address = $order['shipping_address'];
+            $billing_address = $order['billing_address'];
+            $customer = $order['customer'];
 
             $senderInfo = [
                 'name' => $this->shop->business_name,
@@ -328,13 +330,27 @@ class AppController extends Controller
                 'email' => $this->shop->email,
             ];
 
+            $receiverPhone = $shipping_address['phone'];
+
+            if (empty ($receiverPhone) ) {
+                $receiverPhone = $billing_address['phone'];
+            }
+
+            if (empty ($receiverPhone) ) {
+                $receiverPhone = $order['phone'];
+            }
+
+            if (empty ($receiverPhone) ) {
+                $receiverPhone = $customer['phone'];
+            }
+
             $receiverInfo = [
                 'name' => $shipping_address['first_name'] . " ".$shipping_address['last_name'],
                 'address' => $shipping_address['address1'],
                 'postcode' => $shipping_address['zip'],
                 'city' => $shipping_address['city'],
                 'country' => $shipping_address['country_code'],
-                'phone' => $shipping_address['phone'],
+                'phone' => $receiverPhone,
                 'email' => $order['email'],
             ];
 
@@ -349,7 +365,7 @@ class AppController extends Controller
 
         if (isset($order['custom_error'])) {
             Log::debug(var_export($receiverInfo, true));
-            
+
             $page_title = 'error_page';
 
             return view('app.error', [
