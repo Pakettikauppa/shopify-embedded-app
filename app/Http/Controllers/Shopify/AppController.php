@@ -41,6 +41,11 @@ class AppController extends Controller
             }
 
             $this->shop = $shop;
+            if ($shop->pickuppoint_settings == null) {
+                $shop->pickuppoint_settings = '{}';
+            }
+            $this->pickupPointSettings = json_decode($shop->pickuppoint_settings, true);
+
             $this->client = new ShopifyClient($shop->shop_origin, $shop->token, ENV('SHOPIFY_API_KEY'), ENV('SHOPIFY_SECRET'));
 
             // check shopify API
@@ -157,6 +162,7 @@ class AppController extends Controller
         try {
             $resp = $this->pk_client->listShippingMethods();
             $products = json_decode($resp, true);
+
         } catch (\Exception $ex)  {
             throw new FatalErrorException();
         }
@@ -166,9 +172,18 @@ class AppController extends Controller
             ksort($grouped_services);
         }
 
-//        dd($result_rates);
+        // initialize pickup point settings if needed
+        foreach ($grouped_services as $_key => $_service_provider) {
+            if(!isset($this->pickupPointSettings[$_product])) {
+                $this->pickupPointSettings[$_key]['active'] = 'false';
+                $this->pickupPointSettings[$_key]['base_price'] = '0';
+                $this->pickupPointSettings[$_key]['trigger_price'] = '';
+                $this->pickupPointSettings[$_key]['triggered_price'] = '';
+            }
+        }
 
         return view('app.settings', [
+            'pickuppoint_settings' => $this->pickupPointSettings,
             'shipping_methods' => $grouped_services,
             'shop' => $this->shop,
             'additional_services' => unserialize($this->shop->additional_services),
@@ -219,7 +234,8 @@ class AppController extends Controller
         $this->shop->bic = $request->bic;
         if(isset($request->pickuppoints_count)) {
             $this->shop->pickuppoints_count = $request->pickuppoints_count;
-            $this->shop->pickuppoint_providers = implode(";", $request->pickuppoint_providers);
+
+            $this->shop->settings = json_encode($request->pickuppoint);
         }
         $this->shop->locale = $request->language;
         $this->shop->save();

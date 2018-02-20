@@ -126,14 +126,42 @@
             <div class="row">
                 <div class="input-group">
                     <span class="append">{{trans('app.settings.pickuppoint_providers')}}</span>
-                       <ul style='list-style: none;'>
+                       <table>
+                           <tr>
+                               <th colspan="2">
+                                   {{trans('app.settings.pickuppoint_provider')}}
+                               </th>
+                               <th>
+                                   {{trans('app.settings.pickuppoints.base_price')}}
+                               </th>
+                               <th>
+                                   {{trans('app.settings.pickuppoints.trigger_pricee')}}
+                               </th>
+                               <th>
+                                   {{trans('app.settings.pickuppoints.triggered_price')}}
+                               </th>
+                           </tr>
                             @foreach($shipping_methods as $key => $_service_provider)
-                                <li>
-                                    <input type="checkbox" name="pickuppoint_providers[]" value="{{$key}}" @if(in_array($key, $pickuppoint_providers)) checked @endif>
-                                    {{$key}}
-                                </li>
+                                <tr>
+                                    <td>
+                                        <input type="hidden" name="pickuppoint[{{$key}}][active]" value="false">
+                                        <input type="checkbox" name="pickuppoint[{{$key}}][active]" value="true" @if($this->pickuppoint_settings[$key]['active'] == 'true') checked @endif>
+                                    </td>
+                                    <td>
+                                        {{$key}}
+                                    </td>
+                                    <td>
+                                        <input type="number" name="pickuppoint[{{key}}][base_price]" value="{{$this->pickupoint_settings[$key][base_price]}}">
+                                    </td>
+                                    <td>
+                                        <input type="number" name="pickuppoint[{{key}}][trigger_price]" value="{{$this->pickupoint_settings[$key][trigger_price]}}">
+                                    </td>
+                                    <td>
+                                        <input type="number" name="pickuppoint[{{key}}][triggered_price]" value="{{$this->pickupoint_settings[$key][triggered_price]}}">
+                                    </td>
+                                </tr>
                             @endforeach
-                        </ul>
+                        </table>
                     </select>
                 </div>
             </div>
