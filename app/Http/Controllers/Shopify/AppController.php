@@ -41,10 +41,10 @@ class AppController extends Controller
             }
 
             $this->shop = $shop;
-            if ($shop->pickuppoint_settings == null) {
-                $shop->pickuppoint_settings = '{}';
+            if ($shop->settings == null) {
+                $shop->settings = '{}';
             }
-            $this->pickupPointSettings = json_decode($shop->pickuppoint_settings, true);
+            $this->pickupPointSettings = json_decode($shop->settings, true);
 
             $this->client = new ShopifyClient($shop->shop_origin, $shop->token, ENV('SHOPIFY_API_KEY'), ENV('SHOPIFY_SECRET'));
 
@@ -174,7 +174,7 @@ class AppController extends Controller
 
         // initialize pickup point settings if needed
         foreach ($grouped_services as $_key => $_service_provider) {
-            if(!isset($this->pickupPointSettings[$_product])) {
+            if(!isset($this->pickupPointSettings[$_key])) {
                 $this->pickupPointSettings[$_key]['active'] = 'false';
                 $this->pickupPointSettings[$_key]['base_price'] = '0';
                 $this->pickupPointSettings[$_key]['trigger_price'] = '';

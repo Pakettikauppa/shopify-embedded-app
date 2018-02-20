@@ -60,10 +60,10 @@ class PickupPointsController extends Controller
         }
 
         // fetch pickup points
-        if ($shop->pickuppoint_settings == null) {
-            $shop->pickuppoint_settings = '{}';
+        if ($shop->settings == null) {
+            $shop->settings = '{}';
         }
-        $this->pickupPointSettings = json_decode($shop->pickuppoint_settings, true);
+        $this->pickupPointSettings = json_decode($shop->settings, true);
 
         $rates = array();
         if(count($this->pickupPointSettings) > 0) {
@@ -76,8 +76,19 @@ class PickupPointsController extends Controller
             foreach($requestBody->rate->items as $_item) {
                 $totalValue += $_item->price;
             }
+            $pickupPointProviders = array();
+
+            foreach($this->pickupPointSettings as $_provider => $_settings) {
+                if ($_settings['active'] == 'true') {
+                    $pickupPointProviders[] = $_provider;
+                }
+            }
+
+            // convert array to string
+            $pickupPointProviders = implode(",", $pickupPointProviders);
+
             // search nearest pickup locations
-            $pickupPoints = json_decode($pk_client->searchPickupPoints($destination->postal_code, $destination->address1, $destination->country, implode(",", array_keys($this->pickupPointSettings)), $shop->pickuppoints_count ));
+            $pickupPoints = json_decode($pk_client->searchPickupPoints($destination->postal_code, $destination->address1, $destination->country, $pickupPointProviders, $shop->pickuppoints_count ));
 
             // generate custom carrier service response
             try {
@@ -87,7 +98,7 @@ class PickupPointsController extends Controller
                         'description' => ($_pickupPoint->description==null?'':$_pickupPoint->description),
                         'service_code' => "{$_pickupPoint->provider}:{$_pickupPoint->pickup_point_id}",
                         'currency' => 'EUR',
-                        'total_price' => priceForPickupPoint($_pickupPoint->provider, $totalValue)
+                        'total_price' => $this->priceForPickupPoint($_pickupPoint->provider, $totalValue)
                 );
             }
             } catch (\Exception $e) {
@@ -104,7 +115,7 @@ class PickupPointsController extends Controller
     {
         $pickupPointSettings = $this->pickupPointSettings[$provider];
 
-        if ($pickupPointSettings['trigger_price'] >= $totalValue) {
+        if ($pickupPointSettings['trigger_price'] <= $totalValue) {
             return (int)($pickupPointSettings['triggered_price'] * 100);
         }
 

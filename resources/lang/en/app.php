@@ -59,6 +59,12 @@ return [
         'api_secret' => 'API secret',
         'saved' => 'Settings have been saved',
         'setup_wizard' => 'Wizard setup',
+        'pickuppoints' => [
+            'provider' => 'Provider',
+            'base_price' => 'Base price',
+            'trigger_price' => 'Trigger price',
+            'triggered_price' => 'Triggered price',
+        ],
         'wizard' => [
             'is_new_user' => 'Do you have Pakettikauppa API credentials?',
             'register' => 'Register',

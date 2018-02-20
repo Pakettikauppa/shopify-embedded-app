@@ -59,6 +59,12 @@ return [
         'api_secret' => 'API secret',
         'saved' => 'Asetukset ovat tallennettu',
         'setup_wizard' => 'Ohjattuasennus',
+        'pickuppoints' => [
+            'provider' => 'Kuljetusyhtiö',
+            'base_price' => 'Perushinta',
+            'trigger_price' => 'Muutos hinta',
+            'triggered_price' => 'Muutettu hinta',
+        ],
         'wizard' => [
             'is_new_user' => 'Onko sinulla jo Pakettikaupan API tunnukset?',
             'register' => 'Rekisteröidy',

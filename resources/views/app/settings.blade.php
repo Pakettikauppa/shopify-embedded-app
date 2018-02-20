@@ -125,17 +125,16 @@
             @else
             <div class="row">
                 <div class="input-group">
-                    <span class="append">{{trans('app.settings.pickuppoint_providers')}}</span>
                        <table>
                            <tr>
                                <th colspan="2">
-                                   {{trans('app.settings.pickuppoint_provider')}}
+                                   {{trans('app.settings.pickuppoints.provider')}}
                                </th>
                                <th>
                                    {{trans('app.settings.pickuppoints.base_price')}}
                                </th>
                                <th>
-                                   {{trans('app.settings.pickuppoints.trigger_pricee')}}
+                                   {{trans('app.settings.pickuppoints.trigger_price')}}
                                </th>
                                <th>
                                    {{trans('app.settings.pickuppoints.triggered_price')}}
@@ -145,24 +144,23 @@
                                 <tr>
                                     <td>
                                         <input type="hidden" name="pickuppoint[{{$key}}][active]" value="false">
-                                        <input type="checkbox" name="pickuppoint[{{$key}}][active]" value="true" @if($this->pickuppoint_settings[$key]['active'] == 'true') checked @endif>
+                                        <input type="checkbox" name="pickuppoint[{{$key}}][active]" value="true" @if($pickuppoint_settings[$key]['active'] == 'true') checked @endif>
                                     </td>
                                     <td>
                                         {{$key}}
                                     </td>
                                     <td>
-                                        <input type="number" name="pickuppoint[{{key}}][base_price]" value="{{$this->pickupoint_settings[$key][base_price]}}">
+                                        <input type="number" name="pickuppoint[{{$key}}][base_price]" value="{{$pickuppoint_settings[$key]['base_price']}}">
                                     </td>
                                     <td>
-                                        <input type="number" name="pickuppoint[{{key}}][trigger_price]" value="{{$this->pickupoint_settings[$key][trigger_price]}}">
+                                        <input type="number" name="pickuppoint[{{$key}}][trigger_price]" value="{{$pickuppoint_settings[$key]['trigger_price']}}">
                                     </td>
                                     <td>
-                                        <input type="number" name="pickuppoint[{{key}}][triggered_price]" value="{{$this->pickupoint_settings[$key][triggered_price]}}">
+                                        <input type="number" name="pickuppoint[{{$key}}][triggered_price]" value="{{$pickuppoint_settings[$key]['triggered_price']}}">
                                     </td>
                                 </tr>
                             @endforeach
                         </table>
-                    </select>
                 </div>
             </div>
             <div class="row">
