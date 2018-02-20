@@ -13,6 +13,8 @@ use Log;
 
 class PickupPointsController extends Controller
 {
+    private $pickupPointSettings;
+
     public function list(Request $request)
     {
         // SETUP EVERYTHING
@@ -58,32 +60,65 @@ class PickupPointsController extends Controller
         }
 
         // fetch pickup points
-        // fetch shipping providers
-        $shipping_settings = unserialize($shop->shipping_settings);
+        if ($shop->settings == null) {
+            $shop->settings = '{}';
+        }
+        $this->pickupPointSettings = json_decode($shop->settings, true);
 
         $rates = array();
-        if(count($shop->pickuppoint_providers) > 0) {
+        if(count($this->pickupPointSettings) > 0) {
             // get destination address
-            $requestBody = $request->getContent();
-            $destination = json_decode($requestBody)->rate->destination;
+            $requestBody = json_decode($request->getContent());
+            $destination = $requestBody->rate->destination;
+
+            // calculate total value of the cart
+            $totalValue = 0;
+            foreach($requestBody->rate->items as $_item) {
+                $totalValue += $_item->price * $_item->quantity;
+            }
+            $pickupPointProviders = array();
+
+            foreach($this->pickupPointSettings as $_provider => $_settings) {
+                if ($_settings['active'] == 'true') {
+                    $pickupPointProviders[] = $_provider;
+                }
+            }
+
+            // convert array to string
+            $pickupPointProviders = implode(",", $pickupPointProviders);
 
             // search nearest pickup locations
-            $pickupPoints = json_decode($pk_client->searchPickupPoints($destination->postal_code, $destination->address1, $destination->country, $shop->pickuppoint_providers, $shop->pickuppoints_count ));
+            $pickupPoints = json_decode($pk_client->searchPickupPoints($destination->postal_code, $destination->address1, $destination->country, $pickupPointProviders, $shop->pickuppoints_count ));
 
             // generate custom carrier service response
+            try {
             foreach($pickupPoints as $_pickupPoint) {
                 $rates[] = array(
                         'service_name' => "{$_pickupPoint->name}, {$_pickupPoint->street_address}, {$_pickupPoint->postcode}, {$_pickupPoint->city}",
                         'description' => ($_pickupPoint->description==null?'':$_pickupPoint->description),
                         'service_code' => "{$_pickupPoint->provider}:{$_pickupPoint->pickup_point_id}",
                         'currency' => 'EUR',
-                        'total_price' => 0
+                        'total_price' => $this->priceForPickupPoint($_pickupPoint->provider, $totalValue)
                 );
+            }
+            } catch (\Exception $e) {
+                Log::debug(var_export($pickupPoints, true));
             }
         }
         
         $customCarrierServices = array('rates' => $rates);
 
         echo json_encode($customCarrierServices);
+    }
+
+    private function priceForPickupPoint($provider, $totalValue)
+    {
+        $pickupPointSettings = $this->pickupPointSettings[$provider];
+
+        if ($pickupPointSettings['trigger_price'] > 0 and $pickupPointSettings['trigger_price']*100 <= $totalValue) {
+            return (int)($pickupPointSettings['triggered_price'] * 100);
+        }
+
+        return (int)($pickupPointSettings['base_price'] * 100);
     }
 }

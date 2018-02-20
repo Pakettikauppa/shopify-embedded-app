@@ -46,7 +46,6 @@ return [
         'email' => 'Email',
         'phone' => 'Phone',
         'enable_carrier_api' => 'Pickup points functionality need Carrier Services API. API is free for annual subscriptions. To turn on annual subscriptions click settings > Account > Compare plan > Choose a plan > Choose ANNUAL. After you have Annual subscription, contact Shopify Customer Service to enable Carrier Service API.',
-        'pickuppoints' => 'Pickup point settings',
         'pickuppoint_providers' => 'Which service providers are used?',
         'pickuppoints_count' => 'How many pickup points are shown as result?',
         'pickuppoints_count_0' => 'Don\'t show pickup points',
@@ -59,6 +58,13 @@ return [
         'api_secret' => 'API secret',
         'saved' => 'Settings have been saved',
         'setup_wizard' => 'Wizard setup',
+        'pickuppoints' => [
+            'title' => 'Pickup point settings',
+            'provider' => 'Provider',
+            'base_price' => 'Base price (€)',
+            'trigger_price' => 'Trigger price (€)',
+            'triggered_price' => 'Triggered price (€)',
+        ],
         'wizard' => [
             'is_new_user' => 'Do you have Pakettikauppa API credentials?',
             'register' => 'Register',

@@ -119,22 +119,48 @@
 
     <article>
         <div class="card">
-            <h2>{{trans('app.settings.pickuppoints')}}</h2>
+            <h2>{{trans('app.settings.pickuppoints.title')}}</h2>
             @if ($shop->carrier_service_id == null)
             {{trans('app.settings.enable_carrier_api')}}
             @else
             <div class="row">
                 <div class="input-group">
-                    <span class="append">{{trans('app.settings.pickuppoint_providers')}}</span>
-                       <ul style='list-style: none;'>
+                       <table>
+                           <tr>
+                               <th colspan="2">
+                                   {{trans('app.settings.pickuppoints.provider')}}
+                               </th>
+                               <th>
+                                   {{trans('app.settings.pickuppoints.base_price')}}
+                               </th>
+                               <th>
+                                   {{trans('app.settings.pickuppoints.trigger_price')}}
+                               </th>
+                               <th>
+                                   {{trans('app.settings.pickuppoints.triggered_price')}}
+                               </th>
+                           </tr>
                             @foreach($shipping_methods as $key => $_service_provider)
-                                <li>
-                                    <input type="checkbox" name="pickuppoint_providers[]" value="{{$key}}" @if(in_array($key, $pickuppoint_providers)) checked @endif>
-                                    {{$key}}
-                                </li>
+                                <tr>
+                                    <td>
+                                        <input type="hidden" name="pickuppoint[{{$key}}][active]" value="false">
+                                        <input type="checkbox" name="pickuppoint[{{$key}}][active]" value="true" @if($pickuppoint_settings[$key]['active'] == 'true') checked @endif>
+                                    </td>
+                                    <td>
+                                        {{$key}}
+                                    </td>
+                                    <td>
+                                        <input type="number" name="pickuppoint[{{$key}}][base_price]" value="{{$pickuppoint_settings[$key]['base_price']}}">
+                                    </td>
+                                    <td>
+                                        <input type="number" name="pickuppoint[{{$key}}][trigger_price]" value="{{$pickuppoint_settings[$key]['trigger_price']}}">
+                                    </td>
+                                    <td>
+                                        <input type="number" name="pickuppoint[{{$key}}][triggered_price]" value="{{$pickuppoint_settings[$key]['triggered_price']}}">
+                                    </td>
+                                </tr>
                             @endforeach
-                        </ul>
-                    </select>
+                        </table>
                 </div>
             </div>
             <div class="row">
@@ -212,7 +238,7 @@
         </div>
     </article>
 
-
+<!--
     <article>
         <div class="card">
             <h2>{{trans('app.settings.cash_on_delivery')}}</h2>
@@ -231,7 +257,7 @@
         </div>
 
     </article>
-
+-->
     <article>
         <div class="card">
             <h2>{{trans('app.settings.settings')}}</h2>
