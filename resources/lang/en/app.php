@@ -61,9 +61,9 @@ return [
         'pickuppoints' => [
             'title' => 'Pickup point settings',
             'provider' => 'Provider',
-            'base_price' => 'Base price',
-            'trigger_price' => 'Trigger price',
-            'triggered_price' => 'Triggered price',
+            'base_price' => 'Base price (€)',
+            'trigger_price' => 'Trigger price (€)',
+            'triggered_price' => 'Triggered price (€)',
         ],
         'wizard' => [
             'is_new_user' => 'Do you have Pakettikauppa API credentials?',

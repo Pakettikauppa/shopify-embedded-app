@@ -61,9 +61,9 @@ return [
         'pickuppoints' => [
             'title' => 'Noutopisteiden asetukset',
             'provider' => 'Kuljetusyhtiö',
-            'base_price' => 'Perushinta',
-            'trigger_price' => 'Hintaraja',
-            'triggered_price' => 'Hinta ylityksen jälkeen',
+            'base_price' => 'Perushinta (€)',
+            'trigger_price' => 'Hintaraja (€)',
+            'triggered_price' => 'Hinta ylityksen jälkeen (€)',
         ],
         'wizard' => [
             'is_new_user' => 'Onko sinulla jo Pakettikaupan API tunnukset?',
