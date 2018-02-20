@@ -238,7 +238,7 @@
         </div>
     </article>
 
-
+<!--
     <article>
         <div class="card">
             <h2>{{trans('app.settings.cash_on_delivery')}}</h2>
@@ -257,7 +257,7 @@
         </div>
 
     </article>
-
+-->
     <article>
         <div class="card">
             <h2>{{trans('app.settings.settings')}}</h2>
