@@ -235,7 +235,15 @@ class AppController extends Controller
         if(isset($request->pickuppoints_count)) {
             $this->shop->pickuppoints_count = $request->pickuppoints_count;
 
-            $this->shop->settings = json_encode($request->pickuppoint);
+            $pickuppoints = $request->pickuppoint;
+            foreach($pickupppoints as $_pickupPoint) {
+                if($_pickupPoint['base_price'] == '') $_pickupPoint['base_price'] = 0;
+
+                if($_pickupPoint['triggered_price'] == '') {
+                    $_pickupPoint['trigger_price'] = '';
+                }
+            }
+            $this->shop->settings = json_encode($pickuppoints);
         }
         $this->shop->locale = $request->language;
         $this->shop->save();

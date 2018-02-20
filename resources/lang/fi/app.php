@@ -46,7 +46,6 @@ return [
         'email' => 'Sähköposti',
         'phone' => 'Puhelinnumero',
         'enable_carrier_api' => 'Noutopistetoiminto tarvitsee Carrier Services APIn toimintaan. Palvelu on ilmainen vuosittaisille tilauksille. Voit muuttaa tilauksesi vuositilaukseksi: settings > Account > Compare plan > Choose a plan > valitse ANNUAL. Tämän jälkeen pyydä Shopifyn asiakaspalvelu kytkemään päälle Carrier Service API.',
-        'pickuppoints' => 'Noutopisteiden asetukset',
         'pickuppoint_providers' => 'Minkä toimittajan noutopisteet haetaan?',
         'pickuppoints_count' => 'Kuinka monta lähintä noutopistettä näytetään ostajalle?',
         'pickuppoints_count_0' => 'Älä näytä noutopisteitä',
@@ -60,10 +59,11 @@ return [
         'saved' => 'Asetukset ovat tallennettu',
         'setup_wizard' => 'Ohjattuasennus',
         'pickuppoints' => [
+            'title' => 'Noutopisteiden asetukset',
             'provider' => 'Kuljetusyhtiö',
             'base_price' => 'Perushinta',
-            'trigger_price' => 'Muutos hinta',
-            'triggered_price' => 'Muutettu hinta',
+            'trigger_price' => 'Hintaraja',
+            'triggered_price' => 'Hinta ylityksen jälkeen',
         ],
         'wizard' => [
             'is_new_user' => 'Onko sinulla jo Pakettikaupan API tunnukset?',

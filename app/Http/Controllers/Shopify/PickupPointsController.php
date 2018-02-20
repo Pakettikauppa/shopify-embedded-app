@@ -74,7 +74,7 @@ class PickupPointsController extends Controller
             // calculate total value of the cart
             $totalValue = 0;
             foreach($requestBody->rate->items as $_item) {
-                $totalValue += $_item->price;
+                $totalValue += $_item->price * $_item->quantity;
             }
             $pickupPointProviders = array();
 
@@ -115,7 +115,7 @@ class PickupPointsController extends Controller
     {
         $pickupPointSettings = $this->pickupPointSettings[$provider];
 
-        if ($pickupPointSettings['trigger_price'] <= $totalValue) {
+        if ($pickupPointSettings['trigger_price'] > 0 and $pickupPointSettings['trigger_price']*100 <= $totalValue) {
             return (int)($pickupPointSettings['triggered_price'] * 100);
         }
 
