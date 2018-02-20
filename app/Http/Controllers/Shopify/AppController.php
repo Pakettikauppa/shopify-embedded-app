@@ -236,7 +236,7 @@ class AppController extends Controller
             $this->shop->pickuppoints_count = $request->pickuppoints_count;
 
             $pickuppoints = $request->pickuppoint;
-            foreach($pickupppoints as $_pickupPoint) {
+            foreach($pickuppoints as $_pickupPoint) {
                 if($_pickupPoint['base_price'] == '') $_pickupPoint['base_price'] = 0;
 
                 if($_pickupPoint['triggered_price'] == '') {
