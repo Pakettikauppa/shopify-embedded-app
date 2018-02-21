@@ -322,6 +322,8 @@ class AppController extends Controller
 
         $orders = $this->client->call('GET', '/admin/orders.json', ['ids' => implode(',', $order_ids), 'status' => 'any']);
 
+        $order = array ('custom_error' => 'Not defined');
+
         foreach($orders as &$order){
             $order['admin_order_url'] = 'https://' . $this->shop->shop_origin . '/admin/orders/' . $order['id'];
 
@@ -388,7 +390,7 @@ class AppController extends Controller
         }
 
         if (isset($order['custom_error'])) {
-            Log::debug(var_export($receiverInfo, true));
+            Log::debug(var_export($order, true));
 
             $page_title = 'error_page';
 
@@ -429,7 +431,7 @@ class AppController extends Controller
                             var_export($sae->getResponse(), true)
                         );
 
-                        Log::debug('ShopiApiException: '.var_export($exceptionData));
+                        Log::debug('ShopiApiException: '.var_export($exceptionData, true));
                     } 
                }
             }
