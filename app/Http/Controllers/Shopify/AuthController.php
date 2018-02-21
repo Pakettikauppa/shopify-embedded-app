@@ -64,6 +64,7 @@ class AuthController extends Controller
 
         if(session()->has('init_request')){
             $init_request = session()->get('init_request');
+            $init_request = str_replace(array('http:'),  array('https:'), $init_request);
             session()->forget('init_request');
             return redirect($init_request);
         }
