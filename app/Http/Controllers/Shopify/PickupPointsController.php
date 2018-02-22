@@ -116,9 +116,9 @@ class PickupPointsController extends Controller
         $pickupPointSettings = $this->pickupPointSettings[$provider];
 
         if ($pickupPointSettings['trigger_price'] > 0 and $pickupPointSettings['trigger_price']*100 <= $totalValue) {
-            return (int)($pickupPointSettings['triggered_price'] * 100);
+            return (int) round($pickupPointSettings['triggered_price'] * 100.0);
         }
 
-        return (int)($pickupPointSettings['base_price'] * 100);
+        return (int) round($pickupPointSettings['base_price'] * 100.0);
     }
 }
