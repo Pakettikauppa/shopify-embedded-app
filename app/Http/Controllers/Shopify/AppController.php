@@ -223,6 +223,9 @@ class AppController extends Controller
         }
 
         $this->shop->shipping_settings = serialize($shipping_settings);
+        if($request->default_shipping_method != '') {
+            $this->shop->default_service_code = $request->default_shipping_method;
+        }
         $this->shop->business_name = $request->business_name;
         $this->shop->address = $request->address;
         $this->shop->postcode = $request->postcode;
