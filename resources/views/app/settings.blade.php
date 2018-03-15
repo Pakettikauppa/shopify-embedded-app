@@ -7,7 +7,7 @@
         @if(session()->has('success'))
             <div class="alert success">
                 <dl>
-                    <dt>{{session()->get('success')}}</dt>
+                    <dt>{{session()->get('success')}} #{{time()}}</dt>
                 </dl>
             </div>
         @endif
@@ -15,7 +15,7 @@
         @if(!isset($shop->api_key))
             <div class="alert notification">
                 <dl>
-                    <dt>{{trans('app.messages.no_api')}}</dt>
+                    <dt>{{trans('app.messages.no_api')}} #{{time()}}</dt>
                     <dd>{{trans('app.messages.only_test_mode')}}</dd>
                 </dl>
             </div>
@@ -24,7 +24,7 @@
         @if(!$api_valid)
             <div class="alert error">
                 <dl>
-                    <dt>{{trans('app.messages.invalid_credentials')}}</dt>
+                    <dt>{{trans('app.messages.invalid_credentials')}} #{{time()}}</dt>
                 </dl>
             </div>
         @endif
@@ -32,7 +32,7 @@
         @if(session()->has('error'))
             <div class="alert error">
                 <dl>
-                    <dt>{{session()->get('error')}}</dt>
+                    <dt>{{session()->get('error')}} #{{time()}}</dt>
                 </dl>
             </div>
         @endif
