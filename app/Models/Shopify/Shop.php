@@ -110,7 +110,6 @@ class Shop extends Model
 
         try {
             $pk_client->createTrackingCode($shipment);
-            $pk_client->fetchShippingLabel($shipment);
 
             $tracking_code = (string) $shipment->getTrackingCode();
             $reference = (string) $shipment->getReference();
