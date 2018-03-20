@@ -422,7 +422,9 @@ class AppController extends Controller
                         );
 
                         Log::debug('ShopiApiException: '.var_export($exceptionData, true));
-                    } 
+                    } catch(\Exception $e) {
+                        Log::debug('Fullfillment Exception: '.$e->getTraceAsString());
+                    }
                }
             }
         }
