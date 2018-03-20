@@ -95,7 +95,7 @@ class Shop extends Model
         $shipment->setShipmentInfo($info);
         $shipment->addParcel($parcel);
 
-        if($pickupPointId != null) {
+        if($pickupPointId != null and !$isReturn) {
             $additional_service = new AdditionalService();
             $additional_service->setServiceCode(2106);
             $additional_service->addSpecifier('pickup_point_id', $pickupPointId);
