@@ -452,18 +452,6 @@ class AppController extends Controller
     }
 
     public function printLabelsFulfill(Request $request){
-//         unfulfill
-//        foreach($request->ids as $order_id) {
-//            $fulfillment = $this->client->call('GET', '/admin/orders/' . $order_id . '/fulfillments.json');
-//
-//            foreach ($fulfillment as $item) {
-//                if ($item['status'] == 'success') {
-//                    $this->client->call('POST', '/admin/orders/' . $order_id . '/fulfillments/' . $item['id'] . '/cancel.json');
-//                }
-//            }
-//        }
-//        dd('unfulfilled');
-
         $params = $request->all();
         $params['fulfill_order'] = true;
         $request = Request::create('print-labels', 'GET', $params);
