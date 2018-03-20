@@ -391,7 +391,7 @@ class AppController extends Controller
         }
 
         if($fulfill_order){
-            foreach($orders as &$order){
+            foreach($orders as $order){
                 if($order['fulfillment_status'] == 'fulfilled') continue;
                 if($order['status'] == 'custom_error') continue;
 
