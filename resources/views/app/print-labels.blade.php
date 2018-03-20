@@ -18,7 +18,7 @@
                     <tbody>
                     @foreach($orders as $order)
                         <tr>
-                            <td><a href="{{$order['admin_order_url']}}" target="_blank">{{$order['id']}}</a></td>
+                            <td><a href="{{$order['admin_order_url']}}" target="_top">{{$order['id']}}</a></td>
                             <td>
                                 @if($order['status'] == 'created')
                                     <span class="tag green">{{trans('app.print_labels.statuses.created')}}</span>
@@ -46,7 +46,7 @@
                     @endforeach
                     </tbody>
                 </table>
-                <td><a href="{{$orders_url}}" target="_blank">{{trans('app.print_labels.back_to_orders')}}</a></td>
+                <td><a href="{{$orders_url}}" target="_top">{{trans('app.print_labels.back_to_orders')}}</a></td>
             </div>
         </div>
     </div>

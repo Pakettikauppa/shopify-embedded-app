@@ -325,8 +325,6 @@ class AppController extends Controller
 
         $orders = $this->client->call('GET', '/admin/orders.json', ['ids' => implode(',', $order_ids), 'status' => 'any']);
 
-        $order = array ('custom_error' => 'Not defined');
-
         foreach($orders as &$order){
             $order['admin_order_url'] = 'https://' . $this->shop->shop_origin . '/admin/orders/' . $order['id'];
 
@@ -392,22 +390,11 @@ class AppController extends Controller
             $order = $this->shop->sendShipment($this->pk_client, $order, $senderInfo, $receiverInfo, $is_return);
         }
 
-        if (isset($order['custom_error'])) {
-            Log::debug(var_export($order, true));
-
-            $page_title = 'error_page';
-
-            return view('app.error', [
-                'shop' => $this->shop->shop_origin,
-                'orders_url' => 'https://' . $this->shop->shop_origin . '/admin/orders',
-                'page_title' => $page_title,
-                'error_message' => $order['error_message']
-            ]);
-        }
-
         if($fulfill_order){
-            foreach($orders as &$order){
+            foreach($orders as $order){
                 if($order['fulfillment_status'] == 'fulfilled') continue;
+                if($order['status'] == 'custom_error') continue;
+
                 $services = [];
                 foreach($order['line_items'] as $item){
                     if($item['fulfillable_quantity'] > 0){
@@ -435,7 +422,9 @@ class AppController extends Controller
                         );
 
                         Log::debug('ShopiApiException: '.var_export($exceptionData, true));
-                    } 
+                    } catch(\Exception $e) {
+                        Log::debug('Fullfillment Exception: '.$e->getTraceAsString());
+                    }
                }
             }
         }
@@ -463,18 +452,6 @@ class AppController extends Controller
     }
 
     public function printLabelsFulfill(Request $request){
-//         unfulfill
-//        foreach($request->ids as $order_id) {
-//            $fulfillment = $this->client->call('GET', '/admin/orders/' . $order_id . '/fulfillments.json');
-//
-//            foreach ($fulfillment as $item) {
-//                if ($item['status'] == 'success') {
-//                    $this->client->call('POST', '/admin/orders/' . $order_id . '/fulfillments/' . $item['id'] . '/cancel.json');
-//                }
-//            }
-//        }
-//        dd('unfulfilled');
-
         $params = $request->all();
         $params['fulfill_order'] = true;
         $request = Request::create('print-labels', 'GET', $params);
