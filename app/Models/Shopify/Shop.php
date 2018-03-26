@@ -85,7 +85,6 @@ class Shop extends Model
 
         if(!isset($method_code)){                                  // use default shipping method
             $method_code = $this->default_service_code;
-//            $order['status'] = 'no_shipping_service';
         }
 
         $shipment = new Shipment();
@@ -95,22 +94,15 @@ class Shop extends Model
         $shipment->setShipmentInfo($info);
         $shipment->addParcel($parcel);
 
-        if($pickupPointId != null) {
+        if($pickupPointId != null and !$isReturn) {
             $additional_service = new AdditionalService();
             $additional_service->setServiceCode(2106);
             $additional_service->addSpecifier('pickup_point_id', $pickupPointId);
             $shipment->addAdditionalService($additional_service);
         }
-//        $add_services = unserialize($this->additional_services);
-//        foreach($add_services as $service_code){
-//            $additional_service = new AdditionalService();
-//            $additional_service->setServiceCode($service_code);
-//            $shipment->addAdditionalService($additional_service);
-//        }
 
         try {
             $pk_client->createTrackingCode($shipment);
-            $pk_client->fetchShippingLabel($shipment);
 
             $tracking_code = (string) $shipment->getTrackingCode();
             $reference = (string) $shipment->getReference();
