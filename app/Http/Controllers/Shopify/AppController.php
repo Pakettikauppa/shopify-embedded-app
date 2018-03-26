@@ -344,8 +344,6 @@ class AppController extends Controller
                 continue;
             }
             $shipping_address = $order['shipping_address'];
-            $billing_address = $order['billing_address'];
-            $customer = $order['customer'];
 
             $senderInfo = [
                 'name' => $this->shop->business_name,
@@ -359,16 +357,16 @@ class AppController extends Controller
 
             $receiverPhone = $shipping_address['phone'];
 
-            if (empty ($receiverPhone) ) {
-                $receiverPhone = $billing_address['phone'];
+            if (empty ($receiverPhone) and isset($order['billing_address']['phone'])) {
+                $receiverPhone = $order['billing_address']['phone'];
             }
 
             if (empty ($receiverPhone) ) {
                 $receiverPhone = $order['phone'];
             }
 
-            if (empty ($receiverPhone) ) {
-                $receiverPhone = $customer['phone'];
+            if (empty ($receiverPhone) and isset($order['customer']['phone'])) {
+                $receiverPhone = $order['customer']['phone'];
             }
 
             $receiverInfo = [
@@ -394,6 +392,7 @@ class AppController extends Controller
             foreach($orders as $order){
                 if($order['fulfillment_status'] == 'fulfilled') continue;
                 if($order['status'] == 'custom_error') continue;
+                if($order['status'] == 'need_shipping_address') continue;
 
                 $services = [];
                 foreach($order['line_items'] as $item){
