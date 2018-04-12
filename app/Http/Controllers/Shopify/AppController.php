@@ -83,7 +83,7 @@ class AppController extends Controller
                 $carrierServiceData = array(
                         'carrier_service' => array(
                                 'name' => $carrierServiceName,
-                                'callback_url' => route('shopify.pickuppoints.list'),
+                                'callback_url' => 'http://209.50.56.85/api/pickup-points',
                                 'service_discovery' => true,
                         )
                 );
@@ -121,7 +121,7 @@ class AppController extends Controller
                                 $shop->pickuppoints_count = 10;
                                 $shop->save();
 
-                                if($_service['callback_url'] != route('shopify.pickuppoints.list')) {
+                                if($_service['callback_url'] != 'http://209.50.56.85/api/pickup-points') {
                                     $this->client->call('PUT', '/admin/carrier_services/'.$shop->carrier_service_id.'.json', $carrierServiceData);
                                 }
                             }
