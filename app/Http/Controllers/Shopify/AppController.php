@@ -461,7 +461,10 @@ class AppController extends Controller
 
     public function getLabel($order_id)
     {
-        $shipment = ShopifyShipment::where('shop_id', $this->shop->id)->where('order_id', $order_id)->first();
+        $shipment = ShopifyShipment::where('shop_id', $this->shop->id)
+            ->where('order_id', $order_id)
+            ->where('test_mode', $this->shop->test_mode)
+            ->first();
 
         if(!isset($shipment)){
             throw new NotFoundHttpException();
