@@ -92,26 +92,27 @@ class PickupPointsController extends Controller
 
             // generate custom carrier service response
             try {
-            foreach($pickupPoints as $_pickupPoint) {
-                $_pickupPointName = ucwords(strtolower($_pickupPoint->name));
-                if ($_pickupPoint->provider == 'DB Schenker') {
-                    $_descriptionArray = [];
-                    preg_match("/V(?<week>[0-9-]*)L?(?<sat>[0-9-]*)S?(?<sun>[0-9-]?.*)/", $_pickupPoint->description, $_descriptionArray);
+                foreach($pickupPoints as $_pickupPoint) {
+                    $_pickupPointName = ucwords(strtolower($_pickupPoint->name));
+                    if ($_pickupPoint->provider == 'DB Schenker') {
+                        $_descriptionArray = [];
+                        preg_match("/V(?<week>[0-9-]*)[ ]*L?(?<sat>[0-9-]*)[ ]*S?(?<sun>[0-9-]?.*)/", $_pickupPoint->description, $_descriptionArray);
 
-                    if (count($_descriptionArray) > 0) {
-                        $_weekHours = 'ma-pe ' . $this->convertDBSTime($_descriptionArray['week']);
-                        $_satHours = '';
-                        $_sunHours = '';
+                        if (count($_descriptionArray) > 0) {
+                            $_weekHours = 'ma-pe ' . $this->convertDBSTime($_descriptionArray['week']);
+                            $_satHours = '';
+                            $_sunHours = '';
 
-                        if (isset($_descriptionArray['sat'])) {
-                            $_satHours = ', la ' . $this->convertDBSTime($_descriptionArray['sat']);
+                            if (isset($_descriptionArray['sat'])) {
+                                $_satHours = ', la ' . $this->convertDBSTime($_descriptionArray['sat']);
+                            }
+                            if (isset($_descriptionArray['sun'])) {
+                                $_sunHours = ', su ' . $this->convertDBSTime($_descriptionArray['sun']);
+
+                            }
+
+                            $_pickupPoint->description = "{$_weekHours}{$_satHours}{$_sunHours}";
                         }
-                        if (isset($_descriptionArray['sun'])) {
-                            $_sunHours = ', su ' . $this->convertDBSTime($_descriptionArray['sun']);
-
-                        }
-
-                        $_pickupPoint->description = "{$_weekHours}{$_satHours}{$_sunHours}";
                     }
 
                     $rates[] = array(
@@ -122,7 +123,6 @@ class PickupPointsController extends Controller
                         'total_price' => $this->priceForPickupPoint($_pickupPoint->provider, $totalValue)
                     );
                 }
-            }
             } catch (\Exception $e) {
                 Log::debug(var_export($pickupPoints, true));
             }
@@ -142,6 +142,7 @@ class PickupPointsController extends Controller
 
             return "{$startTime} - {$endTime}";
         } catch (\Exception $e) {
+            Log::debug($e->getTraceAsString());
             return $openingHours;
         }
     }
