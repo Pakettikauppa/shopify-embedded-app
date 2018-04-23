@@ -94,6 +94,26 @@ class PickupPointsController extends Controller
             try {
             foreach($pickupPoints as $_pickupPoint) {
                 $_pickupPointName = ucwords(strtolower($_pickupPoint->name));
+                if ($_pickupPoint->provider == 'DB Schenker') {
+                    $_descriptionArray = [];
+                    preg_match("/V(?<week>[0-9-]*)L?(?<sat>[0-9-]*)S?(?<sun>[0-9-]?.*)/", $_pickupPoint->description, $_descriptionArray);
+
+                    if (count($_descriptionArray) > 0) {
+                        $_weekHours = 'ma-pe '. $this->convertDBSTime($_descriptionArray['week']);
+                        $_satHours = '';
+                        $_sunHours = '';
+
+                        if(isset($_descriptionArray['sat'])) {
+                            $_satHours = ', la '. $this->convertDBSTime($_descriptionArray['sat']);
+                        }
+                        if(isset($_descriptionArray['sun'])) {
+                            $_sunHours = ', su '. $this->convertDBSTime($_descriptionArray['sun']);
+
+                        }
+
+                        $_pickupPoint->description = "{$_weekHours}{$_satHours}{$_sunHours}";
+                }
+
                 $rates[] = array(
                         'service_name' => "{$_pickupPointName}, {$_pickupPoint->street_address}, {$_pickupPoint->postcode}, {$_pickupPoint->city}",
                         'description' => $_pickupPoint->provider . ($_pickupPoint->description==null?'':" ({$_pickupPoint->description})"),
@@ -110,6 +130,13 @@ class PickupPointsController extends Controller
         $customCarrierServices = array('rates' => $rates);
 
         echo json_encode($customCarrierServices);
+    }
+
+    private function convertDBSTime($openingHours) {
+        $startTime = substr($_descriptionArray['week'], 0, 2).".".substr($_descriptionArray['week'], 3,2);
+        $endTime = substr($_descriptionArray['week'], 5, 2).".".substr($_descriptionArray['week'], 7,2);
+
+        return "{$startTime} - {$endTime}";
     }
 
     private function priceForPickupPoint($provider, $totalValue)
