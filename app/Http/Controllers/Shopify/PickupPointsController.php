@@ -142,7 +142,10 @@ class PickupPointsController extends Controller
 
             return "{$startTime} - {$endTime}";
         } catch (\Exception $e) {
+<<<<<<< HEAD
             Log::debug($e->getTraceAsString());
+=======
+>>>>>>> 3b7364c... Fixing a typo and making DB Schenker time converter even better
             return $openingHours;
         }
     }
