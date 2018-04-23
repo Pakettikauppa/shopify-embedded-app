@@ -93,9 +93,10 @@ class PickupPointsController extends Controller
             // generate custom carrier service response
             try {
             foreach($pickupPoints as $_pickupPoint) {
+                $_pickupPointName = ucwords(strtolower($_pickupPoint->name));
                 $rates[] = array(
-                        'service_name' => "{$_pickupPoint->name}, {$_pickupPoint->street_address}, {$_pickupPoint->postcode}, {$_pickupPoint->city}",
-                        'description' => ($_pickupPoint->description==null?'':$_pickupPoint->description),
+                        'service_name' => "{$_pickupPointName}, {$_pickupPoint->street_address}, {$_pickupPoint->postcode}, {$_pickupPoint->city}",
+                        'description' => $_pickupPoint->provider . ($_pickupPoint->description==null?'':" ({$_pickupPoint->description})"),
                         'service_code' => "{$_pickupPoint->provider}:{$_pickupPoint->pickup_point_id}",
                         'currency' => 'EUR',
                         'total_price' => $this->priceForPickupPoint($_pickupPoint->provider, $totalValue)
