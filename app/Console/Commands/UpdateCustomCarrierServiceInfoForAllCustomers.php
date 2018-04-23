@@ -54,7 +54,11 @@ class UpdateCustomCarrierServiceInfoForAllCustomers extends Command
         foreach($shops as $shop) {
             $_client = new ShopifyClient($shop->shop_origin, $shop->token, ENV('SHOPIFY_API_KEY'), ENV('SHOPIFY_SECRET'));
 
-            $_client->call('PUT', '/admin/carrier_services/'.$shop->carrier_service_id.'.json', $carrierServiceData);
+            try {
+                $_client->call('PUT', '/admin/carrier_services/' . $shop->carrier_service_id . '.json', $carrierServiceData);
+            } catch(\Exception $e) {
+                $e->getMessage()
+            }
         }
     }
 }
