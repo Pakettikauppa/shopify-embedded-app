@@ -138,25 +138,31 @@ class AppController extends Controller
     public function settings()
     {
         $shipping_zones = $this->client->call('GET', '/admin/shipping_zones.json');
-
-        $shipping_rates = $shipping_zones[0]['weight_based_shipping_rates'];
-        $shipping_rates = array_merge($shipping_rates, $shipping_zones[0]['price_based_shipping_rates']);
-
         $shipping_settings = unserialize($this->shop->shipping_settings);
 
         $result_rates = [];
-        foreach($shipping_rates as $rate){
-            $arr = [];
-            $arr['id'] = $rate['id'];
-            $arr['name'] = $rate['name'];
-            $arr['product_code'] = '';
-            foreach($shipping_settings as $item){
-                if($item['shipping_rate_id'] == $rate['name']){
-                    $arr['product_code'] = $item['product_code'];
+        foreach ($shipping_zones as $shipping_zone) {
+            $shipping_rates = $shipping_zone['weight_based_shipping_rates'];
+            $shipping_rates = array_merge($shipping_rates, $shipping_zone['price_based_shipping_rates']);
+
+            $shipping_zone_name = $shipping_zone['name'];
+
+            foreach($shipping_rates as $rate){
+                $arr = [];
+                $arr['id'] = $rate['id'];
+                $arr['zone'] = $shipping_zone_name;
+                $arr['name'] = $rate['name'];
+                $arr['product_code'] = '';
+                foreach($shipping_settings as $item){
+                    if($item['shipping_rate_id'] == $rate['name']){
+                        $arr['product_code'] = $item['product_code'];
+                    }
                 }
+                $result_rates[] = $arr;
             }
-            $result_rates[] = $arr;
         }
+
+
         $grouped_services = [];
 
         try {
