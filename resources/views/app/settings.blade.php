@@ -86,7 +86,7 @@
 
             <div class="row">
                 <div class="columns four rate-name-column">
-                    {{$rate['name']}}
+                    {{$rate['zone']}}: {{$rate['name']}}
                 </div>
                 <div class="columns eight">
                     <div class="row">
