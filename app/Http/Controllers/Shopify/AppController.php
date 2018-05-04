@@ -395,10 +395,13 @@ class AppController extends Controller
         }
 
         if($fulfill_order){
+
             foreach($orders as $order){
                 if($order['fulfillment_status'] == 'fulfilled') continue;
                 if($order['status'] == 'custom_error') continue;
                 if($order['status'] == 'need_shipping_address') continue;
+
+                $locationId = $order['location_id'];
 
                 $services = [];
                 foreach($order['line_items'] as $item){
@@ -410,6 +413,7 @@ class AppController extends Controller
                 foreach($services as $line_items){
                     $fulfillment = [
                         'tracking_number' => $order['tracking_code'],
+                        'location_id' => $locationId,
                         'tracking_company' => trans('app.settings.company_name'),
                         'tracking_url' => 'https://www.pakettikauppa.fi/seuranta/?'.$order['tracking_code'],
                         'line_items' => $line_items,
