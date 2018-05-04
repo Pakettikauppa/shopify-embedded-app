@@ -395,14 +395,13 @@ class AppController extends Controller
         }
 
         if($fulfill_order){
-            $fullfillmentServices = $this->client->call('GET', '/admin/fulfillment_services.json');
-
-            $locationId = $fullfillmentServices[0]['location_id'];
 
             foreach($orders as $order){
                 if($order['fulfillment_status'] == 'fulfilled') continue;
                 if($order['status'] == 'custom_error') continue;
                 if($order['status'] == 'need_shipping_address') continue;
+
+                $locationId = $order['location_id'];
 
                 $services = [];
                 foreach($order['line_items'] as $item){
