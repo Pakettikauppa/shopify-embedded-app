@@ -58,6 +58,7 @@ return [
         'api_secret' => 'API secret',
         'saved' => 'Settings have been saved',
         'setup_wizard' => 'Wizard setup',
+        'print_return_labels' => 'Always create shipping label for return. Tracking in Shopify does not include return shipment.',
         'pickuppoints' => [
             'title' => 'Pickup point settings',
             'provider' => 'Provider',
