@@ -90,6 +90,10 @@ class PickupPointsController extends Controller
             // search nearest pickup locations
             $pickupPoints = json_decode($pk_client->searchPickupPoints($destination->postal_code, $destination->address1, $destination->country, $pickupPointProviders, $shop->pickuppoints_count ));
 
+            if (count($pickupPoints) == 0) {
+                // search some pickup points if no pickup locations was found
+                $pickupPoints = json_decode($pk_client->searchPickupPoints('00100', null, 'FI', $pickupPointProviders, $shop->pickuppoints_count ));
+            }
             // generate custom carrier service response
             try {
                 foreach($pickupPoints as $_pickupPoint) {
