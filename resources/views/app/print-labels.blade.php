@@ -39,7 +39,7 @@
                             </td>
                             <td>
                                 @if($order['status'] == 'created' || $order['status'] == 'sent')
-                                    <a href="{{route('shopify.label', ['order_id' => $order['id']])}}" target="_blank">{{trans('app.print_labels.get_label_link')}}</a>
+                                    <a href="{{route('shopify.label', ['is_return' => $is_return, 'order_id' => $order['id']])}}" target="_blank">{{trans('app.print_labels.get_label_link')}}</a>
                                 @endif
                             </td>
                         </tr>
