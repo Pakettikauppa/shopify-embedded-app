@@ -57,7 +57,7 @@ return [
         'api_key' => 'API key',
         'api_secret' => 'API secret',
         'saved' => 'Asetukset ovat tallennettu',
-        'setup_wizard' => 'Ohjattuasennus',
+        'setup_wizard' => 'Ohjattu asennus',
         'print_return_labels' => 'Luo aina palautuslähetys lähetyksen yhteyssä. Huom! Shopifyssä oleva seuranta toimii vain alkuperäiselle lähetykselle.',
         'pickuppoints' => [
             'title' => 'Noutopisteiden asetukset',
