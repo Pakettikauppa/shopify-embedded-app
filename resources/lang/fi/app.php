@@ -45,7 +45,7 @@ return [
         'country' => 'Maa',
         'email' => 'Sähköposti',
         'phone' => 'Puhelinnumero',
-        'enable_carrier_api' => 'Noutopistetoiminto tarvitsee Carrier Services APIn toimintaan. Palvelu on ilmainen Shopifyn vuosittaisille tilauksille. Voit muuttaa tilauksesi vuositilaukseksi Shopifyssä: settings > Account > Compare plan > Choose a plan > valitse ANNUAL. Tämän jälkeen pyydä Shopifyn asiakaspalvelu kytkemään päälle Carrier Service API.',
+        'enable_carrier_api' => 'Noutopistetoiminto tarvitsee Carrier Services APIn toimintaan. Shopify Liteen ei ole mahdollista saada noutopisteitä. Palvelu on Shopify Basicin käyttäjille 20 USD/kk tai ilmainen mikäli käytössä on vähintään vuosittainen tilaus. Voit muuttaa tilauksesi vuositilaukseksi Shopifyssä: settings > Account > Compare plan > Choose a plan > valitse ANNUAL. Muille kuin Shopify Basic ja Lite käyttäjille toiminto sisältyy kuukausimaksuun. Tämän jälkeen pyydä Shopifyn asiakaspalvelu kytkemään päälle Carrier Service API.',
         'pickuppoint_providers' => 'Minkä toimittajan noutopisteet haetaan?',
         'pickuppoints_count' => 'Kuinka monta lähintä noutopistettä näytetään ostajalle?',
         'pickuppoints_count_0' => 'Älä näytä noutopisteitä',
