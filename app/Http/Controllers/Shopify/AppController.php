@@ -228,6 +228,8 @@ class AppController extends Controller
             $this->shop->test_mode = (bool) $request->test_mode;
         }
 
+        $this->shop->always_create_return_label = (bool) $request->print_return_labels;
+
         $this->shop->shipping_settings = serialize($shipping_settings);
         if($request->default_shipping_method != '') {
             $this->shop->default_service_code = $request->default_shipping_method;
@@ -241,6 +243,7 @@ class AppController extends Controller
         $this->shop->phone = $request->phone;
         $this->shop->iban = $request->iban;
         $this->shop->bic = $request->bic;
+
         if(isset($request->pickuppoints_count)) {
             $this->shop->pickuppoints_count = $request->pickuppoints_count;
 

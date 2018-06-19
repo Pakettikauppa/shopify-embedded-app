@@ -274,6 +274,10 @@
                 </div>
             </div>
             <div class="row">
+                <label><input type="checkbox" name="print_return_labels" @if($shop->always_create_return_label) checked @endif value="1">{{trans('app.settings.print_return_labels')}}</label>
+            </div>
+
+            <div class="row">
                 <label><input type="checkbox" name="test_mode" @if($shop->test_mode) checked @endif value="1">{{trans('app.settings.test_mode')}}</label>
             </div>
         </div>
