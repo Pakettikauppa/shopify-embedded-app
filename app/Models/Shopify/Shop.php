@@ -46,6 +46,7 @@ class Shop extends Model
         $parcel->setVolume(number_format($order['total_weight'] * 0.000001, 6)); // m3
         $parcel->setContents('');
 
+
         $pickupPointId = null;
         $method_code = null;
 
@@ -99,6 +100,10 @@ class Shop extends Model
             $additional_service->setServiceCode(2106);
             $additional_service->addSpecifier('pickup_point_id', $pickupPointId);
             $shipment->addAdditionalService($additional_service);
+        }
+
+        if($this->always_create_return_label == true) {
+            $shipment->includeReturnLabel(true);
         }
 
         try {
