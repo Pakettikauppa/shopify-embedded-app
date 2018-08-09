@@ -485,11 +485,14 @@ class AppController extends Controller
         return $response;
     }
 
-    public function getLabel($order_id)
+    public function getLabel(Request $request, $order_id)
     {
+        $is_return = isset($request->is_return) ? $request->is_return : false;
+
         $shipment = ShopifyShipment::where('shop_id', $this->shop->id)
             ->where('order_id', $order_id)
             ->where('test_mode', $this->shop->test_mode)
+            ->where('return', $is_return)
             ->first();
 
         if(!isset($shipment)){
