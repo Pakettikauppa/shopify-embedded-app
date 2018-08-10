@@ -407,16 +407,21 @@ class AppController extends Controller
                 $services = [];
 
                 foreach($order['line_items'] as $item){
-                    $variantId = $item->variant_id;
+                    $variantId = $item['variant_id'];
+
+                    if($item['fulfillable_quantity'] > 0){
+                        $service = $item['fulfillment_service'];
+                        $services[$service][NULL][] = ['id' => $item['id']];
+                    }
 
                     $variants = $this->client->call('GET', '/admin/variants/'.$variantId.'.json');
 
-                    $inventoryId = $variants->inventory_item_id;
+                    $inventoryId = $variants['inventory_item_id'];
 
                     // TODO: not the most efficient way to do this
                     $inventoryLevels = $this->client->call('GET', '/admin/inventory_levels.json', ['inventory_item_ids' => $inventoryId]);
 
-                    foreach($inventoryLevels->inventory_levels as $_inventory) {
+                    foreach($inventoryLevels as $_inventory) {
                         if($_inventory['available'] > 0){
                             $service = $item['fulfillment_service'];
                             $services[$service][$_inventory['location_id']][] = ['id' => $item['id']];
