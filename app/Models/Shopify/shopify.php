@@ -41,10 +41,18 @@ class ShopifyClient {
 
     // Get the URL required to request authorization
     public function getAuthorizeUrl($scope, $redirect_url, $nonce) {
-        $url = "https://{$this->shop_domain}/admin/oauth/authorize?client_id={$this->api_key}";
+        $url = "https://{$this->shop_domain}/admin/";
+        $url .= "oauth/authorize?client_id={$this->api_key}";
         $url .= "&scope=" . urlencode($scope);
         $url .= "&redirect_uri=" . urlencode($redirect_url);
         $url .= "&state=" . urlencode($nonce);
+        return $url;
+    }
+
+    public function getAuthorizeUrlArray($scope, $redirect_url, $nonce) {
+        $url['domain'] = $this->shop_domain;
+        $url['path'] = "/oauth/authorize?client_id={$this->api_key}&scope={$scope}&redirect_uri={$redirect_url}&state={$nonce}";
+
         return $url;
     }
 
