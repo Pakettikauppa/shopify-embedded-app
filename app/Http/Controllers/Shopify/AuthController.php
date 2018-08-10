@@ -44,7 +44,7 @@ class AuthController extends Controller
 
         if ($found_shop) {
             return view('app.redirect', [
-                'redirect_url' => $client->getAuthorizeUrlArray(ENV('SHOPIFY_SCOPE'), $callback_url, $nonce);
+                'redirect_url' => $client->getAuthorizeUrlArray(ENV('SHOPIFY_SCOPE'), $callback_url, $nonce)
             ]);
 
         } else {
