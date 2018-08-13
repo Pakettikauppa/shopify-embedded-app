@@ -404,38 +404,56 @@ class AppController extends Controller
                 if($order['status'] == 'custom_error') continue;
                 if($order['status'] == 'need_shipping_address') continue;
 
-                $locationId = $order['location_id'];
-
                 $services = [];
+
                 foreach($order['line_items'] as $item){
+                    $variantId = $item['variant_id'];
+
                     if($item['fulfillable_quantity'] > 0){
                         $service = $item['fulfillment_service'];
-                        $services[$service][] = ['id' => $item['id']];
+                        $services[$service][NULL][] = ['id' => $item['id']];
+                    }
+
+                    $variants = $this->client->call('GET', '/admin/variants/'.$variantId.'.json');
+
+                    $inventoryId = $variants['inventory_item_id'];
+
+                    // TODO: not the most efficient way to do this
+                    $inventoryLevels = $this->client->call('GET', '/admin/inventory_levels.json', ['inventory_item_ids' => $inventoryId]);
+
+                    foreach($inventoryLevels as $_inventory) {
+                        if($_inventory['available'] > 0){
+                            $service = $item['fulfillment_service'];
+                            $services[$service][$_inventory['location_id']][] = ['id' => $item['id']];
+                        }
                     }
                 }
+
                 foreach($services as $line_items){
-                    $fulfillment = [
-                        'tracking_number' => $order['tracking_code'],
-                        'location_id' => $locationId,
-                        'tracking_company' => trans('app.settings.company_name'),
-                        'tracking_url' => 'https://www.pakettikauppa.fi/seuranta/?'.$order['tracking_code'],
-                        'line_items' => $line_items,
-                    ];
+                    foreach($line_items as $locationId) {
+                        $fulfillment = [
+                            'tracking_number' => $order['tracking_code'],
+                            'location_id' => $locationId,
+                            'tracking_company' => trans('app.settings.company_name'),
+                            'tracking_url' => 'https://www.pakettikauppa.fi/seuranta/?' . $order['tracking_code'],
+                            'line_items' => $line_items,
+                        ];
 
-                    try {
-                        $this->client->call('POST', '/admin/orders/'. $order['id'] . '/fulfillments.json', ['fulfillment' => $fulfillment]);
-                    } catch(ShopifyApiException $sae) {
-                        $exceptionData = array(
-                            var_export($sae->getMethod(), true),
-                            var_export($sae->getPath(), true),
-                            var_export($sae->getParams(), true),
-                            var_export($sae->getResponseHeaders(), true),
-                            var_export($sae->getResponse(), true)
-                        );
+                        try {
+                            $this->client->call('POST', '/admin/orders/' . $order['id'] . '/fulfillments.json', ['fulfillment' => $fulfillment]);
+                        } catch (ShopifyApiException $sae) {
+                            $exceptionData = array(
+                                var_export($sae->getMethod(), true),
+                                var_export($sae->getPath(), true),
+                                var_export($sae->getParams(), true),
+                                var_export($sae->getResponseHeaders(), true),
+                                var_export($sae->getResponse(), true)
+                            );
 
-                        Log::debug('ShopiApiException: '.var_export($exceptionData, true));
-                    } catch(\Exception $e) {
-                        Log::debug('Fullfillment Exception: '.$e->getTraceAsString());
+                            Log::debug('ShopiApiException: ' . var_export($exceptionData, true));
+                        } catch (\Exception $e) {
+                            Log::debug('Fullfillment Exception: ' . $e->getTraceAsString());
+                        }
                     }
                }
             }

@@ -14,14 +14,14 @@ class AuthController extends Controller
     {
         $client = new ShopifyClient($request->shop, '', ENV('SHOPIFY_API_KEY'), ENV('SHOPIFY_SECRET'));
 
-        if(!$client->validateSignature($request->all())){
+        if (!$client->validateSignature($request->all())) {
             throw new UnprocessableEntityHttpException();
         }
 
         $found_shop = Shop::where('shop_origin', $request->shop)->first();
-        if(isset($found_shop)){
+        if (isset($found_shop)) {
             $shop = $found_shop;
-        }else{
+        } else {
             $shop = new Shop();
             // default values
             $shop->test_mode = true;
@@ -38,10 +38,18 @@ class AuthController extends Controller
 
         $shop->save();
 
-        $callback_url = route('shopify.auth.callback');
-        $redirect_url =  $client->getAuthorizeUrl(ENV('SHOPIFY_SCOPE'), $callback_url, $nonce);
 
-        return redirect($redirect_url);
+        $callback_url = route('shopify.auth.callback');
+        $redirect_url = $client->getAuthorizeUrl(ENV('SHOPIFY_SCOPE'), $callback_url, $nonce);
+
+        if ($found_shop) {
+            return view('app.redirect', [
+                'url' => $client->getAuthorizeUrlArray(ENV('SHOPIFY_SCOPE'), $callback_url, $nonce)
+            ]);
+
+        } else {
+            return redirect($redirect_url);
+        }
     }
 
     public function callback(Request $request)
