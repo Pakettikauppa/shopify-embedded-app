@@ -65,11 +65,12 @@ class PickupPointsController extends Controller
         }
         $this->pickupPointSettings = json_decode($shop->settings, true);
 
+        // get destination address
+        $requestBody = json_decode($request->getContent());
+        $destination = $requestBody->rate->destination;
+
         $rates = array();
         if(count($this->pickupPointSettings) > 0) {
-            // get destination address
-            $requestBody = json_decode($request->getContent());
-            $destination = $requestBody->rate->destination;
 
             // calculate total value of the cart
             $totalValue = 0;
