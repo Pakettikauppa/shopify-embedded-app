@@ -409,11 +409,6 @@ class AppController extends Controller
                 foreach($order['line_items'] as $item){
                     $variantId = $item['variant_id'];
 
-                    if($item['fulfillable_quantity'] > 0){
-                        $service = $item['fulfillment_service'];
-                        $services[$service][NULL][] = ['id' => $item['id']];
-                    }
-
                     $variants = $this->client->call('GET', '/admin/variants/'.$variantId.'.json');
 
                     $inventoryId = $variants['inventory_item_id'];
@@ -421,22 +416,28 @@ class AppController extends Controller
                     // TODO: not the most efficient way to do this
                     $inventoryLevels = $this->client->call('GET', '/admin/inventory_levels.json', ['inventory_item_ids' => $inventoryId]);
 
+                    $makeNull = true;
                     foreach($inventoryLevels as $_inventory) {
                         if($_inventory['available'] > 0){
                             $service = $item['fulfillment_service'];
                             $services[$service][$_inventory['location_id']][] = ['id' => $item['id']];
+                            $makeNull = false;
                         }
+                    }
+
+                    if($makeNull) {
+                        Log::debug("NULL item: {$item['id']} - ". var_export($inventoryLevels, true));
                     }
                 }
 
                 foreach($services as $line_items){
-                    foreach($line_items as $locationId) {
+                    foreach($line_items as $locationId => $items) {
                         $fulfillment = [
                             'tracking_number' => $order['tracking_code'],
                             'location_id' => $locationId,
                             'tracking_company' => trans('app.settings.company_name'),
                             'tracking_url' => 'https://www.pakettikauppa.fi/seuranta/?' . $order['tracking_code'],
-                            'line_items' => $line_items,
+                            'line_items' => $items,
                         ];
 
                         try {
