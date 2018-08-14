@@ -418,7 +418,7 @@ class AppController extends Controller
 
                     $makeNull = true;
                     foreach($inventoryLevels as $_inventory) {
-                        if($_inventory['available'] > 0){
+                        if($_inventory['available'] > 0 || $_inventory['available'] == NULL){
                             $service = $item['fulfillment_service'];
                             $services[$service][$_inventory['location_id']][] = ['id' => $item['id']];
                             $makeNull = false;
