@@ -98,7 +98,7 @@ class PickupPointsController extends Controller
             // generate custom carrier service response
             try {
                 foreach($pickupPoints as $_pickupPoint) {
-                    $_pickupPointName = ucwords(strtolower($_pickupPoint->name));
+                    $_pickupPointName = ucwords(mb_strtolower($_pickupPoint->name));
                     if ($_pickupPoint->provider == 'DB Schenker') {
                         $_descriptionArray = [];
                         preg_match("/V(?<week>[0-9-]*)[ ]*L?(?<sat>[0-9-]*)[ ]*S?(?<sun>[0-9-]?.*)/", $_pickupPoint->description, $_descriptionArray);

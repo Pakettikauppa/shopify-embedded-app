@@ -417,6 +417,7 @@ class AppController extends Controller
                     $inventoryLevels = $this->client->call('GET', '/admin/inventory_levels.json', ['inventory_item_ids' => $inventoryId]);
 
                     $makeNull = true;
+
                     foreach($inventoryLevels as $_inventory) {
                         if($_inventory['available'] > 0){
                             $service = $item['fulfillment_service'];
