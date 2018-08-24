@@ -409,26 +409,42 @@ class AppController extends Controller
                 foreach($order['line_items'] as $item){
                     $variantId = $item['variant_id'];
 
-                    $variants = $this->client->call('GET', '/admin/variants/'.$variantId.'.json');
+                    try {
+                        $variants = $this->client->call('GET', '/admin/variants/'.$variantId.'.json');
 
-                    $inventoryId = $variants['inventory_item_id'];
+                        $inventoryId = $variants['inventory_item_id'];
 
-                    // TODO: not the most efficient way to do this
-                    $inventoryLevels = $this->client->call('GET', '/admin/inventory_levels.json', ['inventory_item_ids' => $inventoryId]);
+                        // TODO: not the most efficient way to do this
+                        $inventoryLevels = $this->client->call('GET', '/admin/inventory_levels.json', ['inventory_item_ids' => $inventoryId]);
 
-                    $makeNull = true;
+                        $makeNull = true;
 
-                    foreach($inventoryLevels as $_inventory) {
-                        if($_inventory['available'] > 0 || $_inventory['available'] == NULL){
-                            $service = $item['fulfillment_service'];
-                            $services[$service][$_inventory['location_id']][] = ['id' => $item['id']];
-                            $makeNull = false;
+                        foreach($inventoryLevels as $_inventory) {
+                            if($_inventory['available'] > 0 || $_inventory['available'] == NULL){
+                                $service = $item['fulfillment_service'];
+                                $services[$service][$_inventory['location_id']][] = ['id' => $item['id']];
+                                $makeNull = false;
+                            }
                         }
+
+                        if($makeNull) {
+                            Log::debug("NULL item: {$item['id']} - ". var_export($inventoryLevels, true));
+                        }
+                    } catch (ShopifyApiException $sae) {
+                        $exceptionData = array(
+                            var_export($sae->getMethod(), true),
+                            var_export($sae->getPath(), true),
+                            var_export($sae->getParams(), true),
+                            var_export($sae->getResponseHeaders(), true),
+                            var_export($sae->getResponse(), true)
+                        );
+
+                        Log::debug('ShopiApiException: ' . var_export($exceptionData, true));
+                    } catch (\Exception $e) {
+                        Log::debug(var_export($item, true));
+                        Log::debug('Fullfillment Exception: ' . $e->getTraceAsString());
                     }
 
-                    if($makeNull) {
-                        Log::debug("NULL item: {$item['id']} - ". var_export($inventoryLevels, true));
-                    }
                 }
 
                 foreach($services as $line_items){
