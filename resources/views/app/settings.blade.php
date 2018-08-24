@@ -39,7 +39,7 @@
     </div>
 </article>
 
-<form id="setting-form" method="POST" action="{{route('shopify.update-settings')}}">
+<form id="setting-form" method="GET" action="{{route('shopify.update-settings')}}">
 
     <article>
         <div class="card">
