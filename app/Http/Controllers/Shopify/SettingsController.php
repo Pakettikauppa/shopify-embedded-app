@@ -48,14 +48,13 @@ class SettingsController extends Controller
 
             $this->client = new ShopifyClient($shop->shop_origin, $shop->token, ENV('SHOPIFY_API_KEY'), ENV('SHOPIFY_SECRET'));
 
-            // check shopify API, can this be cached?
-            if (\Route::currentRouteName() == 'shopify.settings') {
-                try {
-                    $this->client->call('GET', '/admin/shop.json');
-                } catch (ShopifyApiException $e) {
-                    session()->put('init_request', $request->fullUrl());
-                    return redirect()->route('shopify.auth.index', request()->all());
-                }
+            // TODO how to make this work without this - cache?
+            try {
+                $this->client->call('GET', '/admin/shop.json');
+            } catch (ShopifyApiException $e) {
+                Log::debug("ARE WE EVER GOING HERE??");
+                session()->put('init_request', $request->fullUrl());
+                return redirect()->route('shopify.auth.index', request()->all());
             }
 
             // set pk_client
@@ -77,62 +76,7 @@ class SettingsController extends Controller
             }
 
             \App::setLocale($this->shop->locale);
-            if ($this->shop->carrier_service_id == null) {
-                $carrierServiceName = 'Pakettikauppa: Noutopisteet / Pickup points';
 
-                $carrierServiceData = array(
-                    'carrier_service' => array(
-                        'name' => $carrierServiceName,
-                        'callback_url' => 'http://209.50.56.85/api/pickup-points',
-                        'service_discovery' => true,
-                    )
-                );
-
-                // TODO: cache this result so we don't bug users with every request
-
-                try {
-                    $carrierService = $this->client->call('POST', '/admin/carrier_services.json', $carrierServiceData);
-
-                    // set carrier_service_id and set it's default count value
-                    $shop->carrier_service_id = $carrierService['id'];
-                    $shop->pickuppoints_count = 10;
-
-                    $shop->save();
-
-                } catch (ShopifyApiException $sae) {
-                    $exceptionData = array(
-                        var_export($sae->getMethod(), true),
-                        var_export($sae->getPath(), true),
-                        var_export($sae->getParams(), true),
-                        var_export($sae->getResponseHeaders(), true),
-                        var_export($sae->getResponse(), true)
-                    );
-
-                    Log::debug('ShopiApiException: ' . var_export($exceptionData, true));
-
-                    // it failed, why? Did carrier service already exists but our db shows that it is not active?
-                    $carrierServices = $this->client->call('GET', '/admin/carrier_services.json');
-
-                    if (count($carrierServices) > 0) {
-                        // yes, we have a carrier service!
-                        foreach ($carrierServices as $_service) {
-
-                            if ($_service['name'] == $carrierServiceName) {
-
-                                $shop->carrier_service_id = $_service['id'];
-                                $shop->pickuppoints_count = 10;
-                                $shop->save();
-
-                                if ($_service['callback_url'] != 'http://209.50.56.85/api/pickup-points') {
-                                    $this->client->call('PUT', '/admin/carrier_services/' . $shop->carrier_service_id . '.json', $carrierServiceData);
-                                }
-                            }
-                        }
-                    } else {
-                        // we just don't know why it failed
-                    }
-                }
-            }
             return $next($request);
         });
     }
@@ -147,6 +91,63 @@ class SettingsController extends Controller
 
     public function pickuppoints()
     {
+        if ($this->shop->carrier_service_id == null) {
+            $carrierServiceName = 'Pakettikauppa: Noutopisteet / Pickup points';
+
+            $carrierServiceData = array(
+                'carrier_service' => array(
+                    'name' => $carrierServiceName,
+                    'callback_url' => 'http://209.50.56.85/api/pickup-points',
+                    'service_discovery' => true,
+                )
+            );
+
+            // TODO: cache this result so we don't bug users with every request
+
+            try {
+                $carrierService = $this->client->call('POST', '/admin/carrier_services.json', $carrierServiceData);
+
+                // set carrier_service_id and set it's default count value
+                $shop->carrier_service_id = $carrierService['id'];
+                $shop->pickuppoints_count = 10;
+
+                $shop->save();
+
+            } catch (ShopifyApiException $sae) {
+                $exceptionData = array(
+                    var_export($sae->getMethod(), true),
+                    var_export($sae->getPath(), true),
+                    var_export($sae->getParams(), true),
+                    var_export($sae->getResponseHeaders(), true),
+                    var_export($sae->getResponse(), true)
+                );
+
+                Log::debug('ShopiApiException: ' . var_export($exceptionData, true));
+
+                // it failed, why? Did carrier service already exists but our db shows that it is not active?
+                $carrierServices = $this->client->call('GET', '/admin/carrier_services.json');
+
+                if (count($carrierServices) > 0) {
+                    // yes, we have a carrier service!
+                    foreach ($carrierServices as $_service) {
+
+                        if ($_service['name'] == $carrierServiceName) {
+
+                            $shop->carrier_service_id = $_service['id'];
+                            $shop->pickuppoints_count = 10;
+                            $shop->save();
+
+                            if ($_service['callback_url'] != 'http://209.50.56.85/api/pickup-points') {
+                                $this->client->call('PUT', '/admin/carrier_services/' . $shop->carrier_service_id . '.json', $carrierServiceData);
+                            }
+                        }
+                    }
+                } else {
+                    // we just don't know why it failed
+                }
+            }
+        }
+
         try {
             $resp = $this->pk_client->listShippingMethods();
             $products = json_decode($resp, true);
@@ -359,6 +360,8 @@ class SettingsController extends Controller
                 $this->shop->default_service_code = $request->default_shipping_method;
             }
 
+            $this->shop->always_create_return_label = (bool)$request->print_return_labels;
+
             $responseStatus = 'ok';
             $responseMessage = trans('app.settings.saved');
         }
@@ -399,7 +402,6 @@ class SettingsController extends Controller
 
         // generic
         if (isset($request->language)) {
-            $this->shop->always_create_return_label = (bool)$request->print_return_labels;
 
             $this->shop->locale = $request->language;
 
