@@ -306,11 +306,23 @@
                         $('#setting-form').submit();
                     }
                 },
-                secondary: [{
-                    label: "{{trans('app.settings.setup_wizard')}}",
-                    href: '{{route('shopify.setup-wizard')}}'
-                }]
-            }
+                secondary: [
+                    { label: "Testitila on päällä", callback: function(){ alert('help'); } },
+                    { label: "Ajankohtaista", href: "http://my-app.com/preview_url", target: "new" },
+                    { label: "Asetukset",
+                        type: "dropdown",
+                        links: [
+                            { label: "Lähetysasetukset", href: "{{route('shopify.settings.shipping-link')}}", target: "app" },
+                            { label: "Noutopisteasetukset", href: "{{route('shopify.settings.pickuppoints-link')}}", target: "app" },
+                            { label: "Lähettäjän tiedot", href: "{{route('shopify.settings.sender-link')}}", target: "app" },
+                            { label: "API asetukset", href: "{{route('shopify.settings.api-link')}}", target: "app" },
+                            { label: "Muut", href: "{{route('shopify.settings.generic-link')}}", target: "app" },
+                        ]
+                    }
+            ]
+            },
+            title: 'Page Title',
+            icon: 'https://example.com/path/to/icon.png'
         });
     });
 
