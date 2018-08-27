@@ -48,16 +48,6 @@ class AppController extends Controller
 
             $this->client = new ShopifyClient($shop->shop_origin, $shop->token, ENV('SHOPIFY_API_KEY'), ENV('SHOPIFY_SECRET'));
 
-            // check shopify API
-            if(\Route::currentRouteName() == 'shopify.settings'){
-                try{
-                    $this->client->call('GET', '/admin/shop.json');
-                }catch(ShopifyApiException $e){
-                    session()->put('init_request', $request->fullUrl());
-                    return redirect()->route('shopify.auth.index', request()->all());
-                }
-            }
-
             // set pk_client
             if($this->shop->test_mode){
                 $pk_client_params = [
@@ -77,235 +67,9 @@ class AppController extends Controller
             }
 
             \App::setLocale($this->shop->locale);
-            if($this->shop->carrier_service_id == null) {
-                $carrierServiceName = 'Pakettikauppa: Noutopisteet / Pickup points';
 
-                $carrierServiceData = array(
-                        'carrier_service' => array(
-                                'name' => $carrierServiceName,
-                                'callback_url' => 'http://209.50.56.85/api/pickup-points',
-                                'service_discovery' => true,
-                        )
-                );
-
-                try {
-                    $carrierService = $this->client->call('POST', '/admin/carrier_services.json' , $carrierServiceData);
-
-                    // set carrier_service_id and set it's default count value
-                    $shop->carrier_service_id = $carrierService['id'];
-                    $shop->pickuppoints_count = 10;
-
-                    $shop->save();
-
-                } catch(ShopifyApiException $sae) {
-                    $exceptionData = array(
-                        var_export($sae->getMethod(), true),
-                        var_export($sae->getPath(), true),
-                        var_export($sae->getParams(), true),
-                        var_export($sae->getResponseHeaders(), true),
-                        var_export($sae->getResponse(), true)
-                    );
-
-                    Log::debug('ShopiApiException: '.var_export($exceptionData, true));
-
-                    // it failed, why? Did carrier service already exists but our db shows that it is not active?
-                    $carrierServices = $this->client->call('GET', '/admin/carrier_services.json');
-
-                    if(count($carrierServices) > 0) {
-                        // yes, we have a carrier service!
-                        foreach($carrierServices as $_service) {
-
-                            if($_service['name'] ==  $carrierServiceName) {
-
-                                $shop->carrier_service_id = $_service['id'];
-                                $shop->pickuppoints_count = 10;
-                                $shop->save();
-
-                                if($_service['callback_url'] != 'http://209.50.56.85/api/pickup-points') {
-                                    $this->client->call('PUT', '/admin/carrier_services/'.$shop->carrier_service_id.'.json', $carrierServiceData);
-                                }
-                            }
-                        }
-                    } else {
-                        // we just don't know why it failed
-                    }
-                }
-            }
             return $next($request);
         });
-    }
-
-    public function settings()
-    {
-        $shipping_zones = $this->client->call('GET', '/admin/shipping_zones.json');
-        $shipping_settings = unserialize($this->shop->shipping_settings);
-
-        $result_rates = [];
-        foreach ($shipping_zones as $shipping_zone) {
-            $shipping_rates = $shipping_zone['weight_based_shipping_rates'];
-            $shipping_rates = array_merge($shipping_rates, $shipping_zone['price_based_shipping_rates']);
-
-            $shipping_zone_name = $shipping_zone['name'];
-
-            foreach($shipping_rates as $rate){
-                $arr = [];
-                $arr['id'] = $rate['id'];
-                $arr['zone'] = $shipping_zone_name;
-                $arr['name'] = $rate['name'];
-                $arr['product_code'] = '';
-                foreach($shipping_settings as $item){
-                    if($item['shipping_rate_id'] == $rate['name']){
-                        $arr['product_code'] = $item['product_code'];
-                    }
-                }
-                $result_rates[] = $arr;
-            }
-        }
-
-
-        $grouped_services = [];
-
-        try {
-            $resp = $this->pk_client->listShippingMethods();
-            $products = json_decode($resp, true);
-
-        } catch (\Exception $ex)  {
-            throw new FatalErrorException();
-        }
-        $api_valid = isset($products);
-        if($api_valid){
-            $grouped_services = array_group_by($products, function($i){  return $i['service_provider']; });
-            ksort($grouped_services);
-        }
-
-        // initialize pickup point settings if needed
-        foreach ($grouped_services as $_key => $_service_provider) {
-            if(!isset($this->pickupPointSettings[$_key])) {
-                $this->pickupPointSettings[$_key]['active'] = 'false';
-                $this->pickupPointSettings[$_key]['base_price'] = '0';
-                $this->pickupPointSettings[$_key]['trigger_price'] = '';
-                $this->pickupPointSettings[$_key]['triggered_price'] = '';
-            }
-        }
-
-        return view('app.settings', [
-            'pickuppoint_settings' => $this->pickupPointSettings,
-            'shipping_methods' => $grouped_services,
-            'shop' => $this->shop,
-            'additional_services' => unserialize($this->shop->additional_services),
-            'api_valid' => $api_valid,
-            'shipping_rates' => $result_rates,
-            'pickuppoint_providers' => explode(";", $this->shop->pickuppoint_providers)
-        ]);
-    }
-
-    public function updateSettings(Request $request)
-    {
-        try {
-            $resp = $this->pk_client->listShippingMethods();
-            $products = json_decode($resp, true);
-        } catch (\Exception $ex)  {
-            throw new FatalErrorException();
-        }
-
-        $productProviderByCode = array();
-        foreach($products as $_product) {
-            $productProviderByCode[(string) $_product['shipping_method_code']] = $_product['service_provider'];
-        }
-
-        $shipping_settings = [];
-        if(isset($request->shipping_method)) {
-            foreach($request->shipping_method as $key => $code){
-                $shipping_settings[] = [
-                    'shipping_rate_id' => $key,
-                    'product_code' => $code,
-                    'service_provider' => ($code == null ? '' : $productProviderByCode[(string) $code])
-                 ];
-            }
-        }
-        
-        if(isset($this->shop->api_key) && isset($this->shop->api_secret)){
-            $this->shop->test_mode = (bool) $request->test_mode;
-        }
-
-        $this->shop->always_create_return_label = (bool) $request->print_return_labels;
-
-        $this->shop->shipping_settings = serialize($shipping_settings);
-        if($request->default_shipping_method != '') {
-            $this->shop->default_service_code = $request->default_shipping_method;
-        }
-        $this->shop->business_name = $request->business_name;
-        $this->shop->address = $request->address;
-        $this->shop->postcode = $request->postcode;
-        $this->shop->city = $request->city;
-        $this->shop->country = $request->country;
-        $this->shop->email = $request->email;
-        $this->shop->phone = $request->phone;
-        $this->shop->iban = $request->iban;
-        $this->shop->bic = $request->bic;
-
-        if(isset($request->pickuppoints_count)) {
-            $this->shop->pickuppoints_count = $request->pickuppoints_count;
-
-            $pickuppoints = $request->pickuppoint;
-            foreach($pickuppoints as $_pickupPoint) {
-                if($_pickupPoint['base_price'] == '') $_pickupPoint['base_price'] = 0;
-
-                if($_pickupPoint['triggered_price'] == '') {
-                    $_pickupPoint['trigger_price'] = '';
-                }
-            }
-            $this->shop->settings = json_encode($pickuppoints);
-        }
-        $this->shop->locale = $request->language;
-        $this->shop->save();
-
-        \App::setLocale($this->shop->locale);
-
-        session()->flash('success', trans('app.settings.saved'));
-
-        return redirect()->route('shopify.settings');
-    }
-
-    public function setApiCredentials(Request $request){
-        if(!isset($request->api_key) || !isset($request->api_secret)) {
-            $result = [
-                'status' => 'error',
-                'message' => trans('app.messages.invalid_credentials'),
-            ];
-
-            return response()->json($result);
-        }
-
-        // api check for production
-
-        $client = new Client([
-            'api_key' => $request->api_key,
-            'secret' => $request->api_secret,
-        ]);
-
-        $result = json_decode($client->listShippingMethods());
-        if(!is_array($result)){
-
-            $result = [
-                'status' => 'error',
-                'message' => trans('app.messages.invalid_credentials'),
-            ];
-            return response()->json($result);
-        }
-
-        $this->shop->api_key = $request->api_key;
-        $this->shop->api_secret = $request->api_secret;
-        if(isset($request->customer_id)){
-            $this->shop->customer_id = $request->customer_id;
-        }
-        $this->shop->save();
-
-        $result = [
-            'status' => 'ok'
-        ];
-
-        return response()->json($result);
     }
 
     public function printLabels(Request $request)
@@ -334,8 +98,17 @@ class AppController extends Controller
 
         $orders = $this->client->call('GET', '/admin/orders.json', ['ids' => implode(',', $order_ids), 'status' => 'any']);
 
-        foreach($orders as &$order){
-            $order['admin_order_url'] = 'https://' . $this->shop->shop_origin . '/admin/orders/' . $order['id'];
+        Log::debug(var_export($orders, true));
+
+        $shipments = [];
+
+        foreach($orders as $order){
+            Log::debug(var_export($order, true));
+            $shipment = [];
+            $shipment['fulfillment_status'] = $order['fulfillment_status'];
+            $shipment['line_items'] = $order['line_items'];
+            $shipment['id'] = $order['id'];
+            $shipment['admin_order_url'] = 'https://' . $this->shop->shop_origin . '/admin/orders/' . $order['id'];
 
             $done_shipment = ShopifyShipment::where('shop_id', $this->shop->id)
                 ->where('order_id', $order['id'])
@@ -344,14 +117,21 @@ class AppController extends Controller
                 ->first();
 
             if($done_shipment){
-                $order['status'] = 'sent';
-                $order['tracking_code'] = $done_shipment->tracking_code;
+                $shipment['status'] = 'sent';
+                $shipment['tracking_code'] = $done_shipment->tracking_code;
+                $shipments[] = $shipment;
                 continue;
             }
             if(!isset($order['shipping_address'])){
-                $order['status'] = 'need_shipping_address';
+                $shipment['status'] = 'need_shipping_address';
+                $shipments[] = $shipment;
                 continue;
             }
+
+            if($order['gateway'] == 'Cash on Delivery (COD)') {
+
+            }
+
             $shipping_address = $order['shipping_address'];
 
             $senderInfo = [
@@ -394,12 +174,20 @@ class AppController extends Controller
                 $senderInfo = $tmp;
             }
 
-            $order = $this->shop->sendShipment($this->pk_client, $order, $senderInfo, $receiverInfo, $is_return);
+            $_shipment = $this->shop->sendShipment($this->pk_client, $order, $senderInfo, $receiverInfo, $is_return);
+            $shipment['status'] = $_shipment['status'];
+            $shipment['tracking_code'] = $_shipment['tracking_code'];
+
+            $shipments[] = $shipment;
+
+            Log::debug("Processed order: {$order['id']}");
         }
 
         if($fulfill_order){
 
-            foreach($orders as $order){
+            foreach($shipments as $order) {
+                Log::debug("Fullfilling order: {$order['id']}");
+
                 if($order['fulfillment_status'] == 'fulfilled') continue;
                 if($order['status'] == 'custom_error') continue;
                 if($order['status'] == 'need_shipping_address') continue;
@@ -474,6 +262,8 @@ class AppController extends Controller
                         }
                     }
                }
+                Log::debug("Fullfilled order: {$order['id']}");
+
             }
         }
 
@@ -482,14 +272,23 @@ class AppController extends Controller
         if($fulfill_order) $page_title = 'print_label_fulfill';
 
         return view('app.print-labels', [
-            'shop' => $this->shop->shop_origin,
-            'orders' => $orders,
+            'shop' => $this->shop,
+            'orders' => $shipments,
             'orders_url' => 'https://' . $this->shop->shop_origin . '/admin/orders',
             'page_title' => $page_title,
             'is_return' => $is_return,
         ]);
     }
 
+    public function latestNews() {
+        $folder_path = storage_path('rss');
+        $rssFeed = simplexml_load_file($folder_path.'/feed.xml');
+
+        return view('app.latest-news', [
+            'feed' => $rssFeed->channel,
+            'shop' => $this->shop,
+        ]);
+    }
     public function returnLabel(Request $request){
         $params = $request->all();
         $params['is_return'] = true;
@@ -572,33 +371,5 @@ class AppController extends Controller
             'order_url' => $admin_order_url,
             'orders_url' => $admin_orders_url,
         ]);
-    }
-
-    public function setupWizard(){
-        return view('app.setup-wizard', [
-            'shop' => $this->shop
-        ]);
-    }
-
-    public function signContractLink(Request $request){
-        if(!isset($this->shop->customer_id)){
-            throw new FatalErrorException();
-        }
-
-        $base_url = 'https://oak.dev/sign-contract?';
-
-        $timestamp = time();
-        $hash = hash_hmac('sha256', $this->shop->customer_id . "&" . $timestamp, env('CHECKOUT_TOKEN_API_SECRET'));
-
-        $args = [
-            'customer'   => $this->shop->customer_id,
-            'timestamp'     => $timestamp,
-            'hash'          => $hash,
-        ];
-
-        $link = $base_url . http_build_query($args);
-
-        return  response($link);
-
     }
 }
