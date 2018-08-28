@@ -176,9 +176,17 @@ class AppController extends Controller
 
             $_shipment = $this->shop->sendShipment($this->pk_client, $order, $senderInfo, $receiverInfo, $is_return);
             $shipment['status'] = $_shipment['status'];
-            $shipment['tracking_code'] = $_shipment['tracking_code'];
 
-            $shipments[] = $shipment;
+            $_shipment['tracking_code'] = '';
+            if (isset($_shipment['tracking_code'])) {
+                $shipment['tracking_code'] = $_shipment['tracking_code'];
+            }
+
+            if (isset($_shipment['error_message'])) {
+                $shipment['error_message'] = $_shipment['error_message'];
+            }
+
+                $shipments[] = $shipment;
 
             Log::debug("Processed order: {$order['id']}");
         }
