@@ -26,6 +26,13 @@ return [
         ],
     ],
     'settings' => [
+        'testmode_on' => 'Kytke testitila päälle',
+        'testmode_off' => 'Kytke tuotantotila päälle',
+        'latest-news' => 'Ajankohtaista',
+        'pickuppoints-settings' => 'Noutopisteasetukset',
+        'api-settings' => 'API asetukset',
+        'api-info' => 'Löydät API-tunnukset Pakettikaupan <a href="https://hallinta.pakettikauppa.fi/profile#api-keys" target="_blank">hallintapaneelista Profiili-sivulta</a>. Mikäli sinulla ei vielä ole tunnuksia Pakettikauppaan, voit rekisteröityä osoitteessa <a href="https://www.pakettikauppa.fi/" target="_blank">https://www.pakettikauppa.fi/</a>',
+        'generic-settings' => 'Muut',
         'settings' => 'Asetukset',
         'language' => 'Kieli',
         'shipment_settings' => 'Lähetysasetukset',
@@ -92,6 +99,8 @@ return [
         'api_credentials_saved' => 'API tunnukset ovat nyt tallennettu. Siirry seuraavaan vaiheeseen.',
         'wait_for_email' => 'Odota sähköpostia myyntitiimiltämme',
         'register_first' => 'Sinun täytyy ensin rekisteröityä',
+        'in-testing' => 'Liitäntäsi on nyt testitilassa!',
+        'in-production' => 'Liitäntäsi on nyt tuotantotilassa!',
     ],
     'tracking_info' => [
         'transaction' => 'Lähetys',
