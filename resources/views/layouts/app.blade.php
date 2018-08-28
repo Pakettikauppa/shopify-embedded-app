@@ -33,7 +33,7 @@
                 title: '{{trans('app.settings.settings')}}',
                 icon: '{{url('/img/favicon-96x96.png')}}',
                 buttons: {
-                    @if(Route::currentRouteName() != 'shopify.latest-news')
+                    @if(!in_array(Route::currentRouteName(), ['shopify.latest-news', 'shopify.settings']))
                     primary: {
                         label: "{{trans('app.settings.save_settings')}}",
                         callback: function () {

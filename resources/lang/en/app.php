@@ -31,7 +31,7 @@ return [
         'latest-news' => 'Latest news',
         'pickuppoints-settings' => 'Pickup points',
         'api-settings' => 'Pakettikauppa API',
-        'api-info' => 'You can find your API credentials from <a href="https://hallinta.pakettikauppa.fi/profile" target="_blank">your Profile page</a> in Pakettikauppa merchant panel. If you are not registered to Pakettikauppa, you can do it from <a href="https://www.pakettikauppa.fi/" target="_blank">https://www.pakettikauppa.fi/</a>',
+        'api-info' => 'You can find your API credentials from <a href="https://hallinta.pakettikauppa.fi/profile#api-keys" target="_blank">your Profile page</a> in Pakettikauppa merchant panel. If you are not registered to Pakettikauppa, you can do it from <a href="https://www.pakettikauppa.fi/" target="_blank">https://www.pakettikauppa.fi/</a>',
         'generic-settings' => 'Other',
         'settings' => 'Settings',
         'language' => 'Language',

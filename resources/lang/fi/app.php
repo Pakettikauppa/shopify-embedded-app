@@ -31,7 +31,7 @@ return [
         'latest-news' => 'Ajankohtaista',
         'pickuppoints-settings' => 'Noutopisteasetukset',
         'api-settings' => 'API asetukset',
-        'api-info' => 'Löydät API-tunnukset Pakettikaupan <a href="https://hallinta.pakettikauppa.fi/profile" target="_blank">hallintapaneelista Profiili-sivulta</a>. Mikäli sinulla ei vielä ole tunnuksia Pakettikauppaan, voit rekisteröityä osoitteessa <a href="https://www.pakettikauppa.fi/" target="_blank">https://www.pakettikauppa.fi/</a>',
+        'api-info' => 'Löydät API-tunnukset Pakettikaupan <a href="https://hallinta.pakettikauppa.fi/profile#api-keys" target="_blank">hallintapaneelista Profiili-sivulta</a>. Mikäli sinulla ei vielä ole tunnuksia Pakettikauppaan, voit rekisteröityä osoitteessa <a href="https://www.pakettikauppa.fi/" target="_blank">https://www.pakettikauppa.fi/</a>',
         'generic-settings' => 'Muut',
         'settings' => 'Asetukset',
         'language' => 'Kieli',
