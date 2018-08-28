@@ -274,9 +274,9 @@ class SettingsController extends Controller
             if (isset($this->shop->api_key) && isset($this->shop->api_secret)) {
                 $responseStatus = 'ok';
                 if ($request->test_mode == 'true') {
-                    $responseMessage = trans('app.messages.in-production');
-                } else {
                     $responseMessage = trans('app.messages.in-testing');
+                } else {
+                    $responseMessage = trans('app.messages.in-production');
                 }
                 $this->shop->test_mode = $request->test_mode == 'true';
             } else {
@@ -405,9 +405,9 @@ class SettingsController extends Controller
 
             $this->shop->locale = $request->language;
 
-            $responseStatus = 'ok';
+            $responseStatus = 'ok-reload';
             $responseMessage = trans('app.settings.saved');
-        } else {
+        } else if(!isset($this->shop->locale)) {
             $this->shop->locale = 'fi';
         }
 
