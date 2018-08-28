@@ -44,14 +44,14 @@
                     secondary: [
                             @if($shop->test_mode)
                         {
-                            label: "Testitila on päällä",
+                            label: "{{trans('app.settings.testmode_off')}}",
                             callback: function () {
                                 toggleProduction();
                             }
                         },
                             @else
                         {
-                            label: "Testitila on pois päällä",
+                            label: "{{trans('app.settings.testmode_on')}}",
                             callback: function () {
                                 toggleTesting();
                             }
@@ -59,36 +59,36 @@
 
                             @endif
                         {
-                            label: "Ajankohtaista",
+                            label: "{{trans('app.settings.latest-news')}}",
                             href: "{{route('shopify.latest-news')}}",
                             target: "app"
                         },
                         {
-                            label: "Asetukset",
+                            label: "{{trans('app.settings.settings')}}",
                             type: "dropdown",
                             links: [
                                 {
-                                    label: "Lähetysasetukset",
+                                    label: "{{trans('app.settings.shipment_settings')}}",
                                     href: "{{route('shopify.settings.shipping-link')}}",
                                     target: "app"
                                 },
                                 {
-                                    label: "Noutopisteasetukset",
+                                    label: "{{trans('app.settings.pickuppoints-settings')}}",
                                     href: "{{route('shopify.settings.pickuppoints-link')}}",
                                     target: "app"
                                 },
                                 {
-                                    label: "Lähettäjän tiedot",
+                                    label: "{{trans('app.settings.company_info')}}",
                                     href: "{{route('shopify.settings.sender-link')}}",
                                     target: "app"
                                 },
                                 {
-                                    label: "API asetukset",
+                                    label: "{{trans('app.settings.api-settings')}}",
                                     href: "{{route('shopify.settings.api-link')}}",
                                     target: "app"
                                 },
                                 {
-                                    label: "Muut",
+                                    label: "{{trans('app.settings.generic-settings')}}",
                                     href: "{{route('shopify.settings.generic-link')}}",
                                     target: "app"
                                 },
@@ -129,12 +129,16 @@
                 data: data,
                 dataType: 'json'
             }).done(function (resp) {
-                if (resp.status == 'ok') {
+                if (resp.status == 'ok' || resp.status == 'ok-reload') {
                     if (typeof callback === 'undefined') {
                         showSuccessMessage(resp.message);
                     } else {
                         callback(resp.message);
                     }
+                    if(resp.status == 'ok-reload') {
+                        $(location).attr('href', "{{Request::url()}}");
+                    }
+
                 } else if (resp.result == 'validation_error') {
                     showDangerMessage(resp.message);
                 } else {
