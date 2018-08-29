@@ -2,43 +2,6 @@
 
 @section('card-content')
 
-<article>
-    <div class="info column">
-        @if(session()->has('success'))
-            <div class="alert success">
-                <dl>
-                    <dt>{{session()->get('success')}} #{{time()}}</dt>
-                </dl>
-            </div>
-        @endif
-
-        @if(!isset($shop->api_key))
-            <div class="alert notification">
-                <dl>
-                    <dt>{{trans('app.messages.no_api')}} #{{time()}}</dt>
-                    <dd>{{trans('app.messages.only_test_mode')}}</dd>
-                </dl>
-            </div>
-        @endif
-
-        @if(!$api_valid)
-            <div class="alert error">
-                <dl>
-                    <dt>{{trans('app.messages.invalid_credentials')}} #{{time()}}</dt>
-                </dl>
-            </div>
-        @endif
-
-        @if(session()->has('error'))
-            <div class="alert error">
-                <dl>
-                    <dt>{{session()->get('error')}} #{{time()}}</dt>
-                </dl>
-            </div>
-        @endif
-    </div>
-</article>
-
 <form id="setting-form" method="GET" action="{{route('shopify.update-settings')}}">
 
     <article>
