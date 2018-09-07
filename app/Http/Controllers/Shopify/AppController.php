@@ -98,12 +98,9 @@ class AppController extends Controller
 
         $orders = $this->client->call('GET', '/admin/orders.json', ['ids' => implode(',', $order_ids), 'status' => 'any']);
 
-        Log::debug(var_export($orders, true));
-
         $shipments = [];
 
         foreach($orders as $order){
-            Log::debug(var_export($order, true));
             $shipment = [];
             $shipment['fulfillment_status'] = $order['fulfillment_status'];
             $shipment['line_items'] = $order['line_items'];
@@ -177,7 +174,7 @@ class AppController extends Controller
             $_shipment = $this->shop->sendShipment($this->pk_client, $order, $senderInfo, $receiverInfo, $is_return);
             $shipment['status'] = $_shipment['status'];
 
-            $_shipment['tracking_code'] = '';
+            $shipment['tracking_code'] = '';
             if (isset($_shipment['tracking_code'])) {
                 $shipment['tracking_code'] = $_shipment['tracking_code'];
             }
