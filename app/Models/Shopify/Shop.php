@@ -22,16 +22,26 @@ class Shop extends Model
     public function sendShipment($pk_client, $order, $senderInfo, $receiverInfo, $isReturn = false){
 
         $sender = new Sender();
-        $sender->setName1($senderInfo['name']);
-        $sender->setName2($senderInfo['company']);
+        if($senderInfo['company'] != '') {
+            $sender->setName1($senderInfo['company']);
+            $sender->setName2($senderInfo['name']);
+        } else {
+            $sender->setName1($senderInfo['name']);
+            $sender->setName2($senderInfo['company']);
+        }
         $sender->setAddr1($senderInfo['address']);
         $sender->setPostcode($senderInfo['postcode']);
         $sender->setCity($senderInfo['city']);
         $sender->setCountry($senderInfo['country']);
 
         $receiver = new Receiver();
-        $receiver->setName1($receiverInfo['name']);
-        $receiver->setName2($receiverInfo['company']);
+        if($receiverInfo['company'] != '') {
+            $receiver->setName1($receiverInfo['company']);
+            $receiver->setName2($receiverInfo['name']);
+        } else {
+            $receiver->setName1($receiverInfo['name']);
+            $receiver->setName2($receiverInfo['company']);
+        }
         $receiver->setAddr1($receiverInfo['address']);
         $receiver->setPostcode($receiverInfo['postcode']);
         $receiver->setCity($receiverInfo['city']);
