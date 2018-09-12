@@ -23,6 +23,7 @@ class Shop extends Model
 
         $sender = new Sender();
         $sender->setName1($senderInfo['name']);
+        $sender->setName2($senderInfo['company']);
         $sender->setAddr1($senderInfo['address']);
         $sender->setPostcode($senderInfo['postcode']);
         $sender->setCity($senderInfo['city']);
@@ -30,6 +31,7 @@ class Shop extends Model
 
         $receiver = new Receiver();
         $receiver->setName1($receiverInfo['name']);
+        $receiver->setName2($receiverInfo['company']);
         $receiver->setAddr1($receiverInfo['address']);
         $receiver->setPostcode($receiverInfo['postcode']);
         $receiver->setCity($receiverInfo['city']);

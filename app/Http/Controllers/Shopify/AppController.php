@@ -133,6 +133,7 @@ class AppController extends Controller
 
             $senderInfo = [
                 'name' => $this->shop->business_name,
+                'company' => '',
                 'address' => $this->shop->address,
                 'postcode' => $this->shop->postcode,
                 'city' => $this->shop->city,
@@ -157,6 +158,7 @@ class AppController extends Controller
 
             $receiverInfo = [
                 'name' => $shipping_address['first_name'] . " ".$shipping_address['last_name'],
+                'company' => ($shipping_address['company']==null?'':$shipping_address['company']),
                 'address' => $shipping_address['address1'],
                 'postcode' => $shipping_address['zip'],
                 'city' => $shipping_address['city'],
