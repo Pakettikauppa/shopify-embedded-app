@@ -114,7 +114,7 @@ class Shop extends Model
             $shipment->addAdditionalService($additional_service);
         }
 
-        if($this->always_create_return_label == true) {
+        if($this->always_create_return_label == true && !$isReturn) {
             $shipment->includeReturnLabel(true);
         }
 
