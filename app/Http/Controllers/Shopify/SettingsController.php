@@ -108,10 +108,10 @@ class SettingsController extends Controller
                 $carrierService = $this->client->call('POST', '/admin/carrier_services.json', $carrierServiceData);
 
                 // set carrier_service_id and set it's default count value
-                $shop->carrier_service_id = $carrierService['id'];
-                $shop->pickuppoints_count = 10;
+                $this->shop->carrier_service_id = $carrierService['id'];
+                $this->shop->pickuppoints_count = 10;
 
-                $shop->save();
+                $this->shop->save();
 
             } catch (ShopifyApiException $sae) {
                 $exceptionData = array(
@@ -133,12 +133,12 @@ class SettingsController extends Controller
 
                         if ($_service['name'] == $carrierServiceName) {
 
-                            $shop->carrier_service_id = $_service['id'];
-                            $shop->pickuppoints_count = 10;
-                            $shop->save();
+                            $this->shop->carrier_service_id = $_service['id'];
+                            $this->shop->pickuppoints_count = 10;
+                            $this->shop->save();
 
                             if ($_service['callback_url'] != 'http://209.50.56.85/api/pickup-points') {
-                                $this->client->call('PUT', '/admin/carrier_services/' . $shop->carrier_service_id . '.json', $carrierServiceData);
+                                $this->client->call('PUT', '/admin/carrier_services/' . $this->shop->carrier_service_id . '.json', $carrierServiceData);
                             }
                         }
                     }
