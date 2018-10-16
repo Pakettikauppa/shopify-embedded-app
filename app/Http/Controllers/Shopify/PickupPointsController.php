@@ -90,7 +90,7 @@ class PickupPointsController extends Controller
             // search nearest pickup locations
             $pickupPoints = json_decode($pk_client->searchPickupPoints($destination->postal_code, $destination->address1, $destination->country, $pickupPointProviders, $shop->pickuppoints_count ));
 
-            if (count($pickupPoints) == 0 && ($destination->country == 'AX' || $destination->country == 'FI')) {
+            if ($pickupPoints->isEmpty() && ($destination->country == 'AX' || $destination->country == 'FI')) {
                 // search some pickup points if no pickup locations was found
                 $pickupPoints = json_decode($pk_client->searchPickupPoints('00100', null, 'FI', $pickupPointProviders, $shop->pickuppoints_count ));
             }
