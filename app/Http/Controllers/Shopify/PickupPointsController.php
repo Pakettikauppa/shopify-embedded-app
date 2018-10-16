@@ -70,7 +70,7 @@ class PickupPointsController extends Controller
         $destination = $requestBody->rate->destination;
 
         $rates = array();
-        if($destination->phone != null and count($this->pickupPointSettings) > 0) {
+        if(count($this->pickupPointSettings) > 0) {
             // calculate total value of the cart
             $totalValue = 0;
             foreach($requestBody->rate->items as $_item) {
