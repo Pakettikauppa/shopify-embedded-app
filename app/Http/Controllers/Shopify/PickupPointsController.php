@@ -71,7 +71,6 @@ class PickupPointsController extends Controller
 
         $rates = array();
         if(count($this->pickupPointSettings) > 0) {
-
             // calculate total value of the cart
             $totalValue = 0;
             foreach($requestBody->rate->items as $_item) {
@@ -135,7 +134,7 @@ class PickupPointsController extends Controller
         
         $customCarrierServices = array('rates' => $rates);
 
-        if (!($destination->country == 'FI' || $destination->country == 'AX')) {
+        if (!($destination->country == 'FI' || $destination->country == 'AX' || $destination->country == 'EE')) {
             $customCarrierServices = array('rates' => []);
         }
 

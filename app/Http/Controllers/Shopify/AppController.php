@@ -187,13 +187,13 @@ class AppController extends Controller
 
                 $shipments[] = $shipment;
 
-            Log::debug("Processed order: {$order['id']}");
+            Log::debug("Processed order: {$shipment['tracking_code']} - {$order['id']}");
         }
 
         if($fulfill_order){
 
             foreach($shipments as $order) {
-                Log::debug("Fullfilling order: {$order['id']}");
+                Log::debug("Fullfilling order: {$order['tracking_code']} - {$order['id']}");
 
                 if($order['fulfillment_status'] == 'fulfilled') continue;
                 if($order['status'] == 'custom_error') continue;
@@ -253,7 +253,8 @@ class AppController extends Controller
                         ];
 
                         try {
-                            $this->client->call('POST', '/admin/orders/' . $order['id'] . '/fulfillments.json', ['fulfillment' => $fulfillment]);
+                            $result = $this->client->call('POST', '/admin/orders/' . $order['id'] . '/fulfillments.json', ['fulfillment' => $fulfillment]);
+                            Log::debug(var_export($result, true));
                         } catch (ShopifyApiException $sae) {
                             $exceptionData = array(
                                 var_export($sae->getMethod(), true),

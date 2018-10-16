@@ -73,26 +73,9 @@ class Shop extends Model
             }
 
             if(isset($order['shipping_lines'][0]['code']) && $order['shipping_lines'][0]['code'] != null) {
-                $pickupPoint = explode(":",$order['shipping_lines'][0]['code']);
-
-                if(count($pickupPoint) == 2) {
-
-                    $pickupPointId = $pickupPoint[1];
-
-                    switch($pickupPoint[0]) {
-                        case 'Posti':
-                            $method_code = 2103;
-                            break;
-                        case 'Matkahuolto':
-                            $method_code = 90080;
-                            break;
-                        case 'DB Schenker':
-                            $method_code = 80010;
-                            break;
-                        default:
-                            $pickupPointId = null;
-                    }
-                }
+                $pickupPoint = $this->shippingCode2Method($order['shipping_lines'][0]['code']);
+                $pickupPointId = $pickupPoint['pickup_point_id'];
+                $method_code = $pickupPoint['method_code'];
             }
         }
 
@@ -144,4 +127,34 @@ class Shop extends Model
 
         return $order;
     }
+
+    public function shippingCode2Method($shippingCode) {
+        $pickupPoint = explode(":",$shippingCode);
+        $pickupPointId = null;
+        $method_code = null;
+
+        if(count($pickupPoint) == 2) {
+
+            $pickupPointId = $pickupPoint[1];
+
+            switch($pickupPoint[0]) {
+                case 'Posti':
+                    $method_code = 2103;
+                    break;
+                case 'Matkahuolto':
+                    $method_code = 90080;
+                    break;
+                case 'DB Schenker':
+                    $method_code = 80010;
+                    break;
+                default:
+                    $pickupPointId = null;
+            }
+        }
+
+        return ['method_code' => $method_code,
+            'pickup_point_id' => $pickupPointId
+        ];
+    }
+
 }
