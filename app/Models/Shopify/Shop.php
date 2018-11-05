@@ -75,7 +75,12 @@ class Shop extends Model
             if(isset($order['shipping_lines'][0]['code']) && $order['shipping_lines'][0]['code'] != null) {
                 $pickupPoint = $this->shippingCode2Method($order['shipping_lines'][0]['code']);
                 $pickupPointId = $pickupPoint['pickup_point_id'];
-                $method_code = $pickupPoint['method_code'];
+
+                if(!empty($pickupPointId)) {
+                    $method_code = $pickupPoint['method_code'];
+                } else {
+                    $pickupPointId = null;
+                }
             }
         }
 
