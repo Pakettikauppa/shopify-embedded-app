@@ -19,40 +19,35 @@ class PickupPointsController extends Controller
     {
         // SETUP EVERYTHING
         // setup and validate Shop
-        $found_shop = Shop::where('shop_origin', $request->header('x-shopify-shop-domain'))->first();
+        $shop = Shop::where('shop_origin', $request->header('x-shopify-shop-domain'))->first();
 
-        if(isset($found_shop)){
-            $shop = $found_shop;
-        }else{
+        if($shop == null){
             throw new FatalErrorException();
         }
-
-        $client = new ShopifyClient($request->header('x-shopify-shop-domain'), '', ENV('SHOPIFY_API_KEY'), ENV('SHOPIFY_SECRET'));
 
         $calculatedMac = base64_encode(hash_hmac('sha256', $request->getContent(), ENV('SHOPIFY_SECRET'), true));
         if(!hash_equals($calculatedMac, $request->header('x-shopify-hmac-sha256'))) {
             throw new UnprocessableEntityHttpException();
         }
 
+        $pk_client_params = null;
         // setup Pakettikauppa Client
         if($shop->test_mode){
             $pk_client_params = [
                 'test_mode' => true,
             ];
-        }else{
-            if(isset($shop->api_key) && isset($shop->api_secret)){
-                $pk_client_params = [
-                    'api_key' => $shop->api_key,
-                    'secret' => $shop->api_secret,
-                ];
-            }
+        }else if(!empty($shop->api_key) && !empty($shop->api_secret)){
+            $pk_client_params = [
+                'api_key' => $shop->api_key,
+                'secret' => $shop->api_secret,
+            ];
         }
 
-        if(is_array($pk_client_params)){
-            $pk_client = new Client($pk_client_params);
-        } else {
-            throw new FatalErrorException();            
+        if($pk_client_params == null){
+            throw new FatalErrorException();
         }
+
+        $pk_client = new Client($pk_client_params);
 
         // test if pickup points are available in settings
         if (!(isset($shop->pickuppoints_count) && $shop->pickuppoints_count > 0)) {
