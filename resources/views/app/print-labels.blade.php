@@ -47,6 +47,7 @@
                     </tbody>
                 </table>
                 <form method="post" action="{{route('shopify.get_labels')}}" target="_blank">
+                    <input type="hidden" name="_token" id="csrf-token" value="{{ Session::token() }}" />
                     @foreach($orders as $order)
                         <input type="hidden" name="tracking_codes[]" value="{{$order['tracking_code']}}">
                     @endforeach
