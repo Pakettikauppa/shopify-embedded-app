@@ -72,6 +72,24 @@ class AppController extends Controller
         });
     }
 
+    /**
+     * Shopify has a bug and this function is used to handle that
+     *
+     * @param array $arr
+     * @return array
+     */
+    private function flattenArray($arr) {
+        $values=[];
+        foreach($arr as $item) {
+            if(is_array($item)) {
+                $values = array_merge($values, flattenArray($item));
+            } else {
+                $values[] = $item;
+            }
+        }
+        return $values;
+    }
+
     public function printLabels(Request $request)
     {
         if(!isset($request->ids) && !isset($request->id)){
@@ -91,7 +109,7 @@ class AppController extends Controller
         }
 
         if(isset($request->ids)){
-            $order_ids = $request->ids;
+            $order_ids = $this->flattenArray($request->ids);
         }else{
             $order_ids = [$request->id];
         }
