@@ -9,6 +9,7 @@ return [
     ],
     'print_labels' => [
         'print_label' => 'Print labels',
+        'fetch_all' => 'Print all labels',
         'print_label_fulfill' => 'Print labels & Fulfill',
         'return_label' => 'Print return label',
         'description' => 'List of created shipments',

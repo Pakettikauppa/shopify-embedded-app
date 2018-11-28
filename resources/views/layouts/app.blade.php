@@ -24,7 +24,7 @@
         ShopifyApp.init({
             apiKey: '{{ENV('SHOPIFY_API_KEY')}}',
             shopOrigin: 'https://{{session()->get('shop')}}',
-            debug: true,
+            debug: false,
             forceRedirect: true
         });
 

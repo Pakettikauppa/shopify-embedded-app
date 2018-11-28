@@ -46,7 +46,14 @@
                     @endforeach
                     </tbody>
                 </table>
-                <td><a href="{{$orders_url}}" target="_top">{{trans('app.print_labels.back_to_orders')}}</a></td>
+                <form method="post" action="{{route('shopify.get_labels')}}" target="_blank">
+                    <input type="hidden" name="_token" id="csrf-token" value="{{ Session::token() }}" />
+                    @foreach($orders as $order)
+                        <input type="hidden" name="tracking_codes[]" value="{{$order['tracking_code']}}">
+                    @endforeach
+                    <button name="submit">{{trans('app.print_labels.fetch_all')}}</button>
+                </form>
+                <p><a href="{{$orders_url}}" target="_top">{{trans('app.print_labels.back_to_orders')}}</a></p>
             </div>
         </div>
     </div>

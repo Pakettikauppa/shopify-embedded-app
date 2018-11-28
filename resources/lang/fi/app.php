@@ -9,6 +9,7 @@ return [
     ],
     'print_labels' => [
         'print_label' => 'Tulosta Osoitetarra',
+        'fetch_all' => 'Tulosta kaikki osoitetarrat',
         'print_label_fulfill' => 'Tulosta osoitetarra & Fulfill',
         'return_label' => 'Tulosta palautustarra',
         'description' => 'Lista luoduista lähetyksistä',
