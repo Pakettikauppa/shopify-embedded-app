@@ -20,8 +20,14 @@ use Log;
  */
 class AppController extends Controller
 {
+    /**
+     * @var ShopifyClient
+     */
     private $client;
     private $shop;
+    /**
+     * @var Client
+     */
     private $pk_client;
 
     public function __construct(Request $request)
@@ -331,6 +337,22 @@ class AppController extends Controller
         \Request::replace($request->input());
         $response = \Route::dispatch($request);
         return $response;
+    }
+
+    public function getLabels(Request $request)
+    {
+        if(empty($request->tracking_codes)){
+            throw new NotFoundHttpException();
+        }
+
+        $xml = $this->pk_client->fetchShippingLabels($request->tracking_codes);
+
+        $pdf = base64_decode($xml->{'response.file'});
+
+        return Response::make($pdf, 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'inline; filename="multiple-shipping-labels.pdf"'
+        ]);
     }
 
     public function getLabel(Request $request, $order_id)
