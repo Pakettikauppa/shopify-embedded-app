@@ -205,6 +205,15 @@ class AppController extends Controller
                 $shipment['tracking_code'] = $_shipment['tracking_code'];
             }
 
+            if(!empty($this->pk_client->getResponse()->{'response.trackingcode'}['labelcode'])) {
+                $this->client->call('PUT', '/admin/orders/'.$orer['id'].'.json', [
+                    'order' => [
+                        'id' => $order['id'],
+                        'note' => sprintf('%s: %s', trans('app.settings.actication_code'), $this->pk_client->getResponse()->{'response.trackingcode'}['labelcode'])
+                    ]
+                ]);
+            }
+
             if (isset($_shipment['error_message'])) {
                 $shipment['error_message'] = $_shipment['error_message'];
             }
