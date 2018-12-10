@@ -361,6 +361,7 @@ class SettingsController extends Controller
             }
 
             $this->shop->always_create_return_label = (bool)$request->print_return_labels;
+            $this->shop->create_activation_code = (bool)$request->create_activation_code;
 
             $responseStatus = 'ok';
             $responseMessage = trans('app.settings.saved');
