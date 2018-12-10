@@ -98,7 +98,6 @@ class AppController extends Controller
 
     public function printLabels(Request $request)
     {
-        Log::debug(var_export($request->all(), true));
         if(!isset($request->ids) && !isset($request->id)){
             throw new NotFoundHttpException();
         }
@@ -122,8 +121,6 @@ class AppController extends Controller
         }
 
         $orders = $this->client->call('GET', '/admin/orders.json', ['ids' => implode(',', $order_ids), 'status' => 'any']);
-
-        Log::debug(var_export($orders, true));
 
         $shipments = [];
 
@@ -331,7 +328,6 @@ class AppController extends Controller
     }
 
     public function latestNews() {
-        Log::debug("latest news!");
         $folder_path = storage_path('rss');
         $rssFeed = simplexml_load_file($folder_path.'/feed.xml');
 
