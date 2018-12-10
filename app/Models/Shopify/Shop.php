@@ -106,6 +106,12 @@ class Shop extends Model
             $shipment->includeReturnLabel(true);
         }
 
+        if($this->create_activation_code == true) {
+            $additional_service = new AdditionalService();
+            $additional_service->setServiceCode(9902);
+            $shipment->addAdditionalService($additional_service);
+        }
+
         try {
             $pk_client->createTrackingCode($shipment);
 

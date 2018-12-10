@@ -27,6 +27,8 @@ return [
         ],
     ],
     'settings' => [
+        'activation_code' => 'Activation code',
+        'create_activation_code' => 'Create activation code for every shipment',
         'testmode_on' => 'Enable testmode',
         'testmode_off' => 'Disable testmode',
         'latest-news' => 'Latest news',

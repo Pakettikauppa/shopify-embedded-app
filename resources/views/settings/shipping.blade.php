@@ -84,6 +84,7 @@
 
                 <div class="row">
             <label><input type="checkbox" name="print_return_labels" @if($shop->always_create_return_label) checked @endif value="1">{{trans('app.settings.print_return_labels')}}</label>
+                    <label><input type="checkbox" name="create_activation_code" @if($shop->create_activation_code) checked @endif value="1">{{trans('app.settings.create_activation_code')}}</label>
         </div>
         </div>
 
