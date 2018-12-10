@@ -95,6 +95,7 @@ return [
         'ready' => 'Everything is ready',
         'only_test_mode' => 'Without API credentials you can use the application only in test mode',
         'no_api_set_error' => 'Setup API credentials or turn on the test mode in <a href=":settings_url">Settings</a>.',
+        'credentials_missing' => 'Please input API credentials first',
         'invalid_credentials' => 'API credentials are not valid',
         'no_tracking_info' => 'Tracking information for the order is not available',
         'success' => 'Task was successful!',

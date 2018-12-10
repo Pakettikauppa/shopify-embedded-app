@@ -96,6 +96,7 @@ return [
         'only_test_mode' => 'Ilman API tunnuksia voit käyttää ohjelmaa vain testitilassa',
         'no_api_set_error' => 'Aseta API tunnukset tai kytke testitila päälle <a href=":settings_url">asetuksissa</a>.',
         'invalid_credentials' => 'API tunnukset eivät ole oikein',
+        'credentials_missing' => 'API tunnuksia ei ole syötetty',
         'no_tracking_info' => 'Seurantatiedot tilaukselle eivät ole vielä saatavilla',
         'success' => 'Tehtävä onnistui!',
         'fail' => 'Tehtävä epäonnistui',
