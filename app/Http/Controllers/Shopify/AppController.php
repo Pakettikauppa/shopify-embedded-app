@@ -98,6 +98,7 @@ class AppController extends Controller
 
     public function printLabels(Request $request)
     {
+        Log::debug(var_export($request->all(), true));
         if(!isset($request->ids) && !isset($request->id)){
             throw new NotFoundHttpException();
         }
@@ -121,6 +122,8 @@ class AppController extends Controller
         }
 
         $orders = $this->client->call('GET', '/admin/orders.json', ['ids' => implode(',', $order_ids), 'status' => 'any']);
+
+        Log::debug(var_export($orders, true));
 
         $shipments = [];
 
@@ -206,12 +209,18 @@ class AppController extends Controller
             }
 
             if(!empty($this->pk_client->getResponse()->{'response.trackingcode'}['labelcode'])) {
-                $this->client->call('PUT', '/admin/orders/'.$orer['id'].'.json', [
+                try {
+
+                $this->client->call('PUT', '/admin/orders/'.$order['id'].'.json', [
                     'order' => [
                         'id' => $order['id'],
-                        'note' => sprintf('%s: %s', trans('app.settings.actication_code'), $this->pk_client->getResponse()->{'response.trackingcode'}['labelcode'])
+                        'note' => sprintf('%s: %s', trans('app.settings.activation_code'), $this->pk_client->getResponse()->{'response.trackingcode'}['labelcode'])
                     ]
                 ]);
+                } catch(\Exception $e) {
+                    Log::debug($e->getMessage());
+                    Log::debug($e->getTraceAsString());
+                }
             }
 
             if (isset($_shipment['error_message'])) {
@@ -322,6 +331,7 @@ class AppController extends Controller
     }
 
     public function latestNews() {
+        Log::debug("latest news!");
         $folder_path = storage_path('rss');
         $rssFeed = simplexml_load_file($folder_path.'/feed.xml');
 
