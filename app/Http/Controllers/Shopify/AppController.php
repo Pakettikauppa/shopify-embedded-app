@@ -36,12 +36,17 @@ class AppController extends Controller
 
             if(!session()->has('shop')){
                 session()->put('init_request', $request->fullUrl());
-                return redirect()->route('shopify.auth.index', request()->all());
+
+                $params = $request()->all();
+                $params['_pk_s']=1;
+
+                return redirect()->route('shopify.auth.index', $params);
             }
 
             $shop_origin = session()->get('shop');
             $shop = Shop::where('shop_origin', $shop_origin)->first();
-            if(!isset($shop)){
+
+            if(empty($shop)){
                 session()->put('init_request', $request->fullUrl());
                 return redirect()->route('shopify.auth.index', request()->all());
             }
