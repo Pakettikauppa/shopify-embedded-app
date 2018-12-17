@@ -12,6 +12,12 @@ class AuthController extends Controller
 {
     public function index(Request $request)
     {
+        if($request->get('_pk_s') != null and !session()->has('init_request')) {
+            return view('app.create-session', [
+                'params' => $request->all(),
+            ]);
+        }
+
         $client = new ShopifyClient($request->shop, '', ENV('SHOPIFY_API_KEY'), ENV('SHOPIFY_SECRET'));
 
         if (!$client->validateSignature($request->all())) {
