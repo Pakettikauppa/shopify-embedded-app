@@ -1,6 +1,6 @@
 <html>
 <body>
-<form action="{{route('shopify.auth.index')}}" method="get">
+<form id="form" action="{{route('shopify.auth.index')}}" method="get">
     @foreach($params as $key => $value)
         @if($key != '_pk_s')
         <input type="hidden" name="{{$key}}" value="{{$value}}">
