@@ -236,7 +236,7 @@ class AppController extends Controller
 
         if($fulfill_order){
 
-            foreach($shipments as $order) {
+            foreach($shipments as $orderKey => $order) {
                 Log::debug("Fullfilling order: {$order['tracking_code']} - {$order['id']}");
 
                 if($order['fulfillment_status'] == 'fulfilled') continue;
@@ -263,6 +263,8 @@ class AppController extends Controller
                                 $service = $item['fulfillment_service'];
                                 $services[$service][$_inventory['location_id']][] = ['id' => $item['id']];
                                 $makeNull = false;
+                            } else {
+                                $shipments[$orderKey]['status'] = 'not_in_inventory';
                             }
                         }
 
