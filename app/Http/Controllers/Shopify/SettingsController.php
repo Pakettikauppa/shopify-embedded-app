@@ -31,7 +31,7 @@ class SettingsController extends Controller
             if (!session()->has('shop')) {
                 session()->put('init_request', $request->fullUrl());
 
-                $params = $request()->all();
+                $params = $request->all();
                 $params['_pk_s']=1;
 
                 return redirect()->route('shopify.auth.index', $params);
