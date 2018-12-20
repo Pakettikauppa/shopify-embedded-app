@@ -10,7 +10,4 @@
     <button type="submit">Jos tämä sivu jää näkyviin, paina tästä</button>
 </form>
 </body>
-<script>
-    document.getElementById("form").submit();
-</script>
 </html>
