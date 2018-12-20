@@ -24,6 +24,7 @@ return [
             'sent' => 'Shipping for the order already exists',
             'need_shipping_address' => 'Failed due to absence of shipping address',
             'no_shipping_service' => 'Shipping service for the rate is not set',
+            'not_in_inventory' => 'Product is not in inventory',
         ],
     ],
     'settings' => [
