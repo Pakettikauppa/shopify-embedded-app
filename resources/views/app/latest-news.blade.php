@@ -12,7 +12,7 @@
                         {!! $_item->children("http://purl.org/rss/1.0/modules/content/")->encoded !!}
                     <p>
                         <small>
-                            Julkaistu: {{date('Y.m.d', strtotime($_item->pubDate))}}
+                            Julkaistu: {{date('d.m.Y', strtotime($_item->pubDate))}}
                         </small>
                     </p>
                 </div>
