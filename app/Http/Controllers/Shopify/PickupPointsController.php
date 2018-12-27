@@ -71,13 +71,6 @@ class PickupPointsController extends Controller
             $totalDiscount = 0;
             foreach($requestBody->rate->items as $_item) {
                 $totalValue += $_item->price * $_item->quantity;
-                if(!empty($_item->total_discounts)) {
-                    $totalDiscount+= $_item->total_discounts;
-                }
-            }
-
-            if($shop->include_discounted_price_in_trigger) {
-                $totalValue=$totalValue - $totalDiscount;
             }
 
             $pickupPointProviders = array();
