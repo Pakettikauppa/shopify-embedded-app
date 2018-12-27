@@ -70,6 +70,7 @@ return [
         'saved' => 'Asetukset ovat tallennettu',
         'setup_wizard' => 'Ohjattu asennus',
         'print_return_labels' => 'Luo aina palautuslähetys lähetyksen yhteyssä. Huom! Shopifyssä oleva seuranta toimii vain alkuperäiselle lähetykselle.',
+        'include_discounted_price_in_trigger' => 'Ota hintarajan laskennassa mukaan tuotteiden alennukset.',
         'pickuppoints' => [
             'title' => 'Noutopisteiden asetukset',
             'provider' => 'Kuljetusyhtiö',

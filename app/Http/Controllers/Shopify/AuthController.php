@@ -74,6 +74,7 @@ class AuthController extends Controller
         $shop->token = $client->getAccessToken($request->code);
         $shop->save();
 
+        session()->put('shopify_version', '1');
         session()->put('shop', $request->shop);
 
         if(session()->has('init_request')){

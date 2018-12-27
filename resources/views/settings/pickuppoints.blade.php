@@ -54,20 +54,24 @@
     <article>
         <div class="card">
         <div class="row">
-                <div class="input-group">
-                    <span class="append">{{trans('app.settings.pickuppoints_count')}}</span>
-                    <select name="pickuppoints_count">
-                     @for($i=0; $i<11; $i++)
-                        <option value="{{$i}}" @if($shop->pickuppoints_count == $i) selected @endif>
-                            @if($i == 0)
-                                {{trans('app.settings.pickuppoints_count_0')}}
-                            @else
-                                {{$i}}
-                            @endif
-                        </option>
-                     @endfor
-                    </select>
-                </div>
+            <div class="input-group">
+                <span class="append">{{trans('app.settings.pickuppoints_count')}}</span>
+                <select name="pickuppoints_count">
+                 @for($i=0; $i<11; $i++)
+                    <option value="{{$i}}" @if($shop->pickuppoints_count == $i) selected @endif>
+                        @if($i == 0)
+                            {{trans('app.settings.pickuppoints_count_0')}}
+                        @else
+                            {{$i}}
+                        @endif
+                    </option>
+                 @endfor
+                </select>
+            </div>
+            <div class="input-group">
+                <label><input type="checkbox" name="include_discounted_price_in_trigger" @if($shop->include_discounted_price_in_trigger) checked @endif value="1">{{trans('app.settings.include_discounted_price_in_trigger')}}</label>
+            </div>
+
             </div>
         </div>
         @endif

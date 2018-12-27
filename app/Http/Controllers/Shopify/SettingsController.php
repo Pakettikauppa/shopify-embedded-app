@@ -391,6 +391,8 @@ class SettingsController extends Controller
         if (isset($request->pickuppoints_count)) {
             $this->shop->pickuppoints_count = $request->pickuppoints_count;
 
+            $this->shop->include_discounted_price_in_trigger = (bool)$request->include_discounted_price_in_trigger;
+
             $pickuppoints = $request->pickuppoint;
             foreach ($pickuppoints as $_pickupPoint) {
                 if ($_pickupPoint['base_price'] == '') $_pickupPoint['base_price'] = 0;
