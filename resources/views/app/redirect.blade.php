@@ -1,3 +1,4 @@
+<html>
 <script src="https://cdn.shopify.com/s/assets/external/app.js"></script>
 
 <script type='text/javascript'>
@@ -15,3 +16,5 @@
         ShopifyApp.redirect('{!! $url['path'] !!}');
     }
 </script>
+<body></body>
+</html>
