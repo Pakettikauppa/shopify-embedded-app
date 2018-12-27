@@ -68,10 +68,6 @@
                  @endfor
                 </select>
             </div>
-            <div class="input-group">
-                <label><input type="checkbox" name="include_discounted_price_in_trigger" @if($shop->include_discounted_price_in_trigger) checked @endif value="1">{{trans('app.settings.include_discounted_price_in_trigger')}}</label>
-            </div>
-
             </div>
         </div>
         @endif
