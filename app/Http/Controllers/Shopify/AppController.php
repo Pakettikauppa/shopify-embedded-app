@@ -104,14 +104,19 @@ class AppController extends Controller
     public function printLabels(Request $request)
     {
         if(!isset($request->ids) && !isset($request->id)){
+            Log::debug('No id found');
             throw new NotFoundHttpException();
         }
         $is_return = isset($request->is_return) ? $request->is_return : false;
         $fulfill_order = isset($request->fulfill_order) ? $request->fulfill_order : false;
 
         // api check
-        $result = json_decode($this->pk_client->listShippingMethods());
+        $result = $this->pk_client->listShippingMethods();
+        Log::debug("ListShippingMethods Result:". $result);
+        $result = json_decode($result);
         if(!is_array($result)){
+            Log::debug("List Shipping Methods error!");
+
             return view('app.alert', [
                 'type' => 'error',
                 'title' => trans('app.messages.invalid_credentials'),
