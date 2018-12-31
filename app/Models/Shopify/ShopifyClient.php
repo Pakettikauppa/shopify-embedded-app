@@ -118,7 +118,7 @@ class ShopifyClient {
         // arrays to string
         foreach($query as $key => $item){
             if(is_array($item)){
-                $query[$key] = $item = '["' . implode('", "', $item). '"]';
+                $query[$key] = '["' . implode('", "', $item). '"]';
             }
         }
 
