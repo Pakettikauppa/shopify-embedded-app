@@ -28,6 +28,7 @@
             forceRedirect: true
         });
 
+        @if(!empty($shop))
         ShopifyApp.ready(function () {
             ShopifyApp.Bar.initialize({
                 title: '{{trans('app.settings.settings')}}',
@@ -99,6 +100,7 @@
                 icon: 'https://www.pakettikauppa.fi/apple-icon-57x57.png'
             });
         });
+        @endif
 
         function saveForm() {
             var settingsForm = $('#setting-form');
