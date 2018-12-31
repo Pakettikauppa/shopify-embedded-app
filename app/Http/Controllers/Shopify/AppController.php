@@ -120,7 +120,7 @@ class AppController extends Controller
         }
 
         if(isset($request->ids)){
-            $order_ids = $this->flattenArray($request->ids);
+            $order_ids = $request->ids;
         }else{
             $order_ids = [$request->id];
         }
