@@ -107,8 +107,6 @@ class ShopifyClient {
 
     public function validateSignature($query)
     {
-        return true; // Shopify has a bug and this is used to handle that
-
         $expectedHmac = isset($query['hmac']) ? $query['hmac'] : '';
 
         // First step: remove HMAC and signature keys
@@ -118,9 +116,9 @@ class ShopifyClient {
         ksort($query);
 
         // arrays to string
-        foreach($query as &$item){
+        foreach($query as $key => $item){
             if(is_array($item)){
-                $item = '["' . implode('", "', $item). '"]';
+                $query[$key] = '["' . implode('", "', $item). '"]';
             }
         }
 

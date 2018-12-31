@@ -3,7 +3,13 @@
 <form id="form" action="{{route('shopify.auth.index')}}" method="get">
     @foreach($params as $key => $value)
         @if($key != '_pk_s')
-        <input type="hidden" name="{{$key}}" value="{{$value}}">
+            @if(is_array($value))
+                @foreach($value as $_arrValue)
+                    <input type="hidden" name="{{$key}}[]" value="{{$_arrValue}}">
+                @endforeach
+            @else
+                <input type="hidden" name="{{$key}}" value="{{$value}}">
+            @endif
         @endif
     @endforeach
 
