@@ -77,6 +77,8 @@ class AppController extends Controller
                 $this->pk_client = new Client($pk_client_params);
             }
 
+            $this->pk_client->setComment('Created from Shopify App');
+
             \App::setLocale($this->shop->locale);
 
             return $next($request);
@@ -207,7 +209,9 @@ class AppController extends Controller
                 $senderInfo = $tmp;
             }
 
-            $_shipment = $this->shop->sendShipment($this->pk_client, $order, $senderInfo, $receiverInfo, $is_return);
+            $contents = $shipment['line_items'];
+
+            $_shipment = $this->shop->sendShipment($this->pk_client, $order, $senderInfo, $receiverInfo, $contents, $is_return);
             $shipment['status'] = $_shipment['status'];
 
             $shipment['tracking_code'] = '';

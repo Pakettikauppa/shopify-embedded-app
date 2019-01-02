@@ -19,7 +19,7 @@ class Shop extends Model
     /**
      * @var $pk_client \Pakettikauppa\Client
      */
-    public function sendShipment($pk_client, $order, $senderInfo, $receiverInfo, $isReturn = false){
+    public function sendShipment($pk_client, $order, $senderInfo, $receiverInfo, $contents, $isReturn = false){
 
         $sender = new Sender();
         if($senderInfo['company'] != '') {
@@ -57,6 +57,18 @@ class Shop extends Model
         $parcel->setWeight(number_format($order['total_weight'] * 0.001, 3)); // kg
         $parcel->setVolume(number_format($order['total_weight'] * 0.000001, 6)); // m3
         $parcel->setContents('');
+
+        foreach ($contents as $item) {
+            $contentLine = new Shipment\ContentLine();
+            $contentLine->currency = 'EUR';
+            $contentLine->country_of_origin = 'FI';
+            $contentLine->description = $item['name'];
+            $contentLine->quantity = $item['quantity'];
+            $contentLine->netweight = $item['grams'];
+            $contentLine->tariff_code = '';
+            $contentLine->value = $item['price'];
+            $parcel->addContentLine($contentLine);
+        }
 
 
         $pickupPointId = null;
