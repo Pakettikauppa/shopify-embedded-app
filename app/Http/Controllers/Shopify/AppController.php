@@ -219,15 +219,14 @@ class AppController extends Controller
                 $shipment['tracking_code'] = $_shipment['tracking_code'];
             }
 
-            if(!empty($this->pk_client->getResponse()->{'response.trackingcode'}['labelcode'])) {
+            if(!empty($this->pk_client->getResponse()->{'response.trackingcode'}['labelcode']) and $this->shop->create_activation_code === true) {
                 try {
-
-                $this->client->call('PUT', '/admin/orders/'.$order['id'].'.json', [
-                    'order' => [
-                        'id' => $order['id'],
-                        'note' => sprintf('%s: %s', trans('app.settings.activation_code'), $this->pk_client->getResponse()->{'response.trackingcode'}['labelcode'])
-                    ]
-                ]);
+                    $this->client->call('PUT', '/admin/orders/'.$order['id'].'.json', [
+                        'order' => [
+                            'id' => $order['id'],
+                            'note' => sprintf('%s: %s', trans('app.settings.activation_code'), $this->pk_client->getResponse()->{'response.trackingcode'}['labelcode'])
+                        ]
+                    ]);
                 } catch(\Exception $e) {
                     Log::debug($e->getMessage());
                     Log::debug($e->getTraceAsString());
