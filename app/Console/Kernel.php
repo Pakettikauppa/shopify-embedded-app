@@ -2,6 +2,7 @@
 
 namespace App\Console;
 
+use App\Console\Commands\RemoceCSAPIFromCustomer;
 use App\Console\Commands\Shopify\FetchLatestNews;
 use App\Console\Commands\UpdateCustomCarrierServiceInfoForAllCustomers;
 use Illuminate\Console\Scheduling\Schedule;
@@ -16,6 +17,7 @@ class Kernel extends ConsoleKernel
      */
     protected $commands = [
         UpdateCustomCarrierServiceInfoForAllCustomers::class,
+        RemoceCSAPIFromCustomer::class,
         FetchLatestNews::class,
     ];
 
