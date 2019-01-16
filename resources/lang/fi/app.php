@@ -29,7 +29,7 @@ return [
     ],
     'settings' => [
         'activation_code' => 'Asiointikoodi',
-        'create_activation_code' => 'Luo asiointikoodi (Helposti-koodi, aktivointikoodi) kaikille lähetyksille',
+        'create_activation_code' => 'Luo asiointikoodi (Helposti-koodi, aktivointikoodi) kaikille lähetyksille. Koodi lisätään tilauksen Notesiin, jolloinka se saattaa tulla näkyviin myös asiakkaalle meneviin tietoihin!',
         'testmode_on' => 'Kytke testitila päälle',
         'testmode_off' => 'Kytke tuotantotila päälle',
         'latest-news' => 'Ajankohtaista',
