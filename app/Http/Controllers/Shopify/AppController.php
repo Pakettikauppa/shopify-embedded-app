@@ -237,7 +237,7 @@ class AppController extends Controller
                 $shipment['error_message'] = $_shipment['error_message'];
             }
 
-                $shipments[] = $shipment;
+            $shipments[] = $shipment;
 
             Log::debug("Processed order: {$shipment['tracking_code']} - {$order['id']}");
         }
@@ -245,6 +245,8 @@ class AppController extends Controller
         if($fulfill_order){
 
             foreach($shipments as $orderKey => $order) {
+                if(empty($order['tracking_code'])) continue;
+
                 Log::debug("Fullfilling order: {$order['tracking_code']} - {$order['id']}");
 
                 if($order['fulfillment_status'] == 'fulfilled') continue;
