@@ -192,13 +192,32 @@ class AppController extends Controller
                 $receiverPhone = $order['customer']['phone'];
             }
 
+            $receiverName = $shipping_address['first_name'] . " ".$shipping_address['last_name'];
+            if(empty(trim($receiverName))) $receiverName = $order['billing_address']['first_name']." ".$order['billing_address']['last_name'];
+
+            $receiverCompany = $shipping_address['company'];
+            if(empty($receiverCompany)) $receiverCompany = $order['billing_address']['company'];
+            if(empty($receiverCompany)) $receiverCompany = null;
+
+            $receiverAddress = $shipping_address['address1'];
+            if(empty($receiverAddress)) $receiverAddress = $order['billing_address']['address1'];
+
+            $receiverZip = $shipping_address['zip'];
+            if(empty($receiverZip)) $receiverZip = $order['billing_address']['zip'];
+
+            $receiverCity = $shipping_address['city'];
+            if(empty($receiverCity)) $receiverCity = $order['billing_address']['city'];
+
+            $receiverCountry = $shipping_address['country_code'];
+            if(empty($receiverCountry)) $receiverCountry = $order['billing_address']['country_code'];
+
             $receiverInfo = [
-                'name' => $shipping_address['first_name'] . " ".$shipping_address['last_name'],
-                'company' => ($shipping_address['company']==null?'':$shipping_address['company']),
-                'address' => $shipping_address['address1'],
-                'postcode' => $shipping_address['zip'],
-                'city' => $shipping_address['city'],
-                'country' => $shipping_address['country_code'],
+                'name' => $receiverName,
+                'company' => $receiverCompany,
+                'address' => $receiverAddress,
+                'postcode' => $receiverZip,
+                'city' => $receiverCity,
+                'country' => $receiverCountry,
                 'phone' => $receiverPhone,
                 'email' => $order['email'],
             ];
