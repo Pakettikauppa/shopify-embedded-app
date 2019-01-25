@@ -155,7 +155,7 @@ class AppController extends Controller
                 $shipments[] = $shipment;
                 continue;
             }
-            if(!isset($order['shipping_address'])){
+            if(!isset($order['shipping_address']) and !isset($order['billing_address'])){
                 $shipment['status'] = 'need_shipping_address';
                 $shipments[] = $shipment;
                 continue;
@@ -165,7 +165,11 @@ class AppController extends Controller
 
             }
 
-            $shipping_address = $order['shipping_address'];
+            if(isset($order['shipping_address'])) {
+                $shipping_address = $order['shipping_address'];
+            } else {
+                $shipping_address = $order['billing_address'];
+            }
 
             $senderInfo = [
                 'name' => $this->shop->business_name,
@@ -193,23 +197,12 @@ class AppController extends Controller
             }
 
             $receiverName = $shipping_address['first_name'] . " ".$shipping_address['last_name'];
-            if(empty(trim($receiverName))) $receiverName = $order['billing_address']['first_name']." ".$order['billing_address']['last_name'];
-
             $receiverCompany = $shipping_address['company'];
-            if(empty($receiverCompany)) $receiverCompany = $order['billing_address']['company'];
             if(empty($receiverCompany)) $receiverCompany = null;
-
             $receiverAddress = $shipping_address['address1'];
-            if(empty($receiverAddress)) $receiverAddress = $order['billing_address']['address1'];
-
             $receiverZip = $shipping_address['zip'];
-            if(empty($receiverZip)) $receiverZip = $order['billing_address']['zip'];
-
             $receiverCity = $shipping_address['city'];
-            if(empty($receiverCity)) $receiverCity = $order['billing_address']['city'];
-
             $receiverCountry = $shipping_address['country_code'];
-            if(empty($receiverCountry)) $receiverCountry = $order['billing_address']['country_code'];
 
             $receiverInfo = [
                 'name' => $receiverName,
