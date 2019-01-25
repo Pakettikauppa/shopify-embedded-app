@@ -51,7 +51,9 @@
                 <form method="post" action="{{route('shopify.get_labels')}}" target="_blank">
                     <input type="hidden" name="_token" id="csrf-token" value="{{ Session::token() }}" />
                     @foreach($orders as $order)
+                        @if(isset($order['tracking_code']))
                         <input type="hidden" name="tracking_codes[]" value="{{$order['tracking_code']}}">
+                        @endif
                     @endforeach
                     <button name="submit">{{trans('app.print_labels.fetch_all')}}</button>
                 </form>
