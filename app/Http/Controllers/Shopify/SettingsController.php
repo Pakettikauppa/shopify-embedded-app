@@ -159,7 +159,10 @@ class SettingsController extends Controller
         } catch (\Exception $ex) {
             throw new FatalErrorException();
         }
-        $api_valid = isset($products);
+        $grouped_services = [];
+
+        $api_valid = !empty($products);
+
         if ($api_valid) {
             $grouped_services = array_group_by($products, function ($i) {
                 return $i['service_provider'];
