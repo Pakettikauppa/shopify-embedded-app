@@ -1,7 +1,8 @@
 <?php
 
-if (! function_exists('array_group_by') ) {
-    function array_group_by(array $arr, callable $key_selector) {
+if (!function_exists('array_group_by')) {
+    function array_group_by(array $arr, callable $key_selector)
+    {
         $result = array();
         foreach ($arr as $i) {
             $key = call_user_func($key_selector, $i);
@@ -11,19 +12,27 @@ if (! function_exists('array_group_by') ) {
     }
 }
 
-if (! function_exists('translateStatusCode')) {
-    function translateStatusCode($code, $isShort = false){
+if (!function_exists('translateStatusCode')) {
+    function translateStatusCode($code, $isShort = false)
+    {
         $length = $isShort ? '.short' : '.full';
-        if(!isset($code)) return '';
-        if(!intval($code)) $code = translateContractionToCode($code);
-        if(!$code) return '';
+        if (!isset($code)) {
+            return '';
+        }
+        if (!intval($code)) {
+            $code = translateContractionToCode($code);
+        }
+        if (!$code) {
+            return '';
+        }
 
         return trans('app.status_codes.' . $code . $length);
     }
 }
 
-if (! function_exists('translateContractionToCode')) {
-    function translateContractionToCode($contraction){
+if (!function_exists('translateContractionToCode')) {
+    function translateContractionToCode($contraction)
+    {
         $codes = [
             "REK-TAR" => 31,
             "LUO" => 22,
@@ -39,13 +48,15 @@ if (! function_exists('translateContractionToCode')) {
             "SSI" => 45,
             "POI" => 20,
         ];
-        if(isset($codes[$contraction])) return $codes[$contraction];
-        else return false;
+        if (isset($codes[$contraction])) {
+            return $codes[$contraction];
+        } else {
+            return false;
+        }
     }
 }
 
-if (! function_exists('getCountryList'))
-{
+if (!function_exists('getCountryList')) {
 
     function getCountryList($key = null)
     {
@@ -296,7 +307,7 @@ if (! function_exists('getCountryList'))
             'ZW' => 'Zimbabwe',
         ];
 
-        if(is_null($key)) {
+        if (is_null($key)) {
             return $list;
         } else {
             return isset($list[$key]) ? $list[$key] : null;
@@ -304,8 +315,7 @@ if (! function_exists('getCountryList'))
     }
 }
 
-if (! function_exists('getLanguageList'))
-{
+if (!function_exists('getLanguageList')) {
     function getLanguageList()
     {
         $list = [

@@ -19,10 +19,10 @@ class Shop extends Model
     /**
      * @var $pk_client \Pakettikauppa\Client
      */
-    public function sendShipment($pk_client, $order, $senderInfo, $receiverInfo, $contents, $isReturn = false){
-
+    public function sendShipment($pk_client, $order, $senderInfo, $receiverInfo, $contents, $isReturn = false)
+    {
         $sender = new Sender();
-        if($senderInfo['company'] != '') {
+        if ($senderInfo['company'] != '') {
             $sender->setName1($senderInfo['company']);
             $sender->setName2($senderInfo['name']);
         } else {
@@ -35,7 +35,7 @@ class Shop extends Model
         $sender->setCountry($senderInfo['country']);
 
         $receiver = new Receiver();
-        if($receiverInfo['company'] != '') {
+        if ($receiverInfo['company'] != '') {
             $receiver->setName1($receiverInfo['company']);
             $receiver->setName2($receiverInfo['name']);
         } else {
@@ -74,21 +74,21 @@ class Shop extends Model
         $pickupPointId = null;
         $method_code = null;
 
-        if(isset($order['shipping_lines'][0]['title'])){
+        if (isset($order['shipping_lines'][0]['title'])) {
             $shipping_settings = unserialize($this->shipping_settings);
             $service_name = $order['shipping_lines'][0]['title'];
 
-            foreach($shipping_settings as $item){
-                if($item['shipping_rate_id'] == $service_name){
+            foreach ($shipping_settings as $item) {
+                if ($item['shipping_rate_id'] == $service_name) {
                     $method_code = $item['product_code'];
                 }
             }
 
-            if(isset($order['shipping_lines'][0]['code']) && $order['shipping_lines'][0]['code'] != null) {
+            if (isset($order['shipping_lines'][0]['code']) && $order['shipping_lines'][0]['code'] != null) {
                 $pickupPoint = $this->shippingCode2Method($order['shipping_lines'][0]['code']);
                 $pickupPointId = $pickupPoint['pickup_point_id'];
 
-                if(!empty($pickupPointId)) {
+                if (! empty($pickupPointId)) {
                     $method_code = $pickupPoint['method_code'];
                 } else {
                     $pickupPointId = null;
@@ -96,7 +96,8 @@ class Shop extends Model
             }
         }
 
-        if(!isset($method_code)){                                  // use default shipping method
+        // use default shipping method
+        if (empty($method_code)) {
             $method_code = $this->default_service_code;
         }
 
@@ -107,18 +108,18 @@ class Shop extends Model
         $shipment->setShipmentInfo($info);
         $shipment->addParcel($parcel);
 
-        if($pickupPointId != null and !$isReturn) {
+        if ($pickupPointId != null and ! $isReturn) {
             $additional_service = new AdditionalService();
             $additional_service->setServiceCode(2106);
             $additional_service->addSpecifier('pickup_point_id', $pickupPointId);
             $shipment->addAdditionalService($additional_service);
         }
 
-        if($this->always_create_return_label == true && !$isReturn) {
+        if ($this->always_create_return_label == true && ! $isReturn) {
             $shipment->includeReturnLabel(true);
         }
 
-        if($this->create_activation_code == true) {
+        if ($this->create_activation_code == true) {
             $additional_service = new AdditionalService();
             $additional_service->setServiceCode(9902);
             $shipment->addAdditionalService($additional_service);
@@ -127,8 +128,8 @@ class Shop extends Model
         try {
             $pk_client->createTrackingCode($shipment);
 
-            $tracking_code = (string) $shipment->getTrackingCode();
-            $reference = (string) $shipment->getReference();
+            $tracking_code = (string)$shipment->getTrackingCode();
+            $reference = (string)$shipment->getReference();
 
             $shopify_shipment = new ShopifyShipment();
             $shopify_shipment->shop_id = $this->id;
@@ -138,8 +139,7 @@ class Shop extends Model
             $shopify_shipment->test_mode = $this->test_mode;
             $shopify_shipment->return = $isReturn;
             $shopify_shipment->save();
-
-        } catch (\Exception $ex)  {
+        } catch (\Exception $ex) {
             $order['status'] = 'custom_error';
             $order['error_message'] = $ex->getMessage();
             return $order;
@@ -151,16 +151,16 @@ class Shop extends Model
         return $order;
     }
 
-    public function shippingCode2Method($shippingCode) {
-        $pickupPoint = explode(":",$shippingCode);
+    public function shippingCode2Method($shippingCode)
+    {
+        $pickupPoint = explode(":", $shippingCode);
         $pickupPointId = null;
         $method_code = null;
 
-        if(count($pickupPoint) == 2) {
-
+        if (count($pickupPoint) == 2) {
             $pickupPointId = $pickupPoint[1];
 
-            switch($pickupPoint[0]) {
+            switch ($pickupPoint[0]) {
                 case 'Posti':
                     $method_code = 2103;
                     break;
@@ -175,9 +175,9 @@ class Shop extends Model
             }
         }
 
-        return ['method_code' => $method_code,
+        return [
+            'method_code' => $method_code,
             'pickup_point_id' => $pickupPointId
         ];
     }
-
 }

@@ -34,11 +34,11 @@ class AppController extends Controller
     {
         $this->middleware(function ($request, $next) {
 
-            if(!session()->has('shop')){
+            if (!session()->has('shop')) {
                 session()->put('init_request', $request->fullUrl());
 
                 $params = $request->all();
-                $params['_pk_s']=1;
+                $params['_pk_s'] = 1;
 
                 return redirect()->route('shopify.auth.index', $params);
             }
@@ -46,7 +46,7 @@ class AppController extends Controller
             $shop_origin = session()->get('shop');
             $shop = Shop::where('shop_origin', $shop_origin)->first();
 
-            if(empty($shop)){
+            if (empty($shop)) {
                 session()->put('init_request', $request->fullUrl());
                 return redirect()->route('shopify.auth.index', request()->all());
             }
@@ -57,15 +57,20 @@ class AppController extends Controller
             }
             $this->pickupPointSettings = json_decode($shop->settings, true);
 
-            $this->client = new ShopifyClient($shop->shop_origin, $shop->token, ENV('SHOPIFY_API_KEY'), ENV('SHOPIFY_SECRET'));
+            $this->client = new ShopifyClient(
+                $shop->shop_origin,
+                $shop->token,
+                ENV('SHOPIFY_API_KEY'),
+                ENV('SHOPIFY_SECRET')
+            );
 
             // set pk_client
-            if($this->shop->test_mode){
+            if ($this->shop->test_mode) {
                 $pk_client_params = [
                     'test_mode' => true,
                 ];
-            }else{
-                if(isset($this->shop->api_key) && isset($this->shop->api_secret)){
+            } else {
+                if (isset($this->shop->api_key) && isset($this->shop->api_secret)) {
                     $pk_client_params = [
                         'api_key' => $this->shop->api_key,
                         'secret' => $this->shop->api_secret,
@@ -73,7 +78,7 @@ class AppController extends Controller
                 }
             }
 
-            if(is_array($pk_client_params)){
+            if (is_array($pk_client_params)) {
                 $this->pk_client = new Client($pk_client_params);
             }
 
@@ -91,10 +96,11 @@ class AppController extends Controller
      * @param array $arr
      * @return array
      */
-    private function flattenArray($arr) {
-        $values=[];
-        foreach($arr as $item) {
-            if(is_array($item)) {
+    private function flattenArray($arr)
+    {
+        $values = [];
+        foreach ($arr as $item) {
+            if (is_array($item)) {
                 $values = array_merge($values, flattenArray($item));
             } else {
                 $values[] = $item;
@@ -105,7 +111,7 @@ class AppController extends Controller
 
     public function printLabels(Request $request)
     {
-        if(!isset($request->ids) && !isset($request->id)){
+        if (!isset($request->ids) && !isset($request->id)) {
             Log::debug('No id found');
             throw new NotFoundHttpException();
         }
@@ -114,9 +120,9 @@ class AppController extends Controller
 
         // api check
         $result = $this->pk_client->listShippingMethods();
-        Log::debug("ListShippingMethods Result:". $result);
+        Log::debug("ListShippingMethods Result:" . $result);
         $result = json_decode($result);
-        if(!is_array($result)){
+        if (!is_array($result)) {
             Log::debug("List Shipping Methods error!");
 
             return view('app.alert', [
@@ -126,17 +132,21 @@ class AppController extends Controller
             ]);
         }
 
-        if(isset($request->ids)){
+        if (isset($request->ids)) {
             $order_ids = $request->ids;
-        }else{
+        } else {
             $order_ids = [$request->id];
         }
 
-        $orders = $this->client->call('GET', '/admin/orders.json', ['ids' => implode(',', $order_ids), 'status' => 'any']);
+        $orders = $this->client->call(
+            'GET',
+            '/admin/orders.json',
+            ['ids' => implode(',', $order_ids), 'status' => 'any']
+        );
 
         $shipments = [];
 
-        foreach($orders as $order){
+        foreach ($orders as $order) {
             $shipment = [];
             $shipment['fulfillment_status'] = $order['fulfillment_status'];
             $shipment['line_items'] = $order['line_items'];
@@ -149,23 +159,22 @@ class AppController extends Controller
                 ->where('return', $is_return)
                 ->first();
 
-            if($done_shipment){
+            if ($done_shipment) {
                 $shipment['status'] = 'sent';
                 $shipment['tracking_code'] = $done_shipment->tracking_code;
                 $shipments[] = $shipment;
                 continue;
             }
-            if(!isset($order['shipping_address']) and !isset($order['billing_address'])){
+            if (!isset($order['shipping_address']) and !isset($order['billing_address'])) {
                 $shipment['status'] = 'need_shipping_address';
                 $shipments[] = $shipment;
                 continue;
             }
 
-            if($order['gateway'] == 'Cash on Delivery (COD)') {
-
+            if ($order['gateway'] == 'Cash on Delivery (COD)') {
             }
 
-            if(isset($order['shipping_address'])) {
+            if (isset($order['shipping_address'])) {
                 $shipping_address = $order['shipping_address'];
             } else {
                 $shipping_address = $order['billing_address'];
@@ -184,21 +193,23 @@ class AppController extends Controller
 
             $receiverPhone = $shipping_address['phone'];
 
-            if (empty ($receiverPhone) and isset($order['billing_address']['phone'])) {
+            if (empty($receiverPhone) and isset($order['billing_address']['phone'])) {
                 $receiverPhone = $order['billing_address']['phone'];
             }
 
-            if (empty ($receiverPhone) ) {
+            if (empty($receiverPhone)) {
                 $receiverPhone = $order['phone'];
             }
 
-            if (empty ($receiverPhone) and isset($order['customer']['phone'])) {
+            if (empty($receiverPhone) and isset($order['customer']['phone'])) {
                 $receiverPhone = $order['customer']['phone'];
             }
 
-            $receiverName = $shipping_address['first_name'] . " ".$shipping_address['last_name'];
+            $receiverName = $shipping_address['first_name'] . " " . $shipping_address['last_name'];
             $receiverCompany = $shipping_address['company'];
-            if(empty($receiverCompany)) $receiverCompany = null;
+            if (empty($receiverCompany)) {
+                $receiverCompany = null;
+            }
             $receiverAddress = $shipping_address['address1'];
             $receiverZip = $shipping_address['zip'];
             $receiverCity = $shipping_address['city'];
@@ -215,7 +226,7 @@ class AppController extends Controller
                 'email' => $order['email'],
             ];
 
-            if($is_return){
+            if ($is_return) {
                 $tmp = $receiverInfo;
                 $receiverInfo = $senderInfo;
                 $senderInfo = $tmp;
@@ -223,7 +234,14 @@ class AppController extends Controller
 
             $contents = $shipment['line_items'];
 
-            $_shipment = $this->shop->sendShipment($this->pk_client, $order, $senderInfo, $receiverInfo, $contents, $is_return);
+            $_shipment = $this->shop->sendShipment(
+                $this->pk_client,
+                $order,
+                $senderInfo,
+                $receiverInfo,
+                $contents,
+                $is_return
+            );
             $shipment['status'] = $_shipment['status'];
 
             $shipment['tracking_code'] = '';
@@ -231,15 +249,20 @@ class AppController extends Controller
                 $shipment['tracking_code'] = $_shipment['tracking_code'];
             }
 
-            if(!empty($this->pk_client->getResponse()->{'response.trackingcode'}['labelcode']) and $this->shop->create_activation_code === true) {
+            if (!empty($this->pk_client->getResponse()->{'response.trackingcode'}['labelcode']) and
+                $this->shop->create_activation_code === true) {
                 try {
-                    $this->client->call('PUT', '/admin/orders/'.$order['id'].'.json', [
+                    $this->client->call('PUT', '/admin/orders/' . $order['id'] . '.json', [
                         'order' => [
                             'id' => $order['id'],
-                            'note' => sprintf('%s: %s', trans('app.settings.activation_code'), $this->pk_client->getResponse()->{'response.trackingcode'}['labelcode'])
+                            'note' => sprintf(
+                                '%s: %s',
+                                trans('app.settings.activation_code'),
+                                $this->pk_client->getResponse()->{'response.trackingcode'}['labelcode']
+                            )
                         ]
                     ]);
-                } catch(\Exception $e) {
+                } catch (\Exception $e) {
                     Log::debug($e->getMessage());
                     Log::debug($e->getTraceAsString());
                 }
@@ -254,34 +277,47 @@ class AppController extends Controller
             Log::debug("Processed order: {$shipment['tracking_code']} - {$order['id']}");
         }
 
-        if($fulfill_order){
-
-            foreach($shipments as $orderKey => $order) {
-                if(empty($order['tracking_code'])) continue;
+        if ($fulfill_order) {
+            foreach ($shipments as $orderKey => $order) {
+                if (empty($order['tracking_code'])) {
+                    continue;
+                }
 
                 Log::debug("Fullfilling order: {$order['tracking_code']} - {$order['id']}");
 
-                if($order['fulfillment_status'] == 'fulfilled') continue;
-                if($order['status'] == 'custom_error') continue;
-                if($order['status'] == 'need_shipping_address') continue;
+                if ($order['fulfillment_status'] == 'fulfilled') {
+                    continue;
+                }
+                if ($order['status'] == 'custom_error') {
+                    continue;
+                }
+                if ($order['status'] == 'need_shipping_address') {
+                    continue;
+                }
 
                 $services = [];
 
-                foreach($order['line_items'] as $item){
+                foreach ($order['line_items'] as $item) {
                     $variantId = $item['variant_id'];
 
                     try {
-                        $variants = $this->client->call('GET', '/admin/variants/'.$variantId.'.json');
+                        $variants = $this->client->call('GET', '/admin/variants/' . $variantId . '.json');
 
                         $inventoryId = $variants['inventory_item_id'];
 
                         // TODO: not the most efficient way to do this
-                        $inventoryLevels = $this->client->call('GET', '/admin/inventory_levels.json', ['inventory_item_ids' => $inventoryId]);
+                        $inventoryLevels = $this->client->call(
+                            'GET',
+                            '/admin/inventory_levels.json',
+                            [
+                                'inventory_item_ids' => $inventoryId
+                            ]
+                        );
 
                         $makeNull = true;
 
-                        foreach($inventoryLevels as $_inventory) {
-                            if($_inventory['available'] > 0 || $_inventory['available'] == NULL){
+                        foreach ($inventoryLevels as $_inventory) {
+                            if ($_inventory['available'] > 0 || $_inventory['available'] == null) {
                                 $service = $item['fulfillment_service'];
                                 $services[$service][$_inventory['location_id']][] = ['id' => $item['id']];
                                 $makeNull = false;
@@ -290,8 +326,8 @@ class AppController extends Controller
                             }
                         }
 
-                        if($makeNull) {
-                            Log::debug("NULL item: {$item['id']} - ". var_export($inventoryLevels, true));
+                        if ($makeNull) {
+                            Log::debug("NULL item: {$item['id']} - " . var_export($inventoryLevels, true));
                         }
                     } catch (ShopifyApiException $sae) {
                         $exceptionData = array(
@@ -307,11 +343,10 @@ class AppController extends Controller
                         Log::debug(var_export($item, true));
                         Log::debug('Fullfillment Exception: ' . $e->getTraceAsString());
                     }
-
                 }
 
-                foreach($services as $line_items){
-                    foreach($line_items as $locationId => $items) {
+                foreach ($services as $line_items) {
+                    foreach ($line_items as $locationId => $items) {
                         $fulfillment = [
                             'tracking_number' => $order['tracking_code'],
                             'location_id' => $locationId,
@@ -321,7 +356,13 @@ class AppController extends Controller
                         ];
 
                         try {
-                            $result = $this->client->call('POST', '/admin/orders/' . $order['id'] . '/fulfillments.json', ['fulfillment' => $fulfillment]);
+                            $result = $this->client->call(
+                                'POST',
+                                '/admin/orders/' . $order['id'] . '/fulfillments.json',
+                                [
+                                    'fulfillment' => $fulfillment
+                                ]
+                            );
                             Log::debug(var_export($result, true));
                         } catch (ShopifyApiException $sae) {
                             $exceptionData = array(
@@ -337,15 +378,18 @@ class AppController extends Controller
                             Log::debug('Fullfillment Exception: ' . $e->getTraceAsString());
                         }
                     }
-               }
+                }
                 Log::debug("Fullfilled order: {$order['id']}");
-
             }
         }
 
         $page_title = 'print_label';
-        if($is_return) $page_title = 'return_label';
-        if($fulfill_order) $page_title = 'print_label_fulfill';
+        if ($is_return) {
+            $page_title = 'return_label';
+        }
+        if ($fulfill_order) {
+            $page_title = 'print_label_fulfill';
+        }
 
         return view('app.print-labels', [
             'shop' => $this->shop,
@@ -356,16 +400,19 @@ class AppController extends Controller
         ]);
     }
 
-    public function latestNews() {
+    public function latestNews()
+    {
         $folder_path = storage_path('rss');
-        $rssFeed = simplexml_load_file($folder_path.'/feed.xml');
+        $rssFeed = simplexml_load_file($folder_path . '/feed.xml');
 
         return view('app.latest-news', [
             'feed' => $rssFeed->channel,
             'shop' => $this->shop,
         ]);
     }
-    public function returnLabel(Request $request){
+
+    public function returnLabel(Request $request)
+    {
         $params = $request->all();
         $params['is_return'] = true;
         $request = Request::create('print-labels', 'GET', $params);
@@ -374,7 +421,8 @@ class AppController extends Controller
         return $response;
     }
 
-    public function printLabelsFulfill(Request $request){
+    public function printLabelsFulfill(Request $request)
+    {
         $params = $request->all();
         $params['fulfill_order'] = true;
         $request = Request::create('print-labels', 'GET', $params);
@@ -385,7 +433,7 @@ class AppController extends Controller
 
     public function getLabels(Request $request)
     {
-        if(empty($request->tracking_codes)){
+        if (empty($request->tracking_codes)) {
             throw new NotFoundHttpException();
         }
 
@@ -409,7 +457,7 @@ class AppController extends Controller
             ->where('return', $is_return)
             ->first();
 
-        if(!isset($shipment)){
+        if (!isset($shipment)) {
             throw new NotFoundHttpException();
         }
 
@@ -423,18 +471,19 @@ class AppController extends Controller
 
         return Response::make($pdf_content, 200, [
             'Content-Type' => 'application/pdf',
-            'Content-Disposition' => 'inline; filename="'.$shipment->tracking_code.'.pdf"'
+            'Content-Disposition' => 'inline; filename="' . $shipment->tracking_code . '.pdf"'
         ]);
     }
 
-    public function trackShipment(Request $request){
+    public function trackShipment(Request $request)
+    {
         $is_return = isset($request->is_return) ? $request->is_return : false;
         $shipment = ShopifyShipment::where('shop_id', $this->shop->id)
             ->where('order_id', $request->id)
             ->where('return', $is_return)
             ->first();
 
-        if(!isset($shipment)){
+        if (!isset($shipment)) {
             return view('app.alert', [
                 'type' => 'error',
                 'title' => trans('app.messages.no_tracking_info'),
@@ -446,7 +495,7 @@ class AppController extends Controller
 
         $statuses = json_decode($this->pk_client->getShipmentStatus($tracking_code));
 
-        if(!is_array($statuses) || count($statuses) == 0){
+        if (!is_array($statuses) || count($statuses) == 0) {
             return view('app.alert', [
                 'type' => 'error',
                 'title' => trans('app.messages.no_tracking_info'),
