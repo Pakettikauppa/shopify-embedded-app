@@ -54,7 +54,6 @@ class Handler extends ExceptionHandler
         }
 
         if (ENV('APP_ENV') == 'production') {
-            $exception->getTraceAsString()
             return response()->view('errors.500', [], 500);
         }
 
