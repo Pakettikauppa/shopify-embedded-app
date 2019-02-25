@@ -51,10 +51,11 @@ class RemoceCSAPIFromCustomer extends Command
         try {
             $_client->call('DELETE', '/admin/carrier_services/' . $shop->carrier_service_id . '.json');
 
-            $shop->carrier_service_id = null;
-            $shop->save();
         } catch (\Exception $e) {
             echo $e->getMessage();
         }
+
+        $shop->carrier_service_id = null;
+        $shop->save();
     }
 }
