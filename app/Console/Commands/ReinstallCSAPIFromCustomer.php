@@ -71,13 +71,13 @@ class ReinstallCSAPIFromCustomer extends Command
         // TODO: cache this result so we don't bug users with every request
 
         try {
-            $carrierService = $this->client->call('POST', '/admin/carrier_services.json', $carrierServiceData);
+            $carrierService = $_client->call('POST', '/admin/carrier_services.json', $carrierServiceData);
 
             // set carrier_service_id and set it's default count value
-            $this->shop->carrier_service_id = $carrierService['id'];
+            $shop->carrier_service_id = $carrierService['id'];
 
-            $this->shop->save();
-        } catch (ShopifyApiException $sae) {
+            $shop->save();
+        } catch (\Exception $sae) {
             echo "Add: ".$e->getMessage()."\n";
         }
     }
