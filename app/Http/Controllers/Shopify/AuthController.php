@@ -12,7 +12,7 @@ class AuthController extends Controller
 {
     public function index(Request $request)
     {
-        if($request->get('_pk_s') != null and !session()->has('init_request')) {
+        if ($request->get('_pk_s') != null and !session()->has('init_request')) {
             return view('app.create-session', [
                 'params' => $request->all(),
             ]);
@@ -52,7 +52,6 @@ class AuthController extends Controller
             return view('app.redirect', [
                 'url' => $client->getAuthorizeUrlArray(ENV('SHOPIFY_SCOPE'), $callback_url, $nonce)
             ]);
-
         } else {
             return redirect($redirect_url);
         }
@@ -62,12 +61,12 @@ class AuthController extends Controller
     {
         $client = new ShopifyClient($request->shop, '', ENV('SHOPIFY_API_KEY'), ENV('SHOPIFY_SECRET'));
 
-        if(!$client->validateSignature($request->all())){
+        if (!$client->validateSignature($request->all())) {
             throw new UnprocessableEntityHttpException();
         }
 
         $shop = Shop::where('shop_origin', $request->shop)->where('nonce', $request->state)->first();
-        if(!isset($shop)){
+        if (!isset($shop)) {
             throw new UnprocessableEntityHttpException();
         }
 
@@ -77,9 +76,9 @@ class AuthController extends Controller
         session()->put('shopify_version', '1');
         session()->put('shop', $request->shop);
 
-        if(session()->has('init_request')){
+        if (session()->has('init_request')) {
             $init_request = session()->get('init_request');
-            $init_request = str_replace(array('http:'),  array('https:'), $init_request);
+            $init_request = str_replace(array('http:'), array('https:'), $init_request);
             session()->forget('init_request');
             return redirect($init_request);
         }

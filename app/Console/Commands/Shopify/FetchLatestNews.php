@@ -40,8 +40,9 @@ class FetchLatestNews extends Command
         $rssFeed = file_get_contents(env('RSS_FEED_URL'));
 
         $folder_path = storage_path('rss');
-        if (!is_dir($folder_path))
+        if (!is_dir($folder_path)) {
             mkdir($folder_path, 0777, true);
+        }
 
         file_put_contents($folder_path.'/feed.xml', $rssFeed);
     }

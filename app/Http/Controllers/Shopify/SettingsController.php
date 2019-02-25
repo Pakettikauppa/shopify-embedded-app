@@ -32,7 +32,7 @@ class SettingsController extends Controller
                 session()->put('init_request', $request->fullUrl());
 
                 $params = $request->all();
-                $params['_pk_s']=1;
+                $params['_pk_s'] = 1;
 
                 return redirect()->route('shopify.auth.index', $params);
             }
@@ -44,13 +44,23 @@ class SettingsController extends Controller
                 return redirect()->route('shopify.auth.index', request()->all());
             }
 
+            /*
+            if (session()->get('shopify_version') != 1) {
+                session()->flush();
+            }
+            */
             $this->shop = $shop;
             if ($shop->settings == null) {
                 $shop->settings = '{}';
             }
             $this->pickupPointSettings = json_decode($shop->settings, true);
 
-            $this->client = new ShopifyClient($shop->shop_origin, $shop->token, ENV('SHOPIFY_API_KEY'), ENV('SHOPIFY_SECRET'));
+            $this->client = new ShopifyClient(
+                $shop->shop_origin,
+                $shop->token,
+                ENV('SHOPIFY_API_KEY'),
+                ENV('SHOPIFY_SECRET')
+            );
 
             // TODO how to make this work without this - cache?
             try {
@@ -116,7 +126,6 @@ class SettingsController extends Controller
                 $this->shop->pickuppoints_count = 10;
 
                 $this->shop->save();
-
             } catch (ShopifyApiException $sae) {
                 $exceptionData = array(
                     var_export($sae->getMethod(), true),
@@ -134,15 +143,17 @@ class SettingsController extends Controller
                 if (count($carrierServices) > 0) {
                     // yes, we have a carrier service!
                     foreach ($carrierServices as $_service) {
-
                         if ($_service['name'] == $carrierServiceName) {
-
                             $this->shop->carrier_service_id = $_service['id'];
                             $this->shop->pickuppoints_count = 10;
                             $this->shop->save();
 
                             if ($_service['callback_url'] != 'http://209.50.56.85/api/pickup-points') {
-                                $this->client->call('PUT', '/admin/carrier_services/' . $this->shop->carrier_service_id . '.json', $carrierServiceData);
+                                $this->client->call(
+                                    'PUT',
+                                    '/admin/carrier_services/' . $this->shop->carrier_service_id . '.json',
+                                    $carrierServiceData
+                                );
                             }
                         }
                     }
@@ -155,7 +166,6 @@ class SettingsController extends Controller
         try {
             $resp = $this->pk_client->listShippingMethods();
             $products = json_decode($resp, true);
-
         } catch (\Exception $ex) {
             throw new FatalErrorException();
         }
@@ -237,7 +247,6 @@ class SettingsController extends Controller
         try {
             $resp = $this->pk_client->listShippingMethods();
             $products = json_decode($resp, true);
-
         } catch (\Exception $ex) {
             throw new FatalErrorException();
         }
@@ -313,7 +322,6 @@ class SettingsController extends Controller
 
             $result = json_decode($client->listShippingMethods());
             if (!is_array($result)) {
-
                 $result = [
                     'status' => 'error',
                     'message' => trans('app.messages.invalid_credentials'),
@@ -398,7 +406,9 @@ class SettingsController extends Controller
 
             $pickuppoints = $request->pickuppoint;
             foreach ($pickuppoints as $_pickupPoint) {
-                if ($_pickupPoint['base_price'] == '') $_pickupPoint['base_price'] = 0;
+                if ($_pickupPoint['base_price'] == '') {
+                    $_pickupPoint['base_price'] = 0;
+                }
 
                 if ($_pickupPoint['triggered_price'] == '') {
                     $_pickupPoint['trigger_price'] = '';
@@ -412,13 +422,14 @@ class SettingsController extends Controller
 
         // generic
         if (isset($request->language)) {
-
             $this->shop->locale = $request->language;
 
             $responseStatus = 'ok-reload';
             $responseMessage = trans('app.settings.saved');
-        } else if(!isset($this->shop->locale)) {
-            $this->shop->locale = 'fi';
+        } else {
+            if (!isset($this->shop->locale)) {
+                $this->shop->locale = 'fi';
+            }
         }
 
         $this->shop->save();

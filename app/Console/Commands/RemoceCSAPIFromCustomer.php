@@ -41,7 +41,7 @@ class RemoceCSAPIFromCustomer extends Command
     {
         $shop = Shop::where('shop_origin', $this->argument('shop_origin'))->first();
 
-        if(empty($shop)) {
+        if (empty($shop)) {
             echo "No such shop_origin\n";
             return;
         }
@@ -51,10 +51,11 @@ class RemoceCSAPIFromCustomer extends Command
         try {
             $_client->call('DELETE', '/admin/carrier_services/' . $shop->carrier_service_id . '.json');
 
-            $shop->carrier_service_id = null;
-            $shop->save();
-        } catch(\Exception $e) {
+        } catch (\Exception $e) {
             echo $e->getMessage();
         }
+
+        $shop->carrier_service_id = null;
+        $shop->save();
     }
 }
