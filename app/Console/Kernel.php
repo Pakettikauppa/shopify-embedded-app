@@ -2,6 +2,7 @@
 
 namespace App\Console;
 
+use App\Console\Commands\ReinstallCSAPIFromCustomer;
 use App\Console\Commands\RemoceCSAPIFromCustomer;
 use App\Console\Commands\Shopify\FetchLatestNews;
 use App\Console\Commands\UpdateCustomCarrierServiceInfoForAllCustomers;
@@ -19,6 +20,7 @@ class Kernel extends ConsoleKernel
         UpdateCustomCarrierServiceInfoForAllCustomers::class,
         RemoceCSAPIFromCustomer::class,
         FetchLatestNews::class,
+        ReinstallCSAPIFromCustomer::class,
     ];
 
     /**
