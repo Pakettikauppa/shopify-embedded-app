@@ -2,9 +2,6 @@ sudo: false
 
 language: php
 
-env:
-  - WP_VERSION=latest
-
 php:
   - '7.2'
   - '7.3'
