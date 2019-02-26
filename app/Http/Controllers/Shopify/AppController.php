@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers\Shopify;
 
+use App\Exceptions\ShopifyApiException;
 use App\Http\Controllers\Controller;
-use App\Models\Shopify\ShopifyApiException;
 use App\Models\Shopify\ShopifyClient;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Response;
@@ -11,7 +11,6 @@ use App\Models\Shopify\Shop;
 use App\Models\Shopify\Shipment as ShopifyShipment;
 use Pakettikauppa\Client;
 use Pakettikauppa\Shipment;
-use Psy\Exception\FatalErrorException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Log;
 
