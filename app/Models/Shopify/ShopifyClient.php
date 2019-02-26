@@ -133,8 +133,8 @@ class ShopifyClient
         ksort($query);
 
         // arrays to string
-        foreach($query as $key => $item){
-            if(is_array($item)){
+        foreach ($query as $key => $item) {
+            if (is_array($item)) {
                 $query[$key] = '["' . implode('", "', $item). '"]';
             }
         }

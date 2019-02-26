@@ -50,7 +50,6 @@ class ReinstallCSAPIFromCustomer extends Command
 
         try {
             $_client->call('DELETE', '/admin/carrier_services/' . $shop->carrier_service_id . '.json');
-
         } catch (\Exception $e) {
             echo "Delete: ".$e->getMessage()."\n";
         }
