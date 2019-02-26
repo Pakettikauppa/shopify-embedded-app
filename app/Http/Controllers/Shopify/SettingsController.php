@@ -101,6 +101,20 @@ class SettingsController extends Controller
 
     public function pickuppoints()
     {
+        if ($this->shop->carrier_service_id != null) {
+            try {
+                $resp = $this->client->call('GET',
+                    '/admin/carrier_services/' . $this->shop->carrier_service_id . '.json');
+
+                Log::debug("Carrier Service: " . var_export($resp, true));
+            } catch (\Exception $e) {
+                Log::debug("Carrier Service Not Found: " . $e->getMessage());
+
+                $this->shop->carrier_service_id = null;
+                $this->shop->save();
+            }
+        }
+
         if ($this->shop->carrier_service_id == null) {
             $carrierServiceName = 'Pakettikauppa: Noutopisteet / Pickup points';
 
