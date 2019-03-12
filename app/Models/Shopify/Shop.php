@@ -34,6 +34,10 @@ class Shop extends Model
         $sender->setCity($senderInfo['city']);
         $sender->setCountry($senderInfo['country']);
 
+        if (!empty($senderInfo['phone'])) {
+            $sender->setPhone($senderInfo['phone']);
+        }
+
         $receiver = new Receiver();
         if ($receiverInfo['company'] != '') {
             $receiver->setName1($receiverInfo['company']);
