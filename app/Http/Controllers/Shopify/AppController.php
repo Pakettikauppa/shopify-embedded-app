@@ -137,11 +137,17 @@ class AppController extends Controller
             $order_ids = [$request->id];
         }
 
-        $orders = $this->client->call(
-            'GET',
-            '/admin/orders.json',
-            ['ids' => implode(',', $order_ids), 'status' => 'any']
-        );
+        try {
+            $orders = $this->client->call(
+                'GET',
+                '/admin/orders.json',
+                ['ids' => implode(',', $order_ids), 'status' => 'any']
+            );
+        } catch (ShopifyApiException $sae) {
+            Log::debug('Unauthorized thingie');
+            session()->put('init_request', $request->fullUrl());
+            return redirect()->route('shopify.auth.index', request()->all());
+        }
 
         $shipments = [];
 
