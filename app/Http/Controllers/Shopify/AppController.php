@@ -35,12 +35,18 @@ class AppController extends Controller
 
             if (!session()->has('shop')) {
                 session()->put('init_request', $request->fullUrl());
+                session()->save();
+
+                Cookie::queue('shopify.testCookie', 'yes', 5);
 
                 $params = $request->all();
-                $params['_pk_s'] = 1;
 
                 return redirect()->route('shopify.auth.index', $params);
             }
+
+            Cookie::queue('shopify.topLevelOAuth', 'no', 5);
+
+            session()->save();
 
             $shop_origin = session()->get('shop');
             $shop = Shop::where('shop_origin', $shop_origin)->first();

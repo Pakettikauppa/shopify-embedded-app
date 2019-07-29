@@ -7,17 +7,12 @@ use App\Models\Shopify\ShopifyClient;
 use Illuminate\Http\Request;
 use App\Models\Shopify\Shop;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
+use Cookie;
 
 class AuthController extends Controller
 {
     public function index(Request $request)
     {
-        if ($request->get('_pk_s') != null and !session()->has('init_request')) {
-            return view('app.create-session', [
-                'params' => $request->all(),
-            ]);
-        }
-
         $client = new ShopifyClient($request->shop, '', ENV('SHOPIFY_API_KEY'), ENV('SHOPIFY_SECRET'));
 
         if (!$client->validateSignature($request->all())) {
@@ -25,9 +20,11 @@ class AuthController extends Controller
         }
 
         $found_shop = Shop::where('shop_origin', $request->shop)->first();
-        if (isset($found_shop)) {
+        if (empty($found_shop)) {
             $shop = $found_shop;
         } else {
+            Log::debug("Shop origin = ". $request->shop);
+
             $shop = new Shop();
             // default values
             $shop->test_mode = true;
@@ -41,20 +38,30 @@ class AuthController extends Controller
         $shop->shop_origin = $request->shop;
         $shop->nonce = $nonce;
         $shop->token = '';
-
         $shop->save();
-
 
         $callback_url = route('shopify.auth.callback');
         $redirect_url = $client->getAuthorizeUrl(ENV('SHOPIFY_SCOPE'), $callback_url, $nonce);
+        $params = $request->all();
+        $params['_enable_cookies'] = 'yes';
 
-        if ($found_shop) {
-            return view('app.redirect', [
-                'url' => $client->getAuthorizeUrlArray(ENV('SHOPIFY_SCOPE'), $callback_url, $nonce)
+        $enable_cookies_url = route('shopify.auth.index', $params);
+
+        if ($request->get('_enable_cookies') == 'yes') {
+            return view('auth.create-session', [
+                'redirect_url' => 'https://${shop->shop_origin}/admin/apps/'.env('SHOPIFY_API_KEY'),
             ]);
-        } else {
-            return redirect($redirect_url);
         }
+
+        return view('auth.redirect', [
+            'redirect_url' => $redirect_url,
+            'enable_cookies_url' => $enable_cookies_url,
+        ]);
+    }
+
+    public function enableCookies(Request $request)
+    {
+
     }
 
     public function callback(Request $request)
@@ -66,23 +73,27 @@ class AuthController extends Controller
         }
 
         $shop = Shop::where('shop_origin', $request->shop)->where('nonce', $request->state)->first();
-        if (!isset($shop)) {
+        if (empty($shop)) {
+            Log::debug("shop not found");
             throw new UnprocessableEntityHttpException();
         }
 
         $shop->token = $client->getAccessToken($request->code);
         $shop->save();
 
+        Cookie::put('shopify.topLevelOAuth', 'no');
         session()->put('shopify_version', '1');
         session()->put('shop', $request->shop);
 
+
         if (session()->has('init_request')) {
+            Log::debug("Redirecting to ".session()->get('init_request'));
             $init_request = session()->get('init_request');
             $init_request = str_replace(array('http:'), array('https:'), $init_request);
             session()->forget('init_request');
             return redirect($init_request);
         }
-
+        Log::debug("Redirecting to settings");
         return redirect()->route('shopify.settings');
     }
 }
