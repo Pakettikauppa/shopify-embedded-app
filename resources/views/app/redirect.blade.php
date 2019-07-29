@@ -35,13 +35,16 @@
 
     if (ShopifyTestCookie == "yes") {
         if (ShopifyTopLevelOAuthCookie == "yes") {
+            console.log("HEP 1");
             window.location.assign('{!! $redirect_url !!}');
         } else {
+            console.log("HEP 2");
             setCookie('shopify.topLevelOAuth', 'yes');
 
             ShopifyApp.remoteRedirect('{!! $redirect_url !!}');
         }
     } else {
+        console.log("HEP 3");
         ShopifyApp.remoteRedirect('{!! $enable_cookies_url !!}}');
     }
 </script>

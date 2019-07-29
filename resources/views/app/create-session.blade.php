@@ -31,12 +31,14 @@
     });
 
     function redirect() {
+        console.log("FFFFFF 2");
         setCookie('shopify.testCookie', 'yes');
 
         window.location.assign('{!! $redirect_url !!}');
     }
 
     if (!document.hasStorageAccess) {
+        console.log("FFFFFF 1");
         redirect();
     }
 </script>
