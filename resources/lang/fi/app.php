@@ -92,6 +92,7 @@ return [
     ],
 
     'messages' => [
+        'activate_app_to_browser' => 'Oikeuta tämä selain käyttämään laajennusta',
         'error' => 'Virhe',
         'no_api' => 'API tunnuksia ei ole vielä syötetty',
         'ready' => 'Kaikki on valmista',

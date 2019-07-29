@@ -92,6 +92,7 @@ return [
     ],
 
     'messages' => [
+        'activate_app_to_browser' => 'Allow this browser to use Pakettikauppa app',
         'error' => 'Error',
         'no_api' => 'No API credentials are set',
         'ready' => 'Everything is ready',
