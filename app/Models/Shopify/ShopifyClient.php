@@ -36,6 +36,7 @@ class ShopifyClient
     private $api_key;
     private $secret;
     private $last_response_headers = null;
+    private $api_version = '2019-07';
 
     public function __construct($shop_domain, $token, $api_key, $secret)
     {
@@ -97,11 +98,11 @@ class ShopifyClient
         return $this->callLimit() - $this->callsMade();
     }
 
-    public function call($method, $path, $params = array())
+    public function call($method, $section, $path, $params = array())
     {
-        $baseurl = "https://{$this->shop_domain}/";
+        $baseURL = "https://{$this->shop_domain}/{$section}/api/{$this->api_version}/";
 
-        $url = $baseurl . ltrim($path, '/');
+        $url = $baseURL . ltrim($path, '/');
         $query = in_array($method, array('GET', 'DELETE')) ? $params : array();
         $payload = in_array($method, array('POST', 'PUT')) ? json_encode($params) : array();
         $request_headers = in_array($method, array('POST', 'PUT')) ?

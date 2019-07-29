@@ -140,7 +140,8 @@ class AppController extends Controller
         try {
             $orders = $this->client->call(
                 'GET',
-                '/admin/orders.json',
+                'admin',
+                '/orders.json',
                 ['ids' => implode(',', $order_ids), 'status' => 'any']
             );
         } catch (ShopifyApiException $sae) {
@@ -257,16 +258,16 @@ class AppController extends Controller
             if (!empty($this->pk_client->getResponse()->{'response.trackingcode'}['labelcode']) and
                 $this->shop->create_activation_code === true) {
                 try {
-                    $this->client->call('PUT', '/admin/orders/' . $order['id'] . '.json', [
-                        'order' => [
-                            'id' => $order['id'],
-                            'note' => sprintf(
-                                '%s: %s',
-                                trans('app.settings.activation_code'),
-                                $this->pk_client->getResponse()->{'response.trackingcode'}['labelcode']
-                            )
-                        ]
-                    ]);
+                    $this->client->call(
+                        'PUT',
+                        'admin',
+                        '/orders/' . $order['id'] . '.json',
+                        [
+                            'order' => [
+                                'id' => $order['id'],
+                                'note' => sprintf('%s: %s', trans('app.settings.activation_code'), $this->pk_client->getResponse()->{'response.trackingcode'}['labelcode'])
+                            ]
+                        ]);
                 } catch (\Exception $e) {
                     Log::debug($e->getMessage());
                     Log::debug($e->getTraceAsString());
@@ -306,14 +307,15 @@ class AppController extends Controller
                     $variantId = $item['variant_id'];
 
                     try {
-                        $variants = $this->client->call('GET', '/admin/variants/' . $variantId . '.json');
+                        $variants = $this->client->call('GET', 'admin', '/variants/' . $variantId . '.json');
 
                         $inventoryId = $variants['inventory_item_id'];
 
                         // TODO: not the most efficient way to do this
                         $inventoryLevels = $this->client->call(
                             'GET',
-                            '/admin/inventory_levels.json',
+                            'admin',
+                            '/inventory_levels.json',
                             [
                                 'inventory_item_ids' => $inventoryId
                             ]
@@ -363,7 +365,8 @@ class AppController extends Controller
                         try {
                             $result = $this->client->call(
                                 'POST',
-                                '/admin/orders/' . $order['id'] . '/fulfillments.json',
+                                'admin',
+                                '/orders/' . $order['id'] . '/fulfillments.json',
                                 [
                                     'fulfillment' => $fulfillment
                                 ]

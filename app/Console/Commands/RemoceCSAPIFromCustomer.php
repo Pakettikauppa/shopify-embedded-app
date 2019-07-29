@@ -49,7 +49,7 @@ class RemoceCSAPIFromCustomer extends Command
         $_client = new ShopifyClient($shop->shop_origin, $shop->token, ENV('SHOPIFY_API_KEY'), ENV('SHOPIFY_SECRET'));
 
         try {
-            $_client->call('DELETE', '/admin/carrier_services/' . $shop->carrier_service_id . '.json');
+            $_client->call('DELETE', 'admin', '/carrier_services/' . $shop->carrier_service_id . '.json');
         } catch (\Exception $e) {
             echo $e->getMessage();
         }

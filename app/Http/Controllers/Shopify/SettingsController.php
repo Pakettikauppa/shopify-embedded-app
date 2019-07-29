@@ -49,7 +49,8 @@ class SettingsController extends Controller
             if ($shop->settings == null) {
                 $shop->settings = '{}';
             }
-            $this->pickupPointSettings = json_decode($shop->settings, true);
+            $this->settings = json_decode($shop->settings, true);
+            $this->pickupPointSettings = $this->settings->pickup_points;
 
             $this->client = new ShopifyClient(
                 $shop->shop_origin,
@@ -60,7 +61,7 @@ class SettingsController extends Controller
 
             // TODO how to make this work without this - cache?
             try {
-                $this->client->call('GET', '/admin/shop.json');
+                $this->client->call('GET', 'admin', '/shop.json');
             } catch (ShopifyApiException $e) {
                 Log::debug("ARE WE EVER GOING HERE??");
                 session()->put('init_request', $request->fullUrl());
@@ -103,8 +104,10 @@ class SettingsController extends Controller
     {
         if ($this->shop->carrier_service_id != null) {
             try {
-                $resp = $this->client->call('GET',
-                    '/admin/carrier_services/' . $this->shop->carrier_service_id . '.json');
+                $resp = $this->client->call(
+                    'GET',
+                    'admin',
+                    '/carrier_services/' . $this->shop->carrier_service_id . '.json');
 
                 Log::debug("Carrier Service: " . var_export($resp, true));
             } catch (\Exception $e) {
@@ -129,7 +132,7 @@ class SettingsController extends Controller
             // TODO: cache this result so we don't bug users with every request
 
             try {
-                $carrierService = $this->client->call('POST', '/admin/carrier_services.json', $carrierServiceData);
+                $carrierService = $this->client->call('POST', 'admin', '/carrier_services.json', $carrierServiceData);
 
                 // set carrier_service_id and set it's default count value
                 $this->shop->carrier_service_id = $carrierService['id'];
@@ -148,7 +151,7 @@ class SettingsController extends Controller
                 Log::debug('ShopiApiException: ' . var_export($exceptionData, true));
 
                 // it failed, why? Did carrier service already exists but our db shows that it is not active?
-                $carrierServices = $this->client->call('GET', '/admin/carrier_services.json');
+                $carrierServices = $this->client->call('GET', 'admin', '/carrier_services.json');
 
                 if (count($carrierServices) > 0) {
                     // yes, we have a carrier service!
@@ -161,7 +164,8 @@ class SettingsController extends Controller
                             if ($_service['callback_url'] != 'http://209.50.56.85/api/pickup-points') {
                                 $this->client->call(
                                     'PUT',
-                                    '/admin/carrier_services/' . $this->shop->carrier_service_id . '.json',
+                                    'admin',
+                                    '/carrier_services/' . $this->shop->carrier_service_id . '.json',
                                     $carrierServiceData
                                 );
                             }
@@ -226,7 +230,7 @@ class SettingsController extends Controller
 
     public function shipping()
     {
-        $shipping_zones = $this->client->call('GET', '/admin/shipping_zones.json');
+        $shipping_zones = $this->client->call('GET', 'admin', '/shipping_zones.json');
         $shipping_settings = unserialize($this->shop->shipping_settings);
 
         $result_rates = [];
@@ -294,10 +298,11 @@ class SettingsController extends Controller
         $responseStatus = 'error';
         $responseMessage = 'unknown';
 
-        Log::debug(var_export($request->test_mode, true));
+        Log::debug(var_export($request->all(), true));
 
         if (isset($request->test_mode)) {
             if (isset($this->shop->api_key) && isset($this->shop->api_secret)) {
+                Log::debug('TESTMODE:' . $request->test_mode);
                 $responseStatus = 'ok';
                 if ($request->test_mode == 'true') {
                     $responseMessage = trans('app.messages.in-testing');
@@ -368,6 +373,7 @@ class SettingsController extends Controller
                 $productProviderByCode[(string)$_product['shipping_method_code']] = $_product['service_provider'];
             }
 
+            // Old settings
             $shipping_settings = [];
             if (isset($request->shipping_method)) {
                 foreach ($request->shipping_method as $key => $code) {
@@ -378,6 +384,7 @@ class SettingsController extends Controller
                     ];
                 }
             }
+
 
             $this->shop->shipping_settings = serialize($shipping_settings);
 

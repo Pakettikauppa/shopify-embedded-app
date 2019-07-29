@@ -62,7 +62,8 @@ class UpdateCustomCarrierServiceInfoForAllCustomers extends Command
             try {
                 $_client->call(
                     'PUT',
-                    '/admin/carrier_services/' . $shop->carrier_service_id . '.json',
+                    'admin',
+                    '/carrier_services/' . $shop->carrier_service_id . '.json',
                     $carrierServiceData
                 );
             } catch (\Exception $e) {

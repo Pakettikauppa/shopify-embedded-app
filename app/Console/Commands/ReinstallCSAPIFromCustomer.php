@@ -49,7 +49,7 @@ class ReinstallCSAPIFromCustomer extends Command
         $_client = new ShopifyClient($shop->shop_origin, $shop->token, ENV('SHOPIFY_API_KEY'), ENV('SHOPIFY_SECRET'));
 
         try {
-            $_client->call('DELETE', '/admin/carrier_services/' . $shop->carrier_service_id . '.json');
+            $_client->call('DELETE', 'admin', '/carrier_services/' . $shop->carrier_service_id . '.json');
         } catch (\Exception $e) {
             echo "Delete: ".$e->getMessage()."\n";
         }
@@ -70,7 +70,7 @@ class ReinstallCSAPIFromCustomer extends Command
         // TODO: cache this result so we don't bug users with every request
 
         try {
-            $carrierService = $_client->call('POST', '/admin/carrier_services.json', $carrierServiceData);
+            $carrierService = $_client->call('POST', 'admin', '/carrier_services.json', $carrierServiceData);
 
             // set carrier_service_id and set it's default count value
             $shop->carrier_service_id = $carrierService['id'];
