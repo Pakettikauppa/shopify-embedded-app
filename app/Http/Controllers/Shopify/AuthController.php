@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use App\Models\Shopify\Shop;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 use Cookie;
+use Log;
 
 class AuthController extends Controller
 {
@@ -48,13 +49,15 @@ class AuthController extends Controller
         $enable_cookies_url = route('shopify.auth.index', $params);
 
         if ($request->get('_enable_cookies') == 'yes') {
-            return view('auth.create-session', [
+            return view('app.create-session', [
+                'shop_origin' => $shop->shop_origin,
                 'redirect_url' => 'https://${shop->shop_origin}/admin/apps/'.env('SHOPIFY_API_KEY'),
             ]);
         }
 
-        return view('auth.redirect', [
+        return view('app.redirect', [
             'redirect_url' => $redirect_url,
+            'shop_origin' => $shop->shop_origin,
             'enable_cookies_url' => $enable_cookies_url,
         ]);
     }

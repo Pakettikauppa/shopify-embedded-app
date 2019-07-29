@@ -27,7 +27,7 @@
 <script type='text/javascript'>
     ShopifyApp.init({
         apiKey: '{!! env('SHOPIFY_API_KEY') !!}',
-        shopOrigin: 'https://{!! $url['domain'] !!}'
+        shopOrigin: 'https://{!! $shop_origin !!}'
     });
 
     var ShopifyTestCookie = getCookie("shopify.testCookie");

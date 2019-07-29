@@ -13,6 +13,7 @@ use Pakettikauppa\Client;
 use Pakettikauppa\Shipment;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Log;
+use Cookie;
 
 /**
  * @property \App\Models\Shopify\Shop $shop
