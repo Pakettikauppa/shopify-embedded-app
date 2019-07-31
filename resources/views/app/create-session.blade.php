@@ -1,5 +1,6 @@
 <html>
-<script src="https://cdn.shopify.com/s/assets/external/app.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/js-cookie@2/src/js.cookie.min.js"></script>
+
 <script type='text/javascript'>
     function setCookie(cname, cvalue) {
         var d = new Date();
@@ -25,15 +26,11 @@
     }
 </script>
 <script type='text/javascript'>
-    ShopifyApp.init({
-        apiKey: '{!! env('SHOPIFY_API_KEY') !!}',
-        shopOrigin: 'https://{!! $shop_origin !!}'
-    });
-
     function redirect() {
         console.log("FFFFFF 2");
-        setCookie('shopify.testCookie', 'yes');
+        Cookies.set('testCookie', 'yes');
 
+        console.log("FFFF: " + Cookies.get('testCookie'));
         window.location.assign('{!! $redirect_url !!}');
     }
 

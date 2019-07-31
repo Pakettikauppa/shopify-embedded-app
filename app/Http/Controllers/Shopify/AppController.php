@@ -38,6 +38,7 @@ class AppController extends Controller
                 session()->put('init_request', $request->fullUrl());
                 session()->save();
 
+                Log::debug("Set shopify.testCookie to yes");
                 Cookie::queue('shopify.testCookie', 'yes', 5);
 
                 $params = $request->all();
@@ -45,6 +46,7 @@ class AppController extends Controller
                 return redirect()->route('shopify.auth.index', $params);
             }
 
+            Log::debug("Set top leval o auth cookie to yes");
             Cookie::queue('shopify.topLevelOAuth', 'no', 5);
 
             session()->save();

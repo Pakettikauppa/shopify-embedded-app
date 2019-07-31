@@ -1,5 +1,5 @@
 <html>
-<script src="https://cdn.shopify.com/s/assets/external/app.js"></script>
+<script src="https://unpkg.com/@shopify/app-bridge@1.6.7/umd/index.js"></script>
 <script type='text/javascript'>
     function setCookie(cname, cvalue) {
         var d = new Date();
@@ -25,13 +25,19 @@
     }
 </script>
 <script type='text/javascript'>
-    ShopifyApp.init({
-        apiKey: '{!! env('SHOPIFY_API_KEY') !!}',
-        shopOrigin: 'https://{!! $shop_origin !!}'
-    });
-
     var ShopifyTestCookie = getCookie("shopify.testCookie");
     var ShopifyTopLevelOAuthCookie = getCookie("shopify.topLevelOAuth");
+
+    var AppBridge = window['app-bridge'];
+    var createApp = AppBridge.default;
+    var actions = AppBridge.actions;
+    var Redirect  = actions.Redirect;
+    var app = createApp({
+        apiKey: '{!! env('SHOPIFY_API_KEY') !!}',
+        shopOrigin: '{!! $shop_origin !!}'
+    });
+
+    const redirect = Redirect.create(app);
 
     if (ShopifyTestCookie == "yes") {
         if (ShopifyTopLevelOAuthCookie == "yes") {
@@ -41,11 +47,12 @@
             console.log("HEP 2");
             setCookie('shopify.topLevelOAuth', 'yes');
 
-            ShopifyApp.remoteRedirect('{!! $redirect_url !!}');
+            redirect.dispatch(Redirect.Action.REMOTE, '{!! $redirect_url !!}');
         }
     } else {
         console.log("HEP 3");
-        ShopifyApp.remoteRedirect('{!! $enable_cookies_url !!}}');
+
+        redirect.dispatch(Redirect.Action.REMOTE, '{!! $enable_cookies_url !!}');
     }
 </script>
 <body></body>
