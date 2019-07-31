@@ -23,11 +23,21 @@ class SettingsController extends Controller
     public function __construct(Request $request)
     {
         $this->middleware(function ($request, $next) {
-
             if (!session()->has('shop')) {
                 session()->put('init_request', $request->fullUrl());
+                session()->save();
 
                 $params = $request->all();
+                $params['_pk_s'] = base64_encode($request->fullUrl());
+
+                return redirect()->route('shopify.auth.index', $params);
+            } else if ($request->input('shop') != null and $request->input('shop') != session()->get('shop')) {
+                session()->flush();
+                session()->put('init_request', $request->fullUrl());
+                session()->save();
+
+                $params = $request->all();
+                $params['_pk_s'] = base64_encode($request->fullUrl());
 
                 return redirect()->route('shopify.auth.index', $params);
             }

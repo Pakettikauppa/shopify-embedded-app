@@ -37,19 +37,20 @@ class AppController extends Controller
             if (!session()->has('shop')) {
                 session()->put('init_request', $request->fullUrl());
                 session()->save();
+                $params = $request->all();
+                $params['_pk_s'] = base64_encode($request->fullUrl());
 
-                Log::debug("Set shopify.testCookie to yes");
-                Cookie::queue('shopify.testCookie', 'yes', 5);
+                return redirect()->route('shopify.auth.index', $params);
+            } else if ($request->input('shop') != null and $request->input('shop') != session()->get('shop')) {
+                session()->flush();
+                session()->put('init_request', $request->fullUrl());
+                session()->save();
 
                 $params = $request->all();
+                $params['_pk_s'] = base64_encode($request->fullUrl());
 
                 return redirect()->route('shopify.auth.index', $params);
             }
-
-            Log::debug("Set top leval o auth cookie to yes");
-            Cookie::queue('shopify.topLevelOAuth', 'no', 5);
-
-            session()->save();
 
             $shop_origin = session()->get('shop');
             $shop = Shop::where('shop_origin', $shop_origin)->first();

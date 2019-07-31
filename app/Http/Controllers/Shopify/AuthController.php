@@ -12,15 +12,6 @@ use Log;
 
 class AuthController extends Controller
 {
-    public function __construct(Request $request)
-    {
-        $this->middleware(function ($request, $next) {
-            $response = $next($request);
-            $response->header('X-Frame-Options', 'https://'.$request->shop);
-            return $response;
-        });
-    }
-
     public function index(Request $request)
     {
         $client = new ShopifyClient($request->shop, '', ENV('SHOPIFY_API_KEY'), ENV('SHOPIFY_SECRET'));
@@ -61,8 +52,13 @@ class AuthController extends Controller
 
         $enable_cookies_url = route('shopify.auth.index', $params);
 
+        if ($request->get('_pk_s') !== null) {
+            Log::debug('Setting init_request to '. $request->get('_pk_s'));
+
+            session()->put('init_request', base64_decode($request->get('_pk_s')));
+            session()->save();
+        }
         if ($request->get('_enable_cookies') == 'yes') {
-            Log::debug("Enable cookies");
             return view('app.create-session', [
                 'shop_origin' => $shop->shop_origin,
                 'redirect_url' => 'https://'.$shop->shop_origin.'/admin/apps/'.env('SHOPIFY_API_KEY'),
@@ -100,7 +96,6 @@ class AuthController extends Controller
         $shop->save();
 
         Log::debug("setting topLevelOAuth cookie to no");
-        Cookie::put('shopify.topLevelOAuth', 'no');
         session()->put('shopify_version', '1');
         session()->put('shop', $request->shop);
 
