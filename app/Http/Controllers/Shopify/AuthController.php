@@ -21,7 +21,7 @@ class AuthController extends Controller
         }
 
         $found_shop = Shop::where('shop_origin', $request->shop)->first();
-        if (empty($found_shop)) {
+        if (!empty($found_shop)) {
             $shop = $found_shop;
         } else {
             Log::debug("Shop origin = ". $request->shop);
