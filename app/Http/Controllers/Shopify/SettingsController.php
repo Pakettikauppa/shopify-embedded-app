@@ -44,22 +44,22 @@ class SettingsController extends Controller
 
             $shop_origin = session()->get('shop');
             $shop = Shop::where('shop_origin', $shop_origin)->first();
-            if (!isset($shop)) {
+
+            if (empty($shop)) {
                 session()->put('init_request', $request->fullUrl());
                 return redirect()->route('shopify.auth.index', request()->all());
             }
 
-            /*
-            if (session()->get('shopify_version') != 1) {
-                session()->flush();
-            }
-            */
             $this->shop = $shop;
             if ($shop->settings == null) {
                 $shop->settings = '{}';
             }
             $this->settings = json_decode($shop->settings, true);
-            $this->pickupPointSettings = $this->settings->pickup_points;
+
+            $this->pickupPointSettings = [];
+            if (!empty($this->settings->pickup_points)) {
+                $this->pickupPointSettings = $this->settings->pickup_points;
+            }
 
             $this->client = new ShopifyClient(
                 $shop->shop_origin,
