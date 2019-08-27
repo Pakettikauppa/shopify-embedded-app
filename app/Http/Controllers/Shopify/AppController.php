@@ -64,7 +64,6 @@ class AppController extends Controller
             if ($shop->settings == null) {
                 $shop->settings = '{}';
             }
-            $this->pickupPointSettings = json_decode($shop->settings, true);
 
             $this->client = new ShopifyClient(
                 $shop->shop_origin,
