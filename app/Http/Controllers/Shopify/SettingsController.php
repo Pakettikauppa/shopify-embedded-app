@@ -19,6 +19,8 @@ class SettingsController extends Controller
     private $client;
     private $shop;
     private $pk_client;
+    private $pickupPointSettings;
+    private $settings;
 
     public function __construct(Request $request)
     {
@@ -54,12 +56,8 @@ class SettingsController extends Controller
             if ($shop->settings == null) {
                 $shop->settings = '{}';
             }
-            $this->settings = json_decode($shop->settings, true);
 
-            $this->pickupPointSettings = [];
-            if (!empty($this->settings->pickup_points)) {
-                $this->pickupPointSettings = $this->settings->pickup_points;
-            }
+            $this->pickupPointSettings = json_decode($shop->settings, true);
 
             $this->client = new ShopifyClient(
                 $shop->shop_origin,
