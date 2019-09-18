@@ -100,6 +100,13 @@ class Shop extends Model
             }
         }
 
+        // Don't generate shipping label if so desired
+        if ($method_code == 'NO_SHIPPING') {
+            return [
+                'status' => '',
+            ];
+        }
+
         // use default shipping method
         if (empty($method_code)) {
             $method_code = $this->default_service_code;
