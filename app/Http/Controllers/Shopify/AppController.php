@@ -418,7 +418,7 @@ class AppController extends Controller
 
     public function latestNews()
     {
-        $rssFeed = Storage::get(config('shopify.storage_path') . '/feed.xml');
+        $rssFeed = simplexml_load_string(Storage::get(config('shopify.storage_path') . '/feed.xml'));
 
         return view('app.latest-news', [
             'feed' => $rssFeed->channel,
