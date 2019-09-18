@@ -375,7 +375,7 @@ class SettingsController extends Controller
                 return response()->json($result);
             }
 
-            $productProviderByCode = array();
+            $productProviderByCode = array('NO_SHIPPING' => '');
             foreach ($products as $_product) {
                 $productProviderByCode[(string)$_product['shipping_method_code']] = $_product['service_provider'];
             }
@@ -391,7 +391,6 @@ class SettingsController extends Controller
                     ];
                 }
             }
-
 
             $this->shop->shipping_settings = serialize($shipping_settings);
 

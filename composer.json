@@ -12,7 +12,8 @@
         "laravel/framework": "5.4.*",
         "laravel/tinker": "~1.0",
         "league/flysystem-aws-s3-v3": "^1.0",
-        "pakettikauppa/api-library": "dev-master"
+        "pakettikauppa/api-library": "dev-master",
+      "ext-simplexml": "*"
     },
     "require-dev": {
         "fzaninotto/faker": "~1.4",
