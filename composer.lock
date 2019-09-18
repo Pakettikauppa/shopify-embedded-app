@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "0fc1f9f219943058c123050964ca5e77",
+    "content-hash": "c76c156c19d7a5d2ea2c60bc784ca182",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
@@ -88,6 +88,53 @@
                 "sdk"
             ],
             "time": "2019-09-17T18:07:57+00:00"
+        },
+        {
+            "name": "bearcodi/docker-secrets-exposer",
+            "version": "1.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/bearcodi/docker-secrets-exposer.git",
+                "reference": "379205cfcd493a45519059e8e01fe93a6e1a0a02"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/bearcodi/docker-secrets-exposer/zipball/379205cfcd493a45519059e8e01fe93a6e1a0a02",
+                "reference": "379205cfcd493a45519059e8e01fe93a6e1a0a02",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.6.0"
+            },
+            "require-dev": {
+                "orchestra/testbench": "~3.4.0",
+                "phpunit/phpunit": "~5.7.0"
+            },
+            "type": "package",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Bearcodi\\DockerSecrets\\ServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Bearcodi\\DockerSecrets\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Mark Babič",
+                    "email": "mark@bearcodi.com"
+                }
+            ],
+            "description": "Docker secrets expander for Laravel environment configuration.",
+            "time": "2018-12-19T03:36:43+00:00"
         },
         {
             "name": "dnoegel/php-xdg-base-dir",
