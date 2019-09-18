@@ -57,7 +57,7 @@
                             {{--<span class="append">{{trans('app.settings.shipping_method')}}</span>--}}
                             <select name="shipping_method[{{$rate['name']}}]">
                                 <option value="">{{trans('app.settings.default_shipping')}}</option>
-                                <option value="NO_SHIPPING">{{trans('app.settings.no_shipping_method')}}</option>
+                                <option value="NO_SHIPPING"  @if($rate['product_code'] == 'NO_SHIPPING') selected @endif>{{trans('app.settings.no_shipping_method')}}</option>
                                 @foreach($shipping_methods as $key => $service_provider)
                                     @if(count($service_provider) > 0)
                                         <optgroup label="{{$key}}">
