@@ -6,10 +6,12 @@
     "type": "project",
     "require": {
         "php": ">=5.6.4",
+        "ext-curl": "*",
+        "ext-json": "*",
         "laravel/framework": "5.4.*",
         "laravel/tinker": "~1.0",
-        "pakettikauppa/api-library": "dev-master",
-      "ext-json": "*"
+        "league/flysystem-aws-s3-v3": "^1.0",
+        "pakettikauppa/api-library": "dev-master"
     },
     "require-dev": {
         "fzaninotto/faker": "~1.4",

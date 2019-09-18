@@ -27,6 +27,7 @@ namespace App\Models\Shopify;
 
 use App\Exceptions\ShopifyApiException;
 use App\Exceptions\ShopifyCurlException;
+use Exception;
 use Log;
 
 class ShopifyClient
@@ -224,9 +225,12 @@ class ShopifyClient
     {
         $header_lines = preg_split("/\r\n|\n|\r/", $message_headers);
         $headers = array();
-        list(,
-            $headers['http_status_code'],
-            $headers['http_status_message']) = explode(' ', trim(array_shift($header_lines)), 3);
+        $http_line = explode(' ', trim(array_shift($header_lines)), 3);
+
+        $headers['http_proto'] = $http_line[0];
+        $headers['http_status_code'] = $http_line[1];
+        $headers['http_status_message'] = $htt_line[2] ?? 'OK';
+
         foreach ($header_lines as $header_line) {
             list($name, $value) = explode(':', $header_line, 2);
             $name = strtolower($name);
