@@ -28,6 +28,8 @@ return [
         ],
     ],
     'settings' => [
+        'default_shipping' => 'Use default shipping method',
+        'no_shipping_method' => 'No shipping label',
         'no_shipping' => 'No shipping label',
         'activation_code' => 'Activation code',
         'create_activation_code' => 'Create activation code for every shipment. Activation code is added to order Notes, so it might be visible to the end user.',

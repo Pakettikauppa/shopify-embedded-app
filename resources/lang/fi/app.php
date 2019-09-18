@@ -28,6 +28,8 @@ return [
         ],
     ],
     'settings' => [
+        'default_shipping' => 'Oletus lähetystapa',
+        'no_shipping_method' => 'Älä luo lähetystä',
         'no_shipping' => 'Älä luo lähetystä',
         'activation_code' => 'Asiointikoodi',
         'create_activation_code' => 'Luo asiointikoodi (Helposti-koodi, aktivointikoodi) kaikille lähetyksille. Koodi lisätään tilauksen Notesiin, jolloinka se saattaa tulla näkyviin myös asiakkaalle meneviin tietoihin!',
