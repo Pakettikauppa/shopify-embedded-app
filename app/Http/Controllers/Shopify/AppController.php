@@ -13,8 +13,7 @@ use Pakettikauppa\Client;
 use Pakettikauppa\Shipment;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Log;
-use Cookie;
-
+use Storage;
 /**
  * @property \App\Models\Shopify\Shop $shop
  */
@@ -419,8 +418,7 @@ class AppController extends Controller
 
     public function latestNews()
     {
-        $folder_path = storage_path('rss');
-        $rssFeed = simplexml_load_file($folder_path . '/feed.xml');
+        $rssFeed = Storage::get(config('shopify.storage_path') . '/feed.xml');
 
         return view('app.latest-news', [
             'feed' => $rssFeed->channel,
