@@ -28,7 +28,7 @@ return [
         ],
     ],
     'settings' => [
-        'default_shipping' => 'Oletus lähetystapa',
+        'default_shipping' => 'Oletuslähetystapa',
         'no_shipping_method' => 'Älä luo lähetystä',
         'no_shipping' => 'Älä luo lähetystä',
         'activation_code' => 'Asiointikoodi',
@@ -43,7 +43,7 @@ return [
         'settings' => 'Asetukset',
         'language' => 'Kieli',
         'shipment_settings' => 'Lähetysasetukset',
-        'default_shipping_method' => 'Oletus lähetystapa',
+        'default_shipping_method' => 'Oletuslähetystapa',
         'shopify_method' => 'Toimitustapa Shopifystä',
         'pk_method' => 'Pakettikaupan toimitustavat',
         'company_info' => 'Lähettäjän tiedot',
