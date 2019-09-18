@@ -11,6 +11,8 @@
 |
 */
 
+use Monolog\Handler\SyslogUdpHandler;
+
 $app = new Illuminate\Foundation\Application(
     realpath(__DIR__.'/../')
 );
@@ -51,5 +53,13 @@ $app->singleton(
 | from the actual running of the application and sending responses.
 |
 */
+
+if(env('APP_LOG') == 'syslog') {
+    $app->configureMonologUsing(function($monolog) {
+        // [%datetime%] %channel%.%level_name%: %message% %context% %extra%\n
+        $syslogHandler = new SyslogUdpHandler(env('SYSLOG_HOST'), env('SYSLOG_PORT'));
+        $monolog->pushHandler($syslogHandler);
+    });
+}
 
 return $app;
