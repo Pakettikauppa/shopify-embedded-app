@@ -131,7 +131,7 @@ class SettingsController extends Controller
             $carrierServiceData = array(
                 'carrier_service' => array(
                     'name' => $carrierServiceName,
-                    'callback_url' => 'http://209.50.56.85/api/pickup-points',
+                    'callback_url' => 'http://shopify.pakettikauppa.fi/api/pickup-points',
                     'service_discovery' => true,
                 )
             );
@@ -168,7 +168,7 @@ class SettingsController extends Controller
                             $this->shop->pickuppoints_count = 10;
                             $this->shop->save();
 
-                            if ($_service['callback_url'] != 'http://209.50.56.85/api/pickup-points') {
+                            if ($_service['callback_url'] != 'http://shopify.pakettikauppa.fi/api/pickup-points') {
                                 $this->client->call(
                                     'PUT',
                                     'admin',

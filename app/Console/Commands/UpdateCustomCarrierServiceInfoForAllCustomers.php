@@ -46,7 +46,7 @@ class UpdateCustomCarrierServiceInfoForAllCustomers extends Command
         $carrierServiceData = array(
             'carrier_service' => array(
                 'name' => $carrierServiceName,
-                'callback_url' => 'http://209.50.56.85/api/pickup-points',
+                'callback_url' => 'http://shopify.pakettikauppa.fi/api/pickup-points',
                 'service_discovery' => true,
             )
         );
