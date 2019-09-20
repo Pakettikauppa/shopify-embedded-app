@@ -148,6 +148,7 @@ class PickupPointsController extends Controller
             } catch (\Exception $e) {
                 Log::debug($e->getTraceAsString());
                 Log::debug(var_export($pickupPoints, true));
+                Log::debug(var_export($request->all(), true));
             }
         }
 
