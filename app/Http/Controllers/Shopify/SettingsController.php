@@ -265,16 +265,29 @@ class SettingsController extends Controller
         foreach($result_rates as &$result_rate_a) {
             if (!isset($result_rate_a['duplicate'])) {
                 $result_rate_a['duplicate'] = false;
+		$result_rate_a['same'] = false;
             }
 
             foreach($result_rates as &$result_rate_b) {
-                if ($result_rate_a['id'] != $result_rate_b['id']) {
-                    if ($result_rate_a['name'] == $result_rate_b['name']) {
-                        $result_rate_a['duplicate'] = true;
-                        $result_rate_b['duplicate'] = true;
-                    }
-                }
-            }
+		if ($result_rate_b['same']) {
+			continue;
+		}
+		if ($result_rate_a['same']) {
+			continue;
+		}
+                if ($result_rate_a['id'] == $result_rate_b['id']) {
+			continue;
+		}
+                if ($result_rate_a['name'] != $result_rate_b['name']) {
+			continue;
+		}
+
+               	if ($result_rate_a['zone'] == $result_rate_b['zone']) {
+			$result_rate_a['same'] = true;
+		} else {
+                       	$result_rate_a['duplicate'] = true;
+                       	$result_rate_b['duplicate'] = true;
+		}
         }
 
         $grouped_services = [];
