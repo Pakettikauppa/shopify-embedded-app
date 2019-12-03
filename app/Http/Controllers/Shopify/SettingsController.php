@@ -288,7 +288,8 @@ class SettingsController extends Controller
                        	$result_rate_a['duplicate'] = true;
                        	$result_rate_b['duplicate'] = true;
 		}
-        }
+	}
+       }
 
         $grouped_services = [];
 
