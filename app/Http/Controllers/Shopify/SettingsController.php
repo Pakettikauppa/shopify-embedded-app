@@ -265,6 +265,9 @@ class SettingsController extends Controller
         foreach($result_rates as &$result_rate_a) {
             if (!isset($result_rate_a['duplicate'])) {
                 $result_rate_a['duplicate'] = false;
+	    }
+
+            if (!isset($result_rate_a['same'])) {
 		$result_rate_a['same'] = false;
             }
 
@@ -272,7 +275,7 @@ class SettingsController extends Controller
 		if (!empty($result_rate_b['same'])) {
 			continue;
 		}
-		if ($result_rate_a['same']) {
+		if (!empty($result_rate_a['same'])) {
 			continue;
 		}
                 if ($result_rate_a['id'] == $result_rate_b['id']) {
