@@ -55,7 +55,7 @@
                     <div class="row">
                         {{--<div class="input-group">--}}
                             {{--<span class="append">{{trans('app.settings.shipping_method')}}</span>--}}
-                            <select name="shipping_method[{{$rate['name']}}]">
+                          <select name="shipping_method[{{$rate['name']}}]" duplicate="{{$rate['duplicate']}}">
                                 <option value="">{{trans('app.settings.default_shipping')}}</option>
                                 <option value="NO_SHIPPING"  @if($rate['product_code'] == 'NO_SHIPPING') selected @endif>{{trans('app.settings.no_shipping_method')}}</option>
                                 @foreach($shipping_methods as $key => $service_provider)
