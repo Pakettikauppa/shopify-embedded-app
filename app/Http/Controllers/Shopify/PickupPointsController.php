@@ -69,16 +69,20 @@ class PickupPointsController extends Controller
         if (count($this->pickupPointSettings) > 0) {
             // calculate total value of the cart
             $totalValue = 0;
+            $totalWeightInGrams = 0;
             $totalDiscount = 0;
             foreach ($requestBody->rate->items as $_item) {
                 $totalValue += $_item->price * $_item->quantity;
+                $totalWeightInGrams += $_item->grams * $_item->quantity;
             }
 
             $pickupPointProviders = array();
 
             foreach ($this->pickupPointSettings as $_provider => $_settings) {
                 if ($_settings['active'] == 'true') {
-                    $pickupPointProviders[] = $_provider;
+                    if (!($totalWeightInGrams > 20000 and $_provider === 'DB Schenker')) {
+                        $pickupPointProviders[] = $_provider;
+                    }
                 }
             }
 
