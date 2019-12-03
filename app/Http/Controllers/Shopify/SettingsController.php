@@ -269,7 +269,7 @@ class SettingsController extends Controller
             }
 
             foreach($result_rates as &$result_rate_b) {
-		if ($result_rate_b['same']) {
+		if (!empty($result_rate_b['same'])) {
 			continue;
 		}
 		if ($result_rate_a['same']) {
