@@ -79,6 +79,15 @@
                             </div>
                         </div>
                     </div>
+                    <div class="row">
+                        <div class="columns twelve">
+                            @if($rate['duplicate'])
+                                <small>
+                                    {{trans('app.settings.only_default')}}
+                                </small>
+                            @endif
+                        </div>
+                    </div>
                 @endif
             @endforeach
         </div>
