@@ -46,38 +46,41 @@
             </div>
 
             @foreach($shipping_rates as $rate)
-		@if(!$rate['same'])
-            <div class="row">
-                <div class="columns four rate-name-column">
-                    {{$rate['zone']}}: {{$rate['name']}}
-                </div>
-                <div class="columns eight">
+                @if(!$rate['same'])
                     <div class="row">
-                        {{--<div class="input-group">--}}
-                            {{--<span class="append">{{trans('app.settings.shipping_method')}}</span>--}}
-                          <select name="shipping_method[{{$rate['name']}}]" duplicate="{{$rate['duplicate']}}" same="{{$rate['same']}}">
-                                <option value="">{{trans('app.settings.default_shipping')}}</option>
-				@if(!$rate['duplicate'])
-                                <option value="NO_SHIPPING"  @if($rate['product_code'] == 'NO_SHIPPING') selected @endif>{{trans('app.settings.no_shipping_method')}}</option>
-                                @foreach($shipping_methods as $key => $service_provider)
-                                    @if(count($service_provider) > 0)
-                                        <optgroup label="{{$key}}">
-                                            @foreach($service_provider as $product)
-                                                <option value="{{ $product['shipping_method_code'] }}" data-services="{{json_encode($product['additional_services'])}}"
-                                                        @if($rate['product_code'] == $product['shipping_method_code']) selected @endif>
-                                                    {{ $product['name'] }}
-                                                </option>
-                                            @endforeach
-                                        </optgroup>
-                                    @endif
-                                @endforeach
-				@endif
-                            </select>
-                        {{--</div>--}}
+                        <div class="columns four rate-name-column">
+                            {{$rate['zone']}}: {{$rate['name']}}
+                            @if(!$rate['duplicate'])
+                                <small>
+                                    Huom! Vain "Oletuslähetystapa" toimii tässä lähetyksessä. Syy: Toimitushinnan nimi on identtinen toisessa vyöhykkeessä olevan nimen kanssa. Shopifyssä olevan rajoitteen takia toimitushinnan pitää olla uniikki toimitusvyöhykkeissä.
+                                </small>
+                            @endif
+                        </div>
+                        <div class="columns eight">
+                            <div class="row">
+                                {{--<div class="input-group">--}}
+                                    {{--<span class="append">{{trans('app.settings.shipping_method')}}</span>--}}
+                                  <select name="shipping_method[{{$rate['name']}}]" duplicate="{{$rate['duplicate']}}" same="{{$rate['same']}}">
+                                        <option value="">{{trans('app.settings.default_shipping')}}</option>
+                                        <option value="NO_SHIPPING"  @if($rate['product_code'] == 'NO_SHIPPING') selected @endif>{{trans('app.settings.no_shipping_method')}}</option>
+                                        @foreach($shipping_methods as $key => $service_provider)
+                                            @if(count($service_provider) > 0)
+                                                <optgroup label="{{$key}}">
+                                                    @foreach($service_provider as $product)
+                                                        <option value="{{ $product['shipping_method_code'] }}" data-services="{{json_encode($product['additional_services'])}}"
+                                                                @if($rate['product_code'] == $product['shipping_method_code']) selected @endif>
+                                                            {{ $product['name'] }}
+                                                        </option>
+                                                    @endforeach
+                                                </optgroup>
+                                            @endif
+                                        @endforeach
+                                    </select>
+                                {{--</div>--}}
+                            </div>
+                        </div>
                     </div>
-                </div>
-            </div>
-		@endif
+                @endif
             @endforeach
         </div>
     </article>
