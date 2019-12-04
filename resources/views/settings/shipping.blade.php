@@ -60,7 +60,7 @@
                             <div class="row">
                               <select name="shipping_method[{{$rate['name']}}]">
                                     <option value="">{{trans('app.settings.default_shipping')}}</option>
-                                      @if($rate['duplicate'])
+                                      @if(!$rate['duplicate'])
                                         <option value="NO_SHIPPING"  @if($rate['product_code'] == 'NO_SHIPPING') selected @endif>{{trans('app.settings.no_shipping_method')}}</option>
                                         @foreach($shipping_methods as $key => $service_provider)
                                             @if(count($service_provider) > 0)
