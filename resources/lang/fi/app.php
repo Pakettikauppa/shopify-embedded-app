@@ -28,7 +28,7 @@ return [
         ],
     ],
     'settings' => [
-        'only_default' => 'Huom! Vain "Oletuslähetystapa" toimii ylläolevassa toimituksissa. Shopifyssä olevan rajoitteen takia toimitushinnan pitää olla uniikki eri toimitusvyöhykkeissä.',
+        'only_default' => 'Huom! Vain "Oletuslähetystapa" toimii ylläolevassa toimituksissa. Shopifyssä olevan rajoitteen takia toimitushinnan nimi pitää olla uniikki eri toimitusvyöhykkeissä.',
         'default_shipping' => 'Oletuslähetystapa',
         'no_shipping_method' => 'Älä luo lähetystä',
         'no_shipping' => 'Älä luo lähetystä',
