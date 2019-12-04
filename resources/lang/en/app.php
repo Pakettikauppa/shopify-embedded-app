@@ -28,7 +28,7 @@ return [
         ],
     ],
     'settings' => [
-        'no_default' => 'Only "Default shipping method" works on a order using above method. Limit in Shopify requires name of the price to be unique in different shipping zones.',
+        'only_default' => 'Only "Default shipping method" works on a order using above method. Limit in Shopify requires name of the price to be unique in different shipping zones.',
         'default_shipping' => 'Use default shipping method',
         'no_shipping_method' => 'No shipping label',
         'no_shipping' => 'No shipping label',

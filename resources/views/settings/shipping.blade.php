@@ -50,11 +50,6 @@
                     <div class="row">
                         <div class="columns four rate-name-column">
                             {{$rate['zone']}}: {{$rate['name']}}
-                            @if($rate['duplicate'])
-                                <small>
-                                    Huom! Vain "Oletuslähetystapa" toimii tässä lähetyksessä. Shopifyssä olevan rajoitteen takia toimitushinnan pitää olla uniikki eri toimitusvyöhykkeissä.
-                                </small>
-                            @endif
                         </div>
                         <div class="columns eight">
                             <div class="row">
