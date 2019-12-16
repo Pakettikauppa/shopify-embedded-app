@@ -163,9 +163,19 @@ class AppController extends Controller
         foreach ($orders as $order) {
             $shipment = [];
             $shipment['fulfillment_status'] = $order['fulfillment_status'];
-            $shipment['line_items'] = $order['line_items'];
+            $shipment['line_items'] = [];
+            foreach($order['line_items'] as $line_item) {
+                if ($line_item['requires_shipping']) {
+                    $shipment['line_items'][]=$line_item;
+                }
+            }
             $shipment['id'] = $order['id'];
             $shipment['admin_order_url'] = 'https://' . $this->shop->shop_origin . '/admin/orders/' . $order['id'];
+
+            if (empty($shipment['line_items'])) {
+                $shipment['status'] = 'nothing_to_ship';
+                continue;
+            }
 
             $done_shipment = ShopifyShipment::where('shop_id', $this->shop->id)
                 ->where('order_id', $order['id'])
@@ -266,6 +276,10 @@ class AppController extends Controller
             if (!empty($this->pk_client->getResponse()->{'response.trackingcode'}['labelcode']) and
                 $this->shop->create_activation_code === true) {
                 try {
+                    if ($this->client->callsLeft() > 0 and $this->client->callLimit() == $this->client->callsLeft()) {
+                        sleep(2);
+                    }
+
                     $this->client->call(
                         'PUT',
                         'admin',
@@ -315,10 +329,17 @@ class AppController extends Controller
                     $variantId = $item['variant_id'];
 
                     try {
+                        if ($this->client->callsLeft() > 0 and $this->client->callLimit() == $this->client->callsLeft()) {
+                            sleep(2);
+                        }
+
                         $variants = $this->client->call('GET', 'admin', '/variants/' . $variantId . '.json');
 
                         $inventoryId = $variants['inventory_item_id'];
 
+                        if ($this->client->callsLeft() > 0 and $this->client->callLimit() == $this->client->callsLeft()) {
+                            sleep(2);
+                        }
                         // TODO: not the most efficient way to do this
                         $inventoryLevels = $this->client->call(
                             'GET',
@@ -371,6 +392,10 @@ class AppController extends Controller
                         ];
 
                         try {
+                            if ($this->client->callsLeft() > 0 and $this->client->callLimit() == $this->client->callsLeft()) {
+                                sleep(2);
+                            }
+
                             $result = $this->client->call(
                                 'POST',
                                 'admin',
