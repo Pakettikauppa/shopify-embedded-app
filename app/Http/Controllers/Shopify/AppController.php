@@ -174,6 +174,7 @@ class AppController extends Controller
 
             if (empty($shipment['line_items'])) {
                 $shipment['status'] = 'nothing_to_ship';
+                $shipments[] = $shipment;
                 continue;
             }
 
