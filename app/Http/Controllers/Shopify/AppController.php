@@ -236,6 +236,8 @@ class AppController extends Controller
                 $receiverCompany = null;
             }
             $receiverAddress = $shipping_address['address1'];
+            $receiverAddress2 = empty($shipping_address['address2'])?null:$shipping_address['address2'];
+
             $receiverZip = $shipping_address['zip'];
             $receiverCity = $shipping_address['city'];
             $receiverCountry = $shipping_address['country_code'];
@@ -244,6 +246,7 @@ class AppController extends Controller
                 'name' => $receiverName,
                 'company' => $receiverCompany,
                 'address' => $receiverAddress,
+                'address2' => $receiverAddress2,
                 'postcode' => $receiverZip,
                 'city' => $receiverCity,
                 'country' => $receiverCountry,

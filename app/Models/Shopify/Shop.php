@@ -47,6 +47,9 @@ class Shop extends Model
             $receiver->setName2($receiverInfo['company']);
         }
         $receiver->setAddr1($receiverInfo['address']);
+        if (!empty($receiverInfo['address2'])) {
+            $receiver->setAddr2($receiverInfo['address2']);
+        }
         $receiver->setPostcode($receiverInfo['postcode']);
         $receiver->setCity($receiverInfo['city']);
         $receiver->setCountry($receiverInfo['country']);
