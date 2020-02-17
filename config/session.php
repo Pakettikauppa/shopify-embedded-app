@@ -176,4 +176,5 @@ return [
 
     'http_only' => true,
 
+    'same_site' => 'none',
 ];
