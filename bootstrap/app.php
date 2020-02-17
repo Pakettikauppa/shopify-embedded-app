@@ -11,8 +11,6 @@
 |
 */
 
-use Monolog\Handler\SyslogUdpHandler;
-
 $app = new Illuminate\Foundation\Application(
     realpath(__DIR__.'/../')
 );
