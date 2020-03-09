@@ -112,11 +112,14 @@
         function toggleTesting() {
             toggleTestMode(true);
         }
-
+@php
+$url=Request::url();
+$url=str_replace("http:","https:",$url);
+@endphp
         function toggleTestMode(mode) {
             updateSettings({'test_mode': mode}, function (mesg) {
                 ShopifyApp.Modal.alert(mesg, function () {
-                    $(location).attr('href', "{{Request::url()}}");
+                    $(location).attr('href', "{{$url}}");
                 });
             });
         }
@@ -138,7 +141,7 @@
                         callback(resp.message);
                     }
                     if(resp.status == 'ok-reload') {
-                        $(location).attr('href', "{{Request::url()}}");
+                        $(location).attr('href', "{{$url}}");
                     }
 
                 } else if (resp.result == 'validation_error') {
