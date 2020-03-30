@@ -141,6 +141,7 @@ class Shop extends Model
             if ($aserviceActive == "true") {
                 $additional_service = new AdditionalService();
                 $additional_service->setServiceCode($aserviceCode);
+                $shipment->addAdditionalService($additional_service);
             }
         }
 
