@@ -59,7 +59,9 @@ class PickupPointsController extends Controller
         if ($shop->settings == null) {
             $shop->settings = '{}';
         }
-        $this->pickupPointSettings = json_decode($shop->settings, true);
+
+        $settings = json_decode($shop->settings, true);
+        $this->pickupPointSettings = $settings['pickup_points'];
 
         // get destination address
         $requestBody = json_decode($request->getContent());

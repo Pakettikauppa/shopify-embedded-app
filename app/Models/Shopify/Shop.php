@@ -80,14 +80,21 @@ class Shop extends Model
 
         $pickupPointId = null;
         $method_code = null;
+        $additional_services = [];
 
         if (isset($order['shipping_lines'][0]['title'])) {
-            $shipping_settings = unserialize($this->shipping_settings);
             $service_name = $order['shipping_lines'][0]['title'];
+
+            $settings = json_decode($this->settings, true);
+            if (empty($settings['shipping'])) {
+                $settings['shipping'] = [];
+            }
+            $shipping_settings = $settings['shipping'];
 
             foreach ($shipping_settings as $item) {
                 if ($item['shipping_rate_id'] == $service_name) {
                     $method_code = $item['product_code'];
+                    $additional_services = $item['additional_services'];
                 }
             }
 
@@ -97,6 +104,7 @@ class Shop extends Model
 
                 if (! empty($pickupPointId)) {
                     $method_code = $pickupPoint['method_code'];
+                    $additional_services = [];
                 } else {
                     $pickupPointId = null;
                 }
@@ -127,6 +135,13 @@ class Shop extends Model
             $additional_service->setServiceCode(2106);
             $additional_service->addSpecifier('pickup_point_id', $pickupPointId);
             $shipment->addAdditionalService($additional_service);
+        }
+
+        foreach($additional_services as $aserviceCode => $aserviceActive) {
+            if ($aserviceActive == "true") {
+                $additional_service = new AdditionalService();
+                $additional_service->setServiceCode($aserviceCode);
+            }
         }
 
         if ($this->always_create_return_label == true && ! $isReturn) {

@@ -53,7 +53,7 @@
                         </div>
                         <div class="columns eight">
                             <div class="row">
-                              <select name="shipping_method[{{$rate['name']}}]">
+                              <select name="shipping_method[{{$rate['name']}}]['method']">
                                     <option value="">{{trans('app.settings.default_shipping')}}</option>
                                       @if(!$rate['duplicate'])
                                         <option value="NO_SHIPPING"  @if($rate['product_code'] == 'NO_SHIPPING') selected @endif>{{trans('app.settings.no_shipping_method')}}</option>
@@ -71,6 +71,8 @@
                                         @endforeach
                                       @endif
                                 </select>
+                                <input type="hidden" name="shipping_method[{{$rate['name']}}]['additional_services'][3104]" value="false" />
+                                <input type="checkbox" name="shipping_method[{{$rate['name']}}]['additional_services'][3104]" value="true" /> {{trans('app.settings.additional_service.fragile')}}
                             </div>
                         </div>
                     </div>
