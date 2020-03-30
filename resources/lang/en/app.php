@@ -54,6 +54,9 @@ return [
         'instructions' => 'Learn more about the application at the <a href=":instruction_url">:company_name Help Center</a>.',
         'shipping_method' => 'Shipping method',
         'additional_services' => 'Additional services',
+        'additional_Service' => [
+          'fragile' => 'Fragile (if available for shipping method)',
+        ],
         'business_name' => 'Business name',
         'address' => 'Address',
         'postcode' => 'Postcode',

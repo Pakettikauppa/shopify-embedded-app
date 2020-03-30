@@ -54,6 +54,9 @@ return [
         'instructions' => 'Lue lisää  palveluista <a href=":instruction_url">Pakettikaupan kotisivuilta</a>.',
         'shipping_method' => 'Toimitustapa',
         'additional_services' => 'Lisäpalvelut',
+        'additional_Service' => [
+          'fragile' => 'Särkyvä (mikäli saatavilla lähetystavalle)',
+        ],
         'business_name' => 'Yritys',
         'address' => 'Osoite',
         'postcode' => 'Postinumero',
