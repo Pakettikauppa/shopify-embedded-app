@@ -178,21 +178,8 @@ class Shop extends Model
         $method_code = null;
 
         if (count($pickupPoint) == 2) {
+            $method_code = $pickupPoint[0];
             $pickupPointId = $pickupPoint[1];
-
-            switch ($pickupPoint[0]) {
-                case 'Posti':
-                    $method_code = 2103;
-                    break;
-                case 'Matkahuolto':
-                    $method_code = 90080;
-                    break;
-                case 'DB Schenker':
-                    $method_code = 80010;
-                    break;
-                default:
-                    $pickupPointId = null;
-            }
         }
 
         return [

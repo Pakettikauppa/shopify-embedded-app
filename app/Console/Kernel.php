@@ -6,6 +6,7 @@ use App\Console\Commands\ReinstallCSAPIFromCustomer;
 use App\Console\Commands\RemoceCSAPIFromCustomer;
 use App\Console\Commands\Shopify\FetchLatestNews;
 use App\Console\Commands\UpdateCustomCarrierServiceInfoForAllCustomers;
+use App\Console\Commands\UpdatePickupPointSettings;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 
@@ -21,6 +22,7 @@ class Kernel extends ConsoleKernel
         RemoceCSAPIFromCustomer::class,
         FetchLatestNews::class,
         ReinstallCSAPIFromCustomer::class,
+        UpdatePickupPointSettings::class,
     ];
 
     /**

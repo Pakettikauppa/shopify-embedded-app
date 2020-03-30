@@ -26,23 +26,26 @@
                                    {{trans('app.settings.pickuppoints.triggered_price')}}
                                </th>
                            </tr>
-                            @foreach($shipping_methods as $key => $_service_provider)
+                            @foreach($shipping_methods as $shipping_method)
+                                @php
+                                    $shippingMethodCode = $shipping_method->shipping_method_code;
+                                @endphp
                                 <tr>
                                     <td>
-                                        <input type="hidden" name="pickuppoint[{{$key}}][active]" value="false">
-                                        <input type="checkbox" name="pickuppoint[{{$key}}][active]" value="true" @if($pickuppoint_settings[$key]['active'] == 'true') checked @endif>
+                                        <input type="hidden" name="pickuppoint[{{$shippingMethodCode}}][active]" value="false">
+                                        <input type="checkbox" name="pickuppoint[{{$shippingMethodCode}}][active]" value="true" @if($pickuppoint_settings[$shippingMethodCode]['active'] == 'true') checked @endif>
                                     </td>
                                     <td>
-                                        {{$key}}
+                                        {{$shipping_method->service_provider}}: {{$shipping_method->name}}
                                     </td>
                                     <td>
-                                        <input type="number" name="pickuppoint[{{$key}}][base_price]" value="{{$pickuppoint_settings[$key]['base_price']}}">
+                                        <input type="number" name="pickuppoint[{{$shippingMethodCode}}][base_price]" value="{{$pickuppoint_settings[$shippingMethodCode]['base_price']}}">
                                     </td>
                                     <td>
-                                        <input type="number" name="pickuppoint[{{$key}}][trigger_price]" value="{{$pickuppoint_settings[$key]['trigger_price']}}">
+                                        <input type="number" name="pickuppoint[{{$shippingMethodCode}}][trigger_price]" value="{{$pickuppoint_settings[$shippingMethodCode]['trigger_price']}}">
                                     </td>
                                     <td>
-                                        <input type="number" name="pickuppoint[{{$key}}][triggered_price]" value="{{$pickuppoint_settings[$key]['triggered_price']}}">
+                                        <input type="number" name="pickuppoint[{{$shippingMethodCode}}][triggered_price]" value="{{$pickuppoint_settings[$shippingMethodCode]['triggered_price']}}">
                                     </td>
                                 </tr>
                             @endforeach

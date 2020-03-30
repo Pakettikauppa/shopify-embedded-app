@@ -80,7 +80,7 @@ class PickupPointsController extends Controller
 
             foreach ($this->pickupPointSettings as $_provider => $_settings) {
                 if ($_settings['active'] == 'true') {
-                    if (!($totalWeightInGrams > 20000 and $_provider === 'DB Schenker')) {
+                    if (!($totalWeightInGrams > 20000 and $_provider === '80010')) {
                         $pickupPointProviders[] = $_provider;
                     }
                 }
@@ -117,7 +117,7 @@ class PickupPointsController extends Controller
                 foreach ($pickupPoints as $_pickupPoint) {
                     $_pickupPointName = ucwords(mb_strtolower($_pickupPoint->name));
 
-                    if ($_pickupPoint->provider == 'DB Schenker') {
+                    if ($_pickupPoint->provider == '80010') {
                         $_descriptionArray = [];
                         preg_match(
                             "/V(?<week>[0-9-]*)[ ]*L?(?<sat>[0-9-]*)[ ]*S?(?<sun>[0-9-]?.*)/",
