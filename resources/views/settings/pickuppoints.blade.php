@@ -27,27 +27,29 @@
                                </th>
                            </tr>
                             @foreach($shipping_methods as $shipping_method)
-                                @php
-                                    $shippingMethodCode = $shipping_method->shipping_method_code;
-                                @endphp
-                                <tr>
-                                    <td>
-                                        <input type="hidden" name="pickuppoint[{{$shippingMethodCode}}][active]" value="false">
-                                        <input type="checkbox" name="pickuppoint[{{$shippingMethodCode}}][active]" value="true" @if($pickuppoint_settings[$shippingMethodCode]['active'] == 'true') checked @endif>
-                                    </td>
-                                    <td>
-                                        {{$shipping_method->service_provider}}: {{$shipping_method->name}}
-                                    </td>
-                                    <td>
-                                        <input type="number" name="pickuppoint[{{$shippingMethodCode}}][base_price]" value="{{$pickuppoint_settings[$shippingMethodCode]['base_price']}}">
-                                    </td>
-                                    <td>
-                                        <input type="number" name="pickuppoint[{{$shippingMethodCode}}][trigger_price]" value="{{$pickuppoint_settings[$shippingMethodCode]['trigger_price']}}">
-                                    </td>
-                                    <td>
-                                        <input type="number" name="pickuppoint[{{$shippingMethodCode}}][triggered_price]" value="{{$pickuppoint_settings[$shippingMethodCode]['triggered_price']}}">
-                                    </td>
-                                </tr>
+                                @if ($shipping_method['has_pickup_points'])
+                                    @php
+                                        $shippingMethodCode = (string) $shipping_method['shipping_method_code'];
+                                    @endphp
+                                    <tr>
+                                        <td>
+                                            <input type="hidden" name="pickuppoint[{{$shippingMethodCode}}][active]" value="false">
+                                            <input type="checkbox" name="pickuppoint[{{$shippingMethodCode}}][active]" value="true" @if($pickuppoint_settings[$shippingMethodCode]['active'] == 'true') checked @endif>
+                                        </td>
+                                        <td>
+                                            {{$shipping_method['service_provider']}}: {{$shipping_method['name']}}
+                                        </td>
+                                        <td>
+                                            <input type="number" name="pickuppoint[{{$shippingMethodCode}}][base_price]" value="{{$pickuppoint_settings[$shippingMethodCode]['base_price']}}">
+                                        </td>
+                                        <td>
+                                            <input type="number" name="pickuppoint[{{$shippingMethodCode}}][trigger_price]" value="{{$pickuppoint_settings[$shippingMethodCode]['trigger_price']}}">
+                                        </td>
+                                        <td>
+                                            <input type="number" name="pickuppoint[{{$shippingMethodCode}}][triggered_price]" value="{{$pickuppoint_settings[$shippingMethodCode]['triggered_price']}}">
+                                        </td>
+                                    </tr>
+                               @endif
                             @endforeach
                         </table>
                 </div>

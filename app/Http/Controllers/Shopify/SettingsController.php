@@ -195,10 +195,9 @@ class SettingsController extends Controller
 
         // initialize pickup point settings if needed
         foreach ($products as $product) {
-        	  $shippingMethodCode = $product->shipping_method_code;
-        	  $serviceProvider = $product->service_provider;
+        	  $shippingMethodCode = (string) $product['shipping_method_code'];
 
-        	  if ($product->has_pickup_points) {
+        	  if ($product['has_pickup_points'] && empty($this->pickupPointSettings[ $shippingMethodCode ])) {
 			          $this->pickupPointSettings[ $shippingMethodCode ]['active']          = 'false';
 			          $this->pickupPointSettings[ $shippingMethodCode ]['base_price']      = '0';
 			          $this->pickupPointSettings[ $shippingMethodCode ]['trigger_price']   = '';
