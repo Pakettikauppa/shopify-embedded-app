@@ -190,34 +190,27 @@ class SettingsController extends Controller
         } catch (\Exception $ex) {
             throw new FatalErrorException();
         }
-        $grouped_services = [];
 
         $api_valid = !empty($products);
 
-        if ($api_valid) {
-            $grouped_services = array_group_by($products, function ($i) {
-                return $i['service_provider'];
-            });
-            ksort($grouped_services);
-        }
-
         // initialize pickup point settings if needed
-        foreach ($grouped_services as $_key => $_service_provider) {
-            if (!isset($this->pickupPointSettings[$_key])) {
-                $this->pickupPointSettings[$_key]['active'] = 'false';
-                $this->pickupPointSettings[$_key]['base_price'] = '0';
-                $this->pickupPointSettings[$_key]['trigger_price'] = '';
-                $this->pickupPointSettings[$_key]['triggered_price'] = '';
-            }
+        foreach ($products as $product) {
+        	  $shippingMethodCode = $product->shipping_method_code;
+        	  $serviceProvider = $product->service_provider;
+
+        	  if ($product->has_pickup_points) {
+			          $this->pickupPointSettings[ $shippingMethodCode ]['active']          = 'false';
+			          $this->pickupPointSettings[ $shippingMethodCode ]['base_price']      = '0';
+			          $this->pickupPointSettings[ $shippingMethodCode ]['trigger_price']   = '';
+			          $this->pickupPointSettings[ $shippingMethodCode ]['triggered_price'] = '';
+	          }
         }
 
         return view('settings.pickuppoints', [
             'pickuppoint_settings' => $this->pickupPointSettings,
-            'shipping_methods' => $grouped_services,
+            'shipping_methods' => $products,
             'shop' => $this->shop,
-            'additional_services' => unserialize($this->shop->additional_services),
             'api_valid' => $api_valid,
-            'pickuppoint_providers' => explode(";", $this->shop->pickuppoint_providers)
         ]);
     }
 
