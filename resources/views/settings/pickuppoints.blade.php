@@ -27,7 +27,7 @@
                                </th>
                            </tr>
                             @foreach($shipping_methods as $shipping_method)
-                                @if ($shipping_method->has_pickup_points)
+                                @if ($shipping_method['has_pickup_points'])
                                     @php
                                         $shippingMethodCode = (string) $shipping_method['shipping_method_code'];
                                     @endphp
