@@ -161,7 +161,7 @@ class PickupPointsController extends Controller
                     $rates[] = array(
                         'service_name' => "{$_pickupPointName}, " . "{$_pickupPoint->street_address}, {$_pickupPoint->postcode}, {$_pickupPoint->city}",
                         'description' => $_pickupPoint->provider . ($_pickupPoint->description == null ? '' : " ({$_pickupPoint->description})"),
-                        'service_code' => "{$_pickupPoint->provider}:{$_pickupPoint->pickup_point_id}",
+                        'service_code' => "{$_pickupPoint->provider_service}:{$_pickupPoint->pickup_point_id}",
                         'currency' => 'EUR',
                         'total_price' => $this->priceForPickupPoint($_pickupPoint->provider_service, $totalValue)
                     );
