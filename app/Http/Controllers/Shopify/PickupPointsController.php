@@ -24,8 +24,11 @@ class PickupPointsController extends Controller
             throw new FatalErrorException();
         }
 
+        Log::debug("Searching for " . $shop->shop_origin);
+
         $calculatedMac = base64_encode(hash_hmac('sha256', $request->getContent(), ENV('SHOPIFY_SECRET'), true));
         if (!hash_equals($calculatedMac, $request->header('x-shopify-hmac-sha256'))) {
+            Log::debug("Hash mismatch");
             throw new UnprocessableEntityHttpException();
         }
 
@@ -45,6 +48,7 @@ class PickupPointsController extends Controller
         }
 
         if ($pk_client_params == null) {
+            Log::debug("Pikcup points: fatal error");
             throw new FatalErrorException();
         }
 
@@ -52,6 +56,7 @@ class PickupPointsController extends Controller
 
         // test if pickup points are available in settings
         if (!(isset($shop->pickuppoints_count) && $shop->pickuppoints_count > 0)) {
+            Log::debug("no pickup point counts");
             return;
         }
 
@@ -173,7 +178,10 @@ class PickupPointsController extends Controller
             $customCarrierServices = array('rates' => []);
         }
 
-        echo json_encode($customCarrierServices);
+        $json = json_encode($customCarrierServices);
+
+        Log::debug($json);
+        echo $json;
     }
 
     private function convertDBSTime($openingHours)
