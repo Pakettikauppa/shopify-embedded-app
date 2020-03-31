@@ -117,7 +117,19 @@ class PickupPointsController extends Controller
                 foreach ($pickupPoints as $_pickupPoint) {
                     $_pickupPointName = ucwords(mb_strtolower($_pickupPoint->name));
 
-                    if ($_pickupPoint->provider == '80010') {
+                    switch($_pickupPoint->provider_code) {
+                        case 'Posti':
+                            $_pickupPoint->provider_service = '2103';
+                            break;
+                        case 'Matkahuolto':
+                            $_pickupPoint->provider_service = '90080';
+                            break;
+                        case 'DB Schenker':
+                            $_pickupPoint->provider_service = '80010';
+                            break;
+                    }
+
+                    if ($_pickupPoint->provider_service == '80010') {
                         $_descriptionArray = [];
                         preg_match(
                             "/V(?<week>[0-9-]*)[ ]*L?(?<sat>[0-9-]*)[ ]*S?(?<sun>[0-9-]?.*)/",
@@ -146,7 +158,7 @@ class PickupPointsController extends Controller
                         'description' => $_pickupPoint->provider . ($_pickupPoint->description == null ? '' : " ({$_pickupPoint->description})"),
                         'service_code' => "{$_pickupPoint->provider}:{$_pickupPoint->pickup_point_id}",
                         'currency' => 'EUR',
-                        'total_price' => $this->priceForPickupPoint($_pickupPoint->provider, $totalValue)
+                        'total_price' => $this->priceForPickupPoint($_pickupPoint->provider_service, $totalValue)
                     );
                 }
             } catch (\Exception $e) {
