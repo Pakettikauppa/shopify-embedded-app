@@ -146,7 +146,7 @@ class PickupPointsController extends Controller
                         'description' => $_pickupPoint->provider . ($_pickupPoint->description == null ? '' : " ({$_pickupPoint->description})"),
                         'service_code' => "{$_pickupPoint->provider}:{$_pickupPoint->pickup_point_id}",
                         'currency' => 'EUR',
-                        'total_price' => $this->priceForPickupPoint($_pickupPoint->provider_code, $totalValue)
+                        'total_price' => $this->priceForPickupPoint($_pickupPoint->provider, $totalValue)
                     );
                 }
             } catch (\Exception $e) {
