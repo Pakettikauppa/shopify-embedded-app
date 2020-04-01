@@ -182,6 +182,19 @@ class Shop extends Model
             $pickupPointId = $pickupPoint[1];
         }
 
+        if (!is_numeric($method_code)) {
+            switch($pickupPoint[0]) {
+                case 'Posti':
+                    $method_code = '2103';
+                    break;
+                case 'Matkahuolto':
+                    $method_code = '90080';
+                    break;
+                case 'DB Schenker':
+                    $method_code = '80010';
+                    break;
+            }
+        }
         return [
             'method_code' => $method_code,
             'pickup_point_id' => $pickupPointId
