@@ -193,6 +193,11 @@ class Shop extends Model
                 case 'DB Schenker':
                     $method_code = '80010';
                     break;
+                default:
+                    // reset to defaults.
+                    $method_code = null;
+                    $pickupPointId = null;
+                    break;
             }
         }
         return [
