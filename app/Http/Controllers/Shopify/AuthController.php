@@ -55,7 +55,7 @@ class AuthController extends Controller
             return view('app.redirect', [
                 'redirect_url' => $redirect_url,
                 'shop_origin' => $shop->shop_origin,
-                'enable_cookies_url' => $enable_cookies_url,
+                'enable_cookies_url' => $redirect_url,
             ]);
         }
 

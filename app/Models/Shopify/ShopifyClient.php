@@ -143,7 +143,7 @@ class ShopifyClient
 
         $pairs = [];
         foreach ($query as $key => $value) {
-            if ($key != '_pk_s') {
+            if (in_array($key, ['_pk_s', '_enable_cookies'])) {
                 // Third step: "&" and "%" are replaced by "%26" and "%25" in keys and values, and in addition
                 // "=" is replaced by "%3D" in keys
                 $key = strtr($key, ['&' => '%26', '%' => '%25', '=' => '%3D']);

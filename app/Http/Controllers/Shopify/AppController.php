@@ -34,6 +34,7 @@ class AppController extends Controller
         $this->middleware(function ($request, $next) {
 
             if (!session()->has('shop')) {
+                session()->flush();
                 session()->put('init_request', $request->fullUrl());
                 session()->save();
                 $params = $request->all();
