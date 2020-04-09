@@ -51,13 +51,12 @@ class AuthController extends Controller
         if (session()->has('init_request')) {
             // TODO, use JAvascript to do the redirect
             Log::debug('redirecting in auth 1');
-            return redirect($redirect_url);
-/*            return view('app.redirect', [
+//            return redirect($redirect_url);
+            return view('app.redirect', [
                 'redirect_url' => $redirect_url,
                 'shop_origin' => $shop->shop_origin,
                 'enable_cookies_url' => $enable_cookies_url,
             ]);
-*/
         }
 
 
