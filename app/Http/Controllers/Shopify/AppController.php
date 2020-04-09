@@ -39,6 +39,8 @@ class AppController extends Controller
                 $params = $request->all();
                 $params['_pk_s'] = base64_encode($request->fullUrl());
 
+                Log::debug('redirecting in app 1');
+
                 return redirect()->route('shopify.auth.index', $params);
             } else if ($request->input('shop') != null and $request->input('shop') != session()->get('shop')) {
                 session()->flush();
@@ -48,6 +50,8 @@ class AppController extends Controller
                 $params = $request->all();
                 $params['_pk_s'] = base64_encode($request->fullUrl());
 
+                Log::debug('redirecting in app 2');
+
                 return redirect()->route('shopify.auth.index', $params);
             }
 
@@ -56,6 +60,7 @@ class AppController extends Controller
 
             if (empty($shop)) {
                 session()->put('init_request', $request->fullUrl());
+                Log::debug('redirecting in app 3');
                 return redirect()->route('shopify.auth.index', request()->all());
             }
 

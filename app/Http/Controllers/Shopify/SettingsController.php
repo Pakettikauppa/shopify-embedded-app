@@ -41,6 +41,7 @@ class SettingsController extends Controller
                 $params = $request->all();
                 $params['_pk_s'] = base64_encode($request->fullUrl());
 
+                Log::debug('redirecting in settings 1');
                 return redirect()->route('shopify.auth.index', $params);
             }
 
@@ -49,6 +50,7 @@ class SettingsController extends Controller
 
             if (empty($shop)) {
                 session()->put('init_request', $request->fullUrl());
+                Log::debug('redirecting in settings 2');
                 return redirect()->route('shopify.auth.index', request()->all());
             }
 

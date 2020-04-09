@@ -46,11 +46,20 @@ class AuthController extends Controller
         $params = $request->all();
         $params['_enable_cookies'] = 'yes';
 
+        $enable_cookies_url = route('shopify.auth.index', $params);
+
         if (session()->has('init_request')) {
+            // TODO, use JAvascript to do the redirect
+            Log::debug('redirecting in auth 1');
             return redirect($redirect_url);
+/*            return view('app.redirect', [
+                'redirect_url' => $redirect_url,
+                'shop_origin' => $shop->shop_origin,
+                'enable_cookies_url' => $enable_cookies_url,
+            ]);
+*/
         }
 
-        $enable_cookies_url = route('shopify.auth.index', $params);
 
         if ($request->get('_pk_s') !== null) {
             Log::debug('Setting init_request to '. $request->get('_pk_s'));
@@ -105,6 +114,7 @@ class AuthController extends Controller
             $init_request = session()->get('init_request');
             $init_request = str_replace(array('http:'), array('https:'), $init_request);
             session()->forget('init_request');
+
             return redirect($init_request);
         }
         Log::debug("Redirecting to settings");
