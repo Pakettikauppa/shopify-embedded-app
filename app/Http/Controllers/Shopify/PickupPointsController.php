@@ -26,7 +26,7 @@ class PickupPointsController extends Controller
 
         Log::debug("Searching for " . $shop->shop_origin);
 
-        $calculatedMac = base64_encode(hash_hmac('sha256', $request->getContent(), ENV('SHOPIFY_SECRET'), true));
+        $calculatedMac = base64_encode(hash_hmac('sha256', $request->getContent(), config('shopify.secret'), true));
         if (!hash_equals($calculatedMac, $request->header('x-shopify-hmac-sha256'))) {
             Log::debug("Hash mismatch");
             throw new UnprocessableEntityHttpException();
@@ -68,6 +68,7 @@ class PickupPointsController extends Controller
 
         // get destination address
         $requestBody = json_decode($request->getContent());
+        Log::debug($request->getContent());
         $destination = $requestBody->rate->destination;
 
         $rates = array();
@@ -95,27 +96,27 @@ class PickupPointsController extends Controller
             $pickupPointProviders = implode(",", $pickupPointProviders);
 
             // search nearest pickup locations
-            $pickupPoints = json_decode(
+            $pickupPoints = /* json_decode( */
                 $pk_client->searchPickupPoints(
                     $destination->postal_code,
                     $destination->address1,
                     $destination->country,
                     $pickupPointProviders,
                     $shop->pickuppoints_count
-                )
-            );
+                );
+            /* ); */
 
-            if (empty($pickupPoints) && ($destination->country == 'AX' || $destination->country == 'FI')) {
+            if (empty($pickupPoints) && ($destination->country == 'LT' || $destination->country == 'AX' || $destination->country == 'FI')) {
                 // search some pickup points if no pickup locations was found
-                $pickupPoints = json_decode(
+                $pickupPoints = /* json_decode( */
                     $pk_client->searchPickupPoints(
                         '00100',
                         null,
                         'FI',
                         $pickupPointProviders,
                         $shop->pickuppoints_count
-                    )
-                );
+                    );
+                /* ); */
             }
             // generate custom carrier service response
             try {
@@ -174,7 +175,7 @@ class PickupPointsController extends Controller
 
         $customCarrierServices = array('rates' => $rates);
 
-        if (!($destination->country == 'FI' || $destination->country == 'AX' || $destination->country == 'EE')) {
+        if (!($destination->country == 'LT' || $destination->country == 'FI' || $destination->country == 'AX' || $destination->country == 'EE')) {
             $customCarrierServices = array('rates' => []);
         }
 

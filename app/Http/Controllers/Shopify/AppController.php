@@ -5,14 +5,17 @@ namespace App\Http\Controllers\Shopify;
 use App\Exceptions\ShopifyApiException;
 use App\Http\Controllers\Controller;
 use App\Models\Shopify\ShopifyClient;
+use App\Http\Middleware\VerifyShopify;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Response;
+use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Log;
 use App\Models\Shopify\Shop;
 use App\Models\Shopify\Shipment as ShopifyShipment;
 use Pakettikauppa\Client;
 use Pakettikauppa\Shipment;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
-use Log;
+//use Log;
 use Storage;
 /**
  * @property \App\Models\Shopify\Shop $shop
@@ -31,39 +34,40 @@ class AppController extends Controller
 
     public function __construct(Request $request)
     {
+        //$this->middleware(ShopifyTokenMiddleware::class);
         $this->middleware(function ($request, $next) {
 
-            if (!session()->has('shop')) {
-                session()->flush();
-                session()->put('init_request', $request->fullUrl());
-                session()->save();
-                $params = $request->all();
-                $params['_pk_s'] = base64_encode($request->fullUrl());
+        //     if (!session()->has('shop')) {
+        //         session()->flush();
+        //         session()->put('init_request', $request->fullUrl());
+        //         session()->save();
+        //         $params = $request->all();
+        //         $params['_pk_s'] = base64_encode($request->fullUrl());
 
-                Log::debug('redirecting in app 1');
+        //         Log::debug('redirecting in app 1');
 
-                return redirect()->route('shopify.auth.index', $params);
-            } else if ($request->input('shop') != null and $request->input('shop') != session()->get('shop')) {
-                session()->flush();
-                session()->put('init_request', $request->fullUrl());
-                session()->save();
+        //         return redirect()->route('shopify.auth.index', $params);
+        //     } else if ($request->input('shop') != null and $request->input('shop') != session()->get('shop')) {
+        //         session()->flush();
+        //         session()->put('init_request', $request->fullUrl());
+        //         session()->save();
 
-                $params = $request->all();
-                $params['_pk_s'] = base64_encode($request->fullUrl());
+        //         $params = $request->all();
+        //         $params['_pk_s'] = base64_encode($request->fullUrl());
 
-                Log::debug('redirecting in app 2');
+        //         Log::debug('redirecting in app 2');
 
-                return redirect()->route('shopify.auth.index', $params);
-            }
+        //         return redirect()->route('shopify.auth.index', $params);
+        //     }
+            //dd($request);
+            //$shop_origin = $request->input('shop');//session()->get('shop');
+            $shop = Shop::where('shop_origin', $request->get('shopOrigin'))->first();
 
-            $shop_origin = session()->get('shop');
-            $shop = Shop::where('shop_origin', $shop_origin)->first();
-
-            if (empty($shop)) {
-                session()->put('init_request', $request->fullUrl());
-                Log::debug('redirecting in app 3');
-                return redirect()->route('shopify.auth.index', request()->all());
-            }
+            // if (empty($shop)) {
+            //     session()->put('init_request', $request->fullUrl());
+            //     Log::debug('redirecting in app 3');
+            //     return redirect()->route('shopify.auth.index', request()->all());
+            // }
 
             $this->shop = $shop;
             if ($shop->settings == null) {
@@ -73,8 +77,8 @@ class AppController extends Controller
             $this->client = new ShopifyClient(
                 $shop->shop_origin,
                 $shop->token,
-                ENV('SHOPIFY_API_KEY'),
-                ENV('SHOPIFY_SECRET')
+                config('shopify.api_key'),
+                config('shopify.secret')
             );
 
             // set pk_client
@@ -114,12 +118,38 @@ class AppController extends Controller
         $values = [];
         foreach ($arr as $item) {
             if (is_array($item)) {
-                $values = array_merge($values, flattenArray($item));
+                $values = array_merge($values, $this->flattenArray($item));
             } else {
                 $values[] = $item;
             }
         }
         return $values;
+    }
+
+    private function customPrint($id)
+    {
+        // api check
+        $result = $this->pk_client->listShippingMethods();
+        //dd($result);
+        Log::debug("ListShippingMethods Result:" . json_encode($result));
+        //$result = json_decode($result); no longer needs to be done
+        if (!is_array($result)) {
+            Log::debug("List Shipping Methods error!");
+
+            return response()->json([
+                'type' => 'error',
+                'title' => trans('app.messages.invalid_credentials'),
+                'message' => trans('app.messages.no_api_set_error', ['settings_url' => route('shopify.settings')]),
+            ]);
+        }
+
+        return response()->json([
+            'shop' => $this->shop,
+            //'orders' => $shipments,
+            'orders_url' => 'https://' . $this->shop->shop_origin . '/admin/orders',
+            //'page_title' => $page_title,
+            //'is_return' => $is_return,
+        ]);
     }
 
     public function printLabels(Request $request)
@@ -451,8 +481,20 @@ class AppController extends Controller
         ]);
     }
 
-    public function latestNews()
+    public function index(Request $request)
     {
+        return view('layouts.app', [
+            'shop' => $this->shop,
+        ]);
+    }
+
+    public function latestNews(Request $request)
+    {
+        //$tok = $this->getAccessToken($this->shop->shop_origin, $this->shop->api_key, $this->shop->api_secret);
+        //dd($request);
+
+        //$shop = Shop::where('shop_origin', $shopOrigin)->first();
+
         $rssFeed = simplexml_load_string(Storage::get(config('shopify.storage_path') . '/feed.xml'));
 
         return view('app.latest-news', [
@@ -460,6 +502,31 @@ class AppController extends Controller
             'shop' => $this->shop,
         ]);
     }
+
+    private function getAccessToken($shop, $apiKey, $secret) {
+        $query = array(
+            'client_id' => $apiKey,
+            'client_secret' => $secret,
+            'code' => $code
+        );
+      
+        // Build access token URL
+        $access_token_url = "https://{$shop}/admin/oauth/access_token";
+      
+        // Configure curl client and execute request
+        $curl = curl_init();
+        $curlOptions = array(
+          CURLOPT_RETURNTRANSFER => TRUE,
+          CURLOPT_URL => $access_token_url,
+          CURLOPT_POSTFIELDS => http_build_query($query)
+        );
+        curl_setopt_array($curl, $curlOptions);
+        $response = curl_exec($curl);
+        $jsonResponse = json_decode($response, TRUE);
+        curl_close($curl);
+      
+        return $jsonResponse['access_token'];
+      }
 
     public function returnLabel(Request $request)
     {
@@ -473,6 +540,8 @@ class AppController extends Controller
 
     public function printLabelsFulfill(Request $request)
     {
+        return $this->customPrint($request->get('id'));
+        //dd($request);
         $params = $request->all();
         $params['fulfill_order'] = true;
         $request = Request::create('print-labels', 'GET', $params);

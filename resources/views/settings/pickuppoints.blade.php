@@ -1,7 +1,7 @@
 @extends('layouts.default')
 
 @section('card-content')
-<form id="setting-form" method="GET" action="{{route('shopify.update-settings')}}">
+<form id="setting-form" method="POST" action="{{route('shopify.update-pickuppoints')}}">
 
     <article>
         <div class="card">
@@ -34,19 +34,21 @@
                                     <tr>
                                         <td>
                                             <input type="hidden" name="pickuppoint[{{$shippingMethodCode}}][active]" value="false">
+                                            <label>
                                             <input type="checkbox" name="pickuppoint[{{$shippingMethodCode}}][active]" value="true" @if($pickuppoint_settings[$shippingMethodCode]['active'] == 'true') checked @endif>
+                                            </label>
                                         </td>
                                         <td>
                                             {{$shipping_method['service_provider']}}: {{$shipping_method['name']}}
                                         </td>
                                         <td>
-                                            <input type="number" name="pickuppoint[{{$shippingMethodCode}}][base_price]" value="{{$pickuppoint_settings[$shippingMethodCode]['base_price']}}">
+                                            <input type="number" min="0" name="pickuppoint[{{$shippingMethodCode}}][base_price]" value="{{$pickuppoint_settings[$shippingMethodCode]['base_price']}}">
                                         </td>
                                         <td>
-                                            <input type="number" name="pickuppoint[{{$shippingMethodCode}}][trigger_price]" value="{{$pickuppoint_settings[$shippingMethodCode]['trigger_price']}}">
+                                            <input type="number" min="0" name="pickuppoint[{{$shippingMethodCode}}][trigger_price]" value="{{$pickuppoint_settings[$shippingMethodCode]['trigger_price']}}">
                                         </td>
                                         <td>
-                                            <input type="number" name="pickuppoint[{{$shippingMethodCode}}][triggered_price]" value="{{$pickuppoint_settings[$shippingMethodCode]['triggered_price']}}">
+                                            <input type="number" min="0" name="pickuppoint[{{$shippingMethodCode}}][triggered_price]" value="{{$pickuppoint_settings[$shippingMethodCode]['triggered_price']}}">
                                         </td>
                                     </tr>
                                @endif
