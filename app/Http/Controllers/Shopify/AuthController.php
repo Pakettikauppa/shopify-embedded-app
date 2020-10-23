@@ -201,10 +201,10 @@ class AuthController extends Controller
         //     return redirect($init_request);
         // }
         // Log::debug("Redirecting to settings");
-
+        \App::setLocale($shop ? $shop->locale : 'en');
         return view('layouts.app', [
             'shop' => $shop,
-          ]);
+        ]);
         // $token = $this->makeJWT($request->shop);
         // return redirect()->route('shopify.settings', ['local_token' => $token]);
     }
