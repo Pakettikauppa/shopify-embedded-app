@@ -143,6 +143,32 @@ class SettingsController extends Controller
         ]);
     }
 
+    public function getButtonsTranslations()
+    {
+        //shopify.button-translations
+        return response()->json([
+            'status' => 'OK',
+            'data' => [
+
+                'value' => [
+                    'test_mode_enable_text' => trans('app.settings.testmode_on'),
+                    'test_mode_disable_text' => trans('app.settings.testmode_off'),
+                ],
+
+                'label' => [
+                    'buttonSave' => trans('app.settings.save_settings'),
+                    'buttonNews' => trans('app.settings.latest-news'),
+                    'buttonShipmentSettings' => trans('app.settings.shipment_settings'),
+                    'buttonPickupPointsSettings' => trans('app.settings.pickuppoints-settings'),
+                    'buttonCompanyInformationSettings' => trans('app.settings.company_info'),
+                    'buttonApiSettings' => trans('app.settings.api-settings'),
+                    'buttonOtherSettings' => trans('app.settings.generic-settings'),
+                    'optionsBtnGroup' => trans('app.settings.settings'),
+                ]
+            ]
+        ]);
+    }
+
     private function getCarrierServiceFromShopify($carrier_service_id)
     {
         $response = null;

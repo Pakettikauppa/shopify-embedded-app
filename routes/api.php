@@ -17,6 +17,8 @@ Route::group(['namespace' => 'Shopify'], function () {
     Route::post('/pickup-points', 'PickupPointsController@list')->name('shopify.pickuppoints.list');
 
     Route::group(['middleware' => ['shopify', 'shopify.shop', 'shopify.localize']], function () {
+        Route::get('/buttons-translation', 'SettingsController@getButtonsTranslations')->name('shopify.button-translations');
+
         Route::post('/settings/update/testmode', 'SettingsController@updateTestMode')->name('shopify.update-test-mode');
         Route::post('/settings/update/api', 'SettingsController@updateApiSettings')->name('shopify.update-api');
         Route::post('/settings/update/shipping', 'SettingsController@updateShippingSettings')->name('shopify.update-shipping');
