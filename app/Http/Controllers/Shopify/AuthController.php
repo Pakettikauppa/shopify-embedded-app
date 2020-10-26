@@ -16,71 +16,7 @@ class AuthController extends Controller
 {
     public function index(Request $request)
     {
-        // $client = new ShopifyClient($request->shop, '', ENV('SHOPIFY_API_KEY'), ENV('SHOPIFY_SECRET'));
-
-        // if (!$client->validateSignature($request->all())) {
-        //     throw new UnprocessableEntityHttpException();
-        // }
-
-        // $found_shop = Shop::where('shop_origin', $request->shop)->first();
-        // if (!empty($found_shop)) {
-        //     $shop = $found_shop;
-        // } else {
-        //     Log::debug("Shop origin = " . $request->shop);
-
-        //     $shop = new Shop();
-        //     // default values
-        //     $shop->test_mode = true;
-        //     $shop->locale = 'fi';
-        //     $shop->shipping_settings = serialize([]);
-        //     $shop->default_service_code = 2103;
-        //     $shop->country = 'FI';
-        // }
-
-        // $nonce = Str::random(20);
-        // $shop->shop_origin = $request->shop;
-        // $shop->nonce = $nonce;
-        // $shop->token = '';
-        // $shop->save();
-
-        // $callback_url = route('shopify.auth.callback');
-        // $redirect_url = $client->getAuthorizeUrl(ENV('SHOPIFY_SCOPE'), $callback_url, $nonce);
-        // $params = $request->all();
-        // $params['_enable_cookies'] = 'yes';
-
-        // $enable_cookies_url = route('shopify.auth.index', $params);
-
-        // if (session()->has('init_request')) {
-        //     // TODO, use JAvascript to do the redirect
-        //     Log::debug('redirecting in auth 1');
-        //     //            return redirect($redirect_url);
-        //     return view('app.redirect', [
-        //         'redirect_url' => $redirect_url,
-        //         'shop_origin' => $shop->shop_origin,
-        //         'enable_cookies_url' => $redirect_url,
-        //     ]);
-        // }
-
-
-        // if ($request->get('_pk_s') !== null) {
-        //     Log::debug('Setting init_request to ' . $request->get('_pk_s'));
-
-        //     session()->put('init_request', base64_decode($request->get('_pk_s')));
-        //     session()->save();
-        // }
-        // if ($request->get('_enable_cookies') == 'yes') {
-        //     return view('app.create-session', [
-        //         'shop_origin' => $shop->shop_origin,
-        //         'redirect_url' => 'https://' . $shop->shop_origin . '/admin/apps/' . env('SHOPIFY_API_KEY'),
-        //     ]);
-        // }
-        // Log::debug("Go to a redirect page");
-
-        // return view('app.redirect', [
-        //     'redirect_url' => $redirect_url,
-        //     'shop_origin' => $shop->shop_origin,
-        //     'enable_cookies_url' => $enable_cookies_url,
-        // ]);
+        // TODO: this is where code from Test class index function will go in order to preserve current app settings in partners.shopify.com
     }
 
     public function enableCookies(Request $request)
@@ -93,7 +29,7 @@ class AuthController extends Controller
         parse_str($paramString, $params);
         if (!isset($params['hmac'])) {
             return false;
-          }
+        }
         $hmac = $params['hmac'];
         unset($params['hmac']);
         ksort($params);
@@ -125,11 +61,25 @@ class AuthController extends Controller
         $jsonResponse = json_decode($response, TRUE);
         curl_close($curl);
 
-        file_put_contents(storage_path('logs/token.log'), '==== ' . date('Y-m-d H:i:s') . ' ====' . PHP_EOL . $response . PHP_EOL, FILE_APPEND);
+        file_put_contents(
+            storage_path('logs/token.log'),
+            '==== ' . date('Y-m-d H:i:s') . ' Request token response ====' . PHP_EOL
+                . 'Shop Origin: ' . $shop . PHP_EOL
+                . $response . PHP_EOL,
+            FILE_APPEND
+        );
 
         return $jsonResponse['access_token'];
     }
 
+    /**
+     * Validates current token by requesting access scopes.
+     * 
+     * @param App\Models\Shopify\Shop $shop Shop object
+     * @param string $token token to be validated
+     * 
+     * @return bool return true if token is valid, false otherwise (request returned errors)
+     */
     private function tokenIsValid($shop, $token)
     {
 
@@ -139,17 +89,15 @@ class AuthController extends Controller
         // Configure curl client and execute request
         $curl = curl_init();
         $curlOptions = array(
-            CURLOPT_RETURNTRANSFER => TRUE,
+            CURLOPT_RETURNTRANSFER => true,
             CURLOPT_URL => $url,
             CURLOPT_HTTPHEADER => ['X-Shopify-Access-Token: ' . $token]
         );
         curl_setopt_array($curl, $curlOptions);
         $response = curl_exec($curl);
-        $jsonResponse = json_decode($response, TRUE);
+        $jsonResponse = json_decode($response, true);
 
         curl_close($curl);
-
-        //dd($response);
 
         if (isset($jsonResponse['errors'])) {
             return false;
@@ -160,22 +108,12 @@ class AuthController extends Controller
 
     public function callback(Request $request)
     {
-        // TODO: VALIDATE HMAC HERE
         if (!$this->validateHMAC($request->getQueryString())) {
-            dd('BAD HMAC');
+            // In case HMAC is invalid redirect to installation
             return redirect()->route('install-link', ['shop' => $request->get('shop')]);
         }
-        // $client = new ShopifyClient($request->shop, '', ENV('SHOPIFY_API_KEY'), ENV('SHOPIFY_SECRET'));
 
-        // if (!$client->validateSignature($request->all())) {
-        //     throw new UnprocessableEntityHttpException();
-        // }
-
-        // $shop = Shop::where('shop_origin', $request->shop)->where('nonce', $request->state)->first();
-        // if (empty($shop)) {
-        //     Log::debug("shop not found");
-        //     throw new UnprocessableEntityHttpException();
-        // }
+        // Since HMAC is validated we can assume to have valid information in the URL
         $shop = Shop::where('shop_origin', $request->shop)->first();
         if ($shop->token && $this->tokenIsValid($request->shop, $shop->token)) {
             //
@@ -185,28 +123,12 @@ class AuthController extends Controller
             $this->saveShop($shop, $request->shop, $token);
         }
 
-        //dd([$shop, $request]);
-
-        // Log::debug("setting topLevelOAuth cookie to no");
-        // session()->put('shopify_version', '1');
-        // session()->put('shop', $request->shop);
-
-
-        // if (session()->has('init_request')) {
-        //     Log::debug("Redirecting to ".session()->get('init_request'));
-        //     $init_request = session()->get('init_request');
-        //     $init_request = str_replace(array('http:'), array('https:'), $init_request);
-        //     session()->forget('init_request');
-
-        //     return redirect($init_request);
-        // }
-        // Log::debug("Redirecting to settings");
+        // Set default locale (this is required to get correct localization upon initial app load) - Default to english
         \App::setLocale($shop ? $shop->locale : 'en');
+
         return view('layouts.app', [
             'shop' => $shop,
         ]);
-        // $token = $this->makeJWT($request->shop);
-        // return redirect()->route('shopify.settings', ['local_token' => $token]);
     }
 
     private function saveShop($shop, $shop_origin, $token)
