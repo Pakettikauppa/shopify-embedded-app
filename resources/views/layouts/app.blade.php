@@ -414,6 +414,14 @@
             }
         );
 
+        const titleBar = Actions.TitleBar.create(ShopifyApp, {
+            title: 'My page title',
+            buttons: {
+                primary: buttonSave,
+                secondary: [buttonTestMode, buttonNews, optionsBtnGroup],
+            },
+        });
+
         const UICollection = {
             buttonSave: buttonSave,
             buttonNews: buttonNews,
@@ -422,21 +430,21 @@
             buttonPickupPointsSettings: buttonPickupPointsSettings,
             buttonCompanyInformationSettings: buttonCompanyInformationSettings,
             buttonApiSettings: buttonApiSettings,
-            buttonOtherSettings: buttonOtherSettings
+            buttonOtherSettings: buttonOtherSettings,
+            titleBar: titleBar
         };
 
-        Actions.TitleBar.create(ShopifyApp, {
-            title: 'My page title',
-            buttons: {
-                primary: buttonSave,
-                secondary: [buttonTestMode, buttonNews, optionsBtnGroup],
-            },
-        });
-
         /* Wait for HTML DOM before loading first page */
-        document.addEventListener('DOMContentLoaded', e=>{
+        document.addEventListener('DOMContentLoaded', e => {
             appDiv = document.getElementById('app-page');
 
+            // Check if there is custom content loaded
+            if (document.getElementById('custom-page')) {
+                customPageInit(); // this function must be created on custom page
+                return;
+            }
+
+            // No custom content - load news page
             startLoading();
             ax.get('{{route('shopify.latest-news')}}')
                 .then(response=>{

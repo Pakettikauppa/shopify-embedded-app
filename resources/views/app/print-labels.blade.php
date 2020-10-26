@@ -2,7 +2,7 @@
 
 @section('content')
 
-<section>
+<section id="custom-page">
     <div class="column">
         <div class="card" style="margin-top: 1em">
             <div class="row">
@@ -73,15 +73,11 @@
 
 <script type='text/javascript'>
 
-    ShopifyApp.ready(function(){
-
-        ShopifyApp.Bar.initialize({
-            title: '{{trans('app.print_labels.' . $page_title)}}',
-            icon: '{{url('/img/favicon-96x96.png')}}'
+    function customPageInit() {
+        titleBar.set({
+            title: '{{trans('app.print_labels.' . $page_title)}}'
         });
-
-    });
-
+    }
 </script>
 
 @endsection

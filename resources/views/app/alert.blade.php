@@ -2,7 +2,7 @@
 
 @section('content')
 
-<section>
+<section id="custom-page">
     <div class="row" style="padding-top: 1em; width: 100%;">
         <div class="alert {{$type}}">
             <dl>
@@ -24,14 +24,11 @@
 @section('after-scripts-end')
 
 <script type='text/javascript'>
-
-    ShopifyApp.ready(function(){
-        ShopifyApp.Bar.initialize({
-            title: '{{trans('app.messages.error')}}',
-            icon: '{{url('/img/favicon-96x96.png')}}'
+    function customPageInit() {
+        titleBar.set({
+            title: '{{trans('app.messages.error')}}'
         });
-    });
-
+    }
 </script>
 
 @endsection

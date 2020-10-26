@@ -28,6 +28,10 @@ Route::group(['namespace' => 'Shopify'], function () {
         Route::get('/settings/api', 'SettingsController@api')->name('shopify.settings.api-link');
         Route::get('/settings/generic', 'SettingsController@generic')->name('shopify.settings.generic-link');
         Route::get('/settings/pickuppoints', 'SettingsController@pickuppoints')->name('shopify.settings.pickuppoints-link');
+
+        // TODO: needs to be split into separate jobs
+        // Print labels and fullfill
+        Route::get('/print-labels-fulfill', 'AppController@printLabelsFulfill')->name('shopify.print-labels-fulfill');
     });
 
     // Unsued Routes
@@ -40,7 +44,7 @@ Route::group(['namespace' => 'Shopify'], function () {
     Route::get('/setup-wizard', 'AppController@setupWizard')->name('shopify.setup-wizard');
 
     Route::get('/print-labels', 'AppController@printLabels')->name('shopify.print-labels');
-    Route::get('/print-labels-fulfill', 'AppController@printLabelsFulfill')->middleware('shopify')->name('shopify.print-labels-fulfill');
+    // Route::get('/print-labels-fulfill', 'AppController@printLabelsFulfill')->middleware('shopify')->name('shopify.print-labels-fulfill');
     Route::get('/return-label', 'AppController@returnLabel')->name('shopify.return-label');
 
     Route::get('/get-label/{order_id}', 'AppController@getLabel')->name('shopify.label');
