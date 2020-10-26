@@ -41,13 +41,14 @@
                             </td>
                             <td>
                                 @if($order['status'] == 'created' || $order['status'] == 'sent')
-                                    <a href="{{route('shopify.label', ['is_return' => $is_return, 'order_id' => $order['id']])}}" target="_blank">{{trans('app.print_labels.get_label_link')}}</a>
+                                    <a class="print-label" href="{{route('shopify.label', ['order_id' => $order['id']])}}?{{$order['hmac_print_url']}}" target="_blank">{{trans('app.print_labels.get_label_link')}}</a>
                                 @endif
                             </td>
                         </tr>
                     @endforeach
                     </tbody>
                 </table>
+                {{-- TODO: remove csrf tokens, as it is no longer needed and instead hmac should be attached to request url --}}
                 <form method="post" action="{{route('shopify.get_labels')}}" target="_blank">
                     <input type="hidden" name="_token" id="csrf-token" value="{{ Session::token() }}" />
                     @foreach($orders as $order)
@@ -76,6 +77,20 @@
     function customPageInit() {
         titleBar.set({
             title: '{{trans('app.print_labels.' . $page_title)}}'
+        });
+
+        // Collect all links to print label
+        let printLinks = document.getElementsByClassName('print-label');
+
+        Object.keys(printLinks).forEach( key => {
+            printLinks[key].addEventListener('click', function(e){
+                e.preventDefault();
+                // Use Shopify redirect to safely open link in new tab
+                redirect.dispatch(Actions.Redirect.Action.REMOTE, {
+                    url: e.target.href,
+                    newContext: true,
+                });
+            });
         });
     }
 </script>

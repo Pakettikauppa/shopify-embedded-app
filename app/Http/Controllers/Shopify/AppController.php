@@ -206,6 +206,14 @@ class AppController extends Controller
         return $this->shopifyClient;
     }
 
+    private function createHMAC($params)
+    {
+        ksort($params);
+        $computed_hmac = hash_hmac('sha256', http_build_query($params), config('shopify.secret'));
+
+        return $computed_hmac;
+    }
+
     public function printLabels(Request $request)
     {
         if (!isset($request->ids) && !isset($request->id)) {
@@ -278,6 +286,12 @@ class AppController extends Controller
             }
             $shipment['id'] = $order['id'];
             $shipment['admin_order_url'] = 'https://' . $shop->shop_origin . '/admin/orders/' . $order['id'];
+            $url_params = [
+                'shop' => $shop->shop_origin,
+                'is_return' => $is_return,
+            ];
+            $url_params['hmac'] = $this->createHMAC($url_params);
+            $shipment['hmac_print_url'] = http_build_query($url_params);
 
             if (empty($shipment['line_items'])) {
                 $shipment['status'] = 'nothing_to_ship';
@@ -980,11 +994,13 @@ class AppController extends Controller
 
     public function getLabel(Request $request, $order_id)
     {
+        $shop = request()->get('shop');
+        $this->pk_client = $this->getPakketikauppaClient($shop);
         $is_return = isset($request->is_return) ? $request->is_return : false;
 
-        $shipment = ShopifyShipment::where('shop_id', $this->shop->id)
+        $shipment = ShopifyShipment::where('shop_id', $shop->id)
             ->where('order_id', $order_id)
-            ->where('test_mode', $this->shop->test_mode)
+            ->where('test_mode', $shop->test_mode)
             ->where('return', $is_return)
             ->first();
 
