@@ -32,6 +32,8 @@ Route::group(['namespace' => 'Shopify'], function () {
         // TODO: needs to be split into separate jobs
         // Print labels and fullfill
         Route::get('/print-labels-fulfill', 'AppController@printLabelsFulfill')->name('shopify.print-labels-fulfill');
+        Route::get('/print-labels', 'AppController@printLabels')->name('shopify.print-labels');
+        Route::get('/return-label', 'AppController@returnLabel')->name('shopify.return-label');
     });
 
     // Unsued Routes
@@ -43,9 +45,9 @@ Route::group(['namespace' => 'Shopify'], function () {
 
     Route::get('/setup-wizard', 'AppController@setupWizard')->name('shopify.setup-wizard');
 
-    Route::get('/print-labels', 'AppController@printLabels')->name('shopify.print-labels');
+    // Route::get('/print-labels', 'AppController@printLabels')->name('shopify.print-labels');
     // Route::get('/print-labels-fulfill', 'AppController@printLabelsFulfill')->middleware('shopify')->name('shopify.print-labels-fulfill');
-    Route::get('/return-label', 'AppController@returnLabel')->name('shopify.return-label');
+    // Route::get('/return-label', 'AppController@returnLabel')->name('shopify.return-label');
 
     Route::get('/get-label/{order_id}', 'AppController@getLabel')->name('shopify.label');
     Route::post('/get-labels', 'AppController@getLabels')->name('shopify.get_labels');

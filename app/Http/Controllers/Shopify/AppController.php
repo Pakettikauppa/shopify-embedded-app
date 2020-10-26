@@ -35,6 +35,9 @@ class AppController extends Controller
 
     private $shopifyClient;
 
+    private $fullfill_order = false;
+    private $is_return = false;
+
     public function __construct(Request $request)
     {
         //$this->middleware(ShopifyTokenMiddleware::class);
@@ -105,7 +108,7 @@ class AppController extends Controller
             // $this->pk_client->setComment('Created from Shopify App');
 
             // \App::setLocale($this->shop->locale);
-
+            
             return $next($request);
         });
     }
@@ -203,15 +206,16 @@ class AppController extends Controller
         return $this->shopifyClient;
     }
 
-    public function printLabelsFulfill(Request $request)
+    public function printLabels(Request $request)
     {
         if (!isset($request->ids) && !isset($request->id)) {
             Log::debug('No id found');
             throw new NotFoundHttpException();
         }
-        $is_return = isset($request->is_return) ? $request->is_return : false;
-        $fulfill_order = isset($request->fulfill_order) ? $request->fulfill_order : false;
-        $fulfill_order = true;
+        //$is_return = isset($request->is_return) ? $request->is_return : false;
+        //$fulfill_order = isset($request->fulfill_order) ? $request->fulfill_order : false;
+        $fulfill_order = $this->fullfill_order;
+        $is_return = $this->is_return;
 
         $shop = request()->get('shop');
         
@@ -382,7 +386,7 @@ class AppController extends Controller
 
             if (
                 !empty($this->pk_client->getResponse()->{'response.trackingcode'}['labelcode']) and
-                $this->shop->create_activation_code === true
+                $shop->create_activation_code === true
             ) {
                 try {
                     if ($this->client->callsLeft() > 0 and $this->client->callLimit() == $this->client->callsLeft()) {
@@ -934,6 +938,9 @@ class AppController extends Controller
 
     public function returnLabel(Request $request)
     {
+        $this->is_return = true;
+        return $this->printLabels($request);
+
         $params = $request->all();
         $params['is_return'] = true;
         $request = Request::create('print-labels', 'GET', $params);
@@ -942,9 +949,10 @@ class AppController extends Controller
         return $response;
     }
 
-    public function printLabelsFulfill_old(Request $request)
+    public function printLabelsFulfill(Request $request)
     {
-        return $this->customPrint($request->get('id'));
+        $this->fullfill_order = true;
+        return $this->printLabels($request);
         //dd($request);
         $params = $request->all();
         $params['fulfill_order'] = true;
