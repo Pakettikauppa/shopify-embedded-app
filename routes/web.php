@@ -16,10 +16,11 @@
 //     //return redirect('https://www.pakettikauppa.fi');
 // });
 
-Route::get('/', 'Test@index')->name('install-link');
+//Route::get('/', 'Test@index')->name('install-link');
 
 Route::group(['namespace' => 'Shopify'], function () {
-    Route::get('/auth/', 'AuthController@index')->name('shopify.auth.index');
+    Route::get('/auth', 'AuthController@index')->name('install-link');
+    //Route::get('/auth/', 'AuthController@index')->name('shopify.auth.index');
     Route::get('/auth/callback', 'AuthController@callback')->name('shopify.auth.callback');
 
     Route::group(['middleware' => ['shopify', 'shopify.shop', 'shopify.localize']], function () {

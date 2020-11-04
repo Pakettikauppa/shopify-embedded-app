@@ -16,7 +16,35 @@ class AuthController extends Controller
 {
     public function index(Request $request)
     {
-        // TODO: this is where code from Test class index function will go in order to preserve current app settings in partners.shopify.com
+        // Check that shopdomain is valid
+        $shop_domain = $request->input('shop', '');
+        if (!$this->isValidShopDomain($shop_domain)) {
+            dd('Shop domain is not valid. Must be like - shopname.myshopify.com');
+        }
+
+        $api_key = config('shopify.api_key');
+        $scopes = config('shopify.scope');
+        $redirect_uri = route('shopify.auth.callback');
+
+        // Build install/approval URL to redirect to
+        $install_url = "https://" . $shop_domain . "/admin/oauth/authorize?client_id=" . $api_key . "&scope=" . $scopes . "&redirect_uri=" . urlencode($redirect_uri);
+
+        // Due to how shopify works redirection must be done on shopify end (as app is loaded inside iframe)
+        return view('app.entry', ['shopOrigin' => $shop_domain, 'api_key' => $api_key, 'install_url' => $install_url]);
+    }
+
+    private function isValidShopDomain($shop)
+    {
+        $substring = explode('.', $shop);
+
+        // 'domain.myshopify.com'
+        if (count($substring) != 3) {
+            return false;
+        }
+
+        // allow dashes and alphanumberic characters
+        $substring[0] = str_replace('-', '', $substring[0]);
+        return (ctype_alnum($substring[0]) && $substring[1] . '.' . $substring[2] == 'myshopify.com');
     }
 
     public function enableCookies(Request $request)
