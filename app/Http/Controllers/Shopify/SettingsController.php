@@ -261,7 +261,7 @@ class SettingsController extends Controller
             $shop->saveCarrierServiceId($carrier_service_id);
         }
 
-        $pk_client = $this->getPakketikauppaClient($shop->api_key, $shop->api_secret);
+        $pk_client = $this->getPakketikauppaClient($shop);
 
         $products = $pk_client->listShippingMethods();
         
@@ -375,7 +375,7 @@ class SettingsController extends Controller
         $grouped_services = [];
 
         try {
-            $pk_client = $this->getPakketikauppaClient($shop->api_key, $shop->api_secret);
+            $pk_client = $this->getPakketikauppaClient($shop);
             $resp = $pk_client->listShippingMethods();
             $products = json_decode(json_encode($resp), true);
         } catch (\Exception $ex) {
@@ -416,19 +416,26 @@ class SettingsController extends Controller
     }
 
     /**
-     * Creates pakettikauppa client with supplied key and secret
+     * Creates pakettikauppa client according to supplied shop settings
      * 
-     * @param string $api_key
-     * @param string $api_secret
+     * @param \App\Models\Shopify\Shop $shop
      * 
      * @return \Pakettikauppa\Client
      */
-    public function getPakketikauppaClient($api_key, $api_secret)
+    public function getPakketikauppaClient($shop)
     {
-        return new Client([
-            'api_key' => $api_key,
-            'secret' => $api_secret,
-        ]);
+        $config = [
+            'test_mode' => true
+        ];
+
+        if (!$shop->test_mode) {
+            $config = [
+                'api_key' => $shop->api_key,
+                'secret' => $shop->api_secret,
+            ];
+        }
+
+        return new Client($config);
     }
 
     /**
@@ -445,7 +452,10 @@ class SettingsController extends Controller
             return false;
         }
 
-        $client = $this->getPakketikauppaClient($api_key, $api_secret);
+        $client = new Client([
+            'api_key' => $api_key,
+            'secret' => $api_secret,
+        ]);
         $result = $client->listShippingMethods();
 
         return is_array($result);
@@ -540,7 +550,7 @@ class SettingsController extends Controller
     {
         $shop = request()->get('shop');
 
-        $pk_client = $this->getPakketikauppaClient($shop->api_key, $shop->api_secret);
+        $pk_client = $this->getPakketikauppaClient($shop);
         $products = $pk_client->listShippingMethods();
 
         if (!is_array($products)) {
