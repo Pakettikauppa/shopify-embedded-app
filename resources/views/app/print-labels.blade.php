@@ -49,7 +49,7 @@
                     </tbody>
                 </table>
                 {{-- TODO: remove csrf tokens, as it is no longer needed and instead hmac should be attached to request url --}}
-                <form method="post" action="{{route('shopify.get_labels')}}" target="_blank">
+            <form id="print-labels-form" method="post" action="{{route('shopify.get_labels')}}?{{$print_all_params}}" target="_blank">
                     <input type="hidden" name="_token" id="csrf-token" value="{{ Session::token() }}" />
                     @foreach($orders as $order)
                         @if(isset($order['tracking_code']))

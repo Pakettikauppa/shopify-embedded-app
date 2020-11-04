@@ -560,10 +560,18 @@ class AppController extends Controller
             $page_title = 'print_label_fulfill';
         }
 
+        $print_all_url_params = [
+            'shop' => $shop->shop_origin,
+            'is_return' => $is_return,
+        ];
+        $print_all_url_params['hmac'] = $this->createHMAC($print_all_url_params);
+        $hmac_print_all_url = http_build_query($print_all_url_params);
+
         return view('app.print-labels', [
             'shop' => $shop,
             'orders' => $shipments,
             'orders_url' => 'https://' . $shop->shop_origin . '/admin/orders',
+            'print_all_params' => $hmac_print_all_url,
             'page_title' => $page_title,
             'is_return' => $is_return,
         ]);
@@ -978,11 +986,14 @@ class AppController extends Controller
 
     public function getLabels(Request $request)
     {
-        if (empty($request->tracking_codes)) {
+        if (empty(request()->get('tracking_codes'))) {
             throw new NotFoundHttpException();
         }
 
-        $xml = $this->pk_client->fetchShippingLabels($request->tracking_codes);
+        $shop = request()->get('shop');
+        $this->pk_client = $this->getPakketikauppaClient($shop);
+
+        $xml = $this->pk_client->fetchShippingLabels(request()->get('tracking_codes'));
 
         $pdf = base64_decode($xml->{'response.file'});
 
