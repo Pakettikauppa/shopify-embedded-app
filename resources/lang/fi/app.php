@@ -25,9 +25,11 @@ return [
             'need_shipping_address' => 'Epäonnistui koska toimitusosoite puuttui',
             'no_shipping_service' => 'Ei toimitustapaa valittuna',
             'not_in_inventory' => 'Tuotetta ei varastossa',
+            'nothing_to_ship' => 'Ei lähetettäviä tuotteita',
         ],
     ],
     'settings' => [
+        'only_default' => 'Huom! Vain "Oletuslähetystapa" toimii ylläolevassa toimituksissa. Shopifyssä olevan rajoitteen takia toimitushinnan nimi pitää olla uniikki eri toimitusvyöhykkeissä.',
         'default_shipping' => 'Oletuslähetystapa',
         'no_shipping_method' => 'Älä luo lähetystä',
         'no_shipping' => 'Älä luo lähetystä',
@@ -71,6 +73,7 @@ return [
         'api_key' => 'API key',
         'api_secret' => 'API secret',
         'saved' => 'Asetukset ovat tallennettu',
+        'save_failed' => 'Failed to save changes',
         'setup_wizard' => 'Ohjattu asennus',
         'print_return_labels' => 'Luo aina palautuslähetys lähetyksen yhteyssä. Huom! Shopifyssä oleva seuranta toimii vain alkuperäiselle lähetykselle.',
         'include_discounted_price_in_trigger' => 'Ota hintarajan laskennassa mukaan tuotteiden alennukset.',
@@ -111,6 +114,7 @@ return [
         'register_first' => 'Sinun täytyy ensin rekisteröityä',
         'in-testing' => 'Liitäntäsi on nyt testitilassa!',
         'in-production' => 'Liitäntäsi on nyt tuotantotilassa!',
+        'failed-test-mode' => 'Could not switch Test Mode',
     ],
     'tracking_info' => [
         'transaction' => 'Lähetys',

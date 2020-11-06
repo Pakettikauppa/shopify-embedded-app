@@ -25,9 +25,11 @@ return [
             'need_shipping_address' => 'Failed due to absence of shipping address',
             'no_shipping_service' => 'Shipping service for the rate is not set',
             'not_in_inventory' => 'Product is not in inventory',
+            'nothing_to_ship' => 'No products to ship',
         ],
     ],
     'settings' => [
+        'only_default' => 'Only "Default shipping method" works on a order using above method. Limit in Shopify requires name of the price to be unique in different shipping zones.',
         'default_shipping' => 'Use default shipping method',
         'no_shipping_method' => 'No shipping label',
         'no_shipping' => 'No shipping label',
@@ -71,6 +73,7 @@ return [
         'api_key' => 'API key',
         'api_secret' => 'API secret',
         'saved' => 'Settings have been saved',
+        'save_failed' => 'Failed to save changes',
         'setup_wizard' => 'Wizard setup',
         'print_return_labels' => 'Always create shipping label for return. Tracking in Shopify does not include return shipment.',
         'include_discounted_price_in_trigger' => 'Use discounted price for trigger price.',
@@ -111,6 +114,7 @@ return [
         'register_first' => 'You must register first',
         'in-testing' => 'Your integration is now in test mode!',
         'in-production' => 'Your integration is now in production mode!',
+        'failed-test-mode' => 'Could not switch Test Mode',
     ],
     'tracking_info' => [
         'transaction' => 'Transaction',

@@ -24,8 +24,11 @@ class PickupPointsController extends Controller
             throw new FatalErrorException();
         }
 
-        $calculatedMac = base64_encode(hash_hmac('sha256', $request->getContent(), ENV('SHOPIFY_SECRET'), true));
+        Log::debug("Searching for " . $shop->shop_origin);
+
+        $calculatedMac = base64_encode(hash_hmac('sha256', $request->getContent(), config('shopify.secret'), true));
         if (!hash_equals($calculatedMac, $request->header('x-shopify-hmac-sha256'))) {
+            Log::debug("Hash mismatch");
             throw new UnprocessableEntityHttpException();
         }
 
@@ -45,6 +48,7 @@ class PickupPointsController extends Controller
         }
 
         if ($pk_client_params == null) {
+            Log::debug("Pikcup points: fatal error");
             throw new FatalErrorException();
         }
 
@@ -52,6 +56,7 @@ class PickupPointsController extends Controller
 
         // test if pickup points are available in settings
         if (!(isset($shop->pickuppoints_count) && $shop->pickuppoints_count > 0)) {
+            Log::debug("no pickup point counts");
             return;
         }
 
@@ -63,22 +68,27 @@ class PickupPointsController extends Controller
 
         // get destination address
         $requestBody = json_decode($request->getContent());
+        Log::debug($request->getContent());
         $destination = $requestBody->rate->destination;
 
         $rates = array();
         if (count($this->pickupPointSettings) > 0) {
             // calculate total value of the cart
             $totalValue = 0;
+            $totalWeightInGrams = 0;
             $totalDiscount = 0;
             foreach ($requestBody->rate->items as $_item) {
                 $totalValue += $_item->price * $_item->quantity;
+                $totalWeightInGrams += $_item->grams * $_item->quantity;
             }
 
             $pickupPointProviders = array();
 
             foreach ($this->pickupPointSettings as $_provider => $_settings) {
                 if ($_settings['active'] == 'true') {
-                    $pickupPointProviders[] = $_provider;
+                    if (!($totalWeightInGrams > 20000 and $_provider === '80010')) {
+                        $pickupPointProviders[] = $_provider;
+                    }
                 }
             }
 
@@ -86,34 +96,46 @@ class PickupPointsController extends Controller
             $pickupPointProviders = implode(",", $pickupPointProviders);
 
             // search nearest pickup locations
-            $pickupPoints = json_decode(
+            $pickupPoints = /* json_decode( */
                 $pk_client->searchPickupPoints(
                     $destination->postal_code,
                     $destination->address1,
                     $destination->country,
                     $pickupPointProviders,
                     $shop->pickuppoints_count
-                )
-            );
+                );
+            /* ); */
 
-            if (empty($pickupPoints) && ($destination->country == 'AX' || $destination->country == 'FI')) {
+            if (empty($pickupPoints) && ($destination->country == 'LT' || $destination->country == 'AX' || $destination->country == 'FI')) {
                 // search some pickup points if no pickup locations was found
-                $pickupPoints = json_decode(
+                $pickupPoints = /* json_decode( */
                     $pk_client->searchPickupPoints(
                         '00100',
                         null,
                         'FI',
                         $pickupPointProviders,
                         $shop->pickuppoints_count
-                    )
-                );
+                    );
+                /* ); */
             }
             // generate custom carrier service response
             try {
                 foreach ($pickupPoints as $_pickupPoint) {
                     $_pickupPointName = ucwords(mb_strtolower($_pickupPoint->name));
 
-                    if ($_pickupPoint->provider == 'DB Schenker') {
+                    switch($_pickupPoint->provider_code) {
+                        case 'Posti':
+                            $_pickupPoint->provider_service = '2103';
+                            break;
+                        case 'Matkahuolto':
+                            $_pickupPoint->provider_service = '90080';
+                            break;
+                        case 'DB Schenker':
+                            $_pickupPoint->provider_service = '80010';
+                            break;
+                    }
+
+                    if ($_pickupPoint->provider_service == '80010') {
                         $_descriptionArray = [];
                         preg_match(
                             "/V(?<week>[0-9-]*)[ ]*L?(?<sat>[0-9-]*)[ ]*S?(?<sun>[0-9-]?.*)/",
@@ -140,9 +162,9 @@ class PickupPointsController extends Controller
                     $rates[] = array(
                         'service_name' => "{$_pickupPointName}, " . "{$_pickupPoint->street_address}, {$_pickupPoint->postcode}, {$_pickupPoint->city}",
                         'description' => $_pickupPoint->provider . ($_pickupPoint->description == null ? '' : " ({$_pickupPoint->description})"),
-                        'service_code' => "{$_pickupPoint->provider}:{$_pickupPoint->pickup_point_id}",
+                        'service_code' => "{$_pickupPoint->provider_service}:{$_pickupPoint->pickup_point_id}",
                         'currency' => 'EUR',
-                        'total_price' => $this->priceForPickupPoint($_pickupPoint->provider_code, $totalValue)
+                        'total_price' => $this->priceForPickupPoint($_pickupPoint->provider_service, $totalValue)
                     );
                 }
             } catch (\Exception $e) {
@@ -154,11 +176,14 @@ class PickupPointsController extends Controller
 
         $customCarrierServices = array('rates' => $rates);
 
-        if (!($destination->country == 'FI' || $destination->country == 'AX' || $destination->country == 'EE')) {
+        if (!($destination->country == 'LT' || $destination->country == 'FI' || $destination->country == 'AX' || $destination->country == 'EE')) {
             $customCarrierServices = array('rates' => []);
         }
 
-        echo json_encode($customCarrierServices);
+        $json = json_encode($customCarrierServices);
+
+        Log::debug($json);
+        echo $json;
     }
 
     private function convertDBSTime($openingHours)

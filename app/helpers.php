@@ -1,5 +1,22 @@
 <?php
 
+if (!function_exists('isHMACValid')) {
+    function isHMACValid($paramString)
+    {
+        $params = [];
+        parse_str($paramString, $params);
+        if (!isset($params['hmac'])) {
+            return false;
+          }
+        $hmac = $params['hmac'];
+        unset($params['hmac']);
+        ksort($params);
+        $computed_hmac = hash_hmac('sha256', http_build_query($params), config('shopify.secret'));
+
+        return hash_equals($computed_hmac, $hmac);
+    }
+}
+
 if (!function_exists('array_group_by')) {
     function array_group_by(array $arr, callable $key_selector)
     {

@@ -1,7 +1,7 @@
 @extends('layouts.default')
 
 @section('card-content')
-<form id="setting-form" method="GET" action="{{route('shopify.update-settings')}}">
+<form id="setting-form" method="POST" action="{{route('shopify.update-pickuppoints')}}">
 
     <article>
         <div class="card">
@@ -26,25 +26,32 @@
                                    {{trans('app.settings.pickuppoints.triggered_price')}}
                                </th>
                            </tr>
-                            @foreach($shipping_methods as $key => $_service_provider)
-                                <tr>
-                                    <td>
-                                        <input type="hidden" name="pickuppoint[{{$key}}][active]" value="false">
-                                        <input type="checkbox" name="pickuppoint[{{$key}}][active]" value="true" @if($pickuppoint_settings[$key]['active'] == 'true') checked @endif>
-                                    </td>
-                                    <td>
-                                        {{$key}}
-                                    </td>
-                                    <td>
-                                        <input type="number" name="pickuppoint[{{$key}}][base_price]" value="{{$pickuppoint_settings[$key]['base_price']}}">
-                                    </td>
-                                    <td>
-                                        <input type="number" name="pickuppoint[{{$key}}][trigger_price]" value="{{$pickuppoint_settings[$key]['trigger_price']}}">
-                                    </td>
-                                    <td>
-                                        <input type="number" name="pickuppoint[{{$key}}][triggered_price]" value="{{$pickuppoint_settings[$key]['triggered_price']}}">
-                                    </td>
-                                </tr>
+                            @foreach($shipping_methods as $shipping_method)
+                                @if ($shipping_method['has_pickup_points'])
+                                    @php
+                                        $shippingMethodCode = (string) $shipping_method['shipping_method_code'];
+                                    @endphp
+                                    <tr>
+                                        <td>
+                                            <input type="hidden" name="pickuppoint[{{$shippingMethodCode}}][active]" value="false">
+                                            <label>
+                                            <input type="checkbox" name="pickuppoint[{{$shippingMethodCode}}][active]" value="true" @if($pickuppoint_settings[$shippingMethodCode]['active'] == 'true') checked @endif>
+                                            </label>
+                                        </td>
+                                        <td>
+                                            {{$shipping_method['service_provider']}}: {{$shipping_method['name']}}
+                                        </td>
+                                        <td>
+                                            <input type="number" min="0" name="pickuppoint[{{$shippingMethodCode}}][base_price]" value="{{$pickuppoint_settings[$shippingMethodCode]['base_price']}}">
+                                        </td>
+                                        <td>
+                                            <input type="number" min="0" name="pickuppoint[{{$shippingMethodCode}}][trigger_price]" value="{{$pickuppoint_settings[$shippingMethodCode]['trigger_price']}}">
+                                        </td>
+                                        <td>
+                                            <input type="number" min="0" name="pickuppoint[{{$shippingMethodCode}}][triggered_price]" value="{{$pickuppoint_settings[$shippingMethodCode]['triggered_price']}}">
+                                        </td>
+                                    </tr>
+                               @endif
                             @endforeach
                         </table>
                 </div>

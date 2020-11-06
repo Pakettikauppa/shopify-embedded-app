@@ -2,7 +2,7 @@
 
 @section('content')
 
-<section>
+<section id="custom-page">
     <div class="column">
         <div class="card" style="margin-top: 1em">
             <div class="row">
@@ -41,14 +41,15 @@
                             </td>
                             <td>
                                 @if($order['status'] == 'created' || $order['status'] == 'sent')
-                                    <a href="{{route('shopify.label', ['is_return' => $is_return, 'order_id' => $order['id']])}}" target="_blank">{{trans('app.print_labels.get_label_link')}}</a>
+                                    <a class="print-label" href="{{route('shopify.label', ['order_id' => $order['id']])}}?{{$order['hmac_print_url']}}" target="_blank">{{trans('app.print_labels.get_label_link')}}</a>
                                 @endif
                             </td>
                         </tr>
                     @endforeach
                     </tbody>
                 </table>
-                <form method="post" action="{{route('shopify.get_labels')}}" target="_blank">
+                {{-- TODO: remove csrf tokens, as it is no longer needed and instead hmac should be attached to request url --}}
+            <form id="print-labels-form" method="post" action="{{route('shopify.get_labels')}}?{{$print_all_params}}" target="_blank">
                     <input type="hidden" name="_token" id="csrf-token" value="{{ Session::token() }}" />
                     @foreach($orders as $order)
                         @if(isset($order['tracking_code']))
@@ -73,15 +74,25 @@
 
 <script type='text/javascript'>
 
-    ShopifyApp.ready(function(){
-
-        ShopifyApp.Bar.initialize({
-            title: '{{trans('app.print_labels.' . $page_title)}}',
-            icon: '{{url('/img/favicon-96x96.png')}}'
+    function customPageInit() {
+        titleBar.set({
+            title: '{{trans('app.print_labels.' . $page_title)}}'
         });
 
-    });
+        // Collect all links to print label
+        let printLinks = document.getElementsByClassName('print-label');
 
+        Object.keys(printLinks).forEach( key => {
+            printLinks[key].addEventListener('click', function(e){
+                e.preventDefault();
+                // Use Shopify redirect to safely open link in new tab
+                redirect.dispatch(Actions.Redirect.Action.REMOTE, {
+                    url: e.target.href,
+                    newContext: true,
+                });
+            });
+        });
+    }
 </script>
 
 @endsection

@@ -28,6 +28,9 @@
     var ShopifyTestCookie = getCookie("shopify.testCookie");
     var ShopifyTopLevelOAuthCookie = getCookie("shopify.topLevelOAuth");
 
+    // ShopifyTestCookie = 'yes';
+    // ShopifyTopLevelOAuthCookie = 'yes';
+
     var AppBridge = window['app-bridge'];
     var createApp = AppBridge.default;
     var actions = AppBridge.actions;

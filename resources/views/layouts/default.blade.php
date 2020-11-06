@@ -1,6 +1,4 @@
-@extends('layouts.app')
 
-@section('content')
 
     <section>
         <div class="column" style="margin-top: 2rem;">
@@ -14,4 +12,4 @@
         </article>
     </footer>
 
-@endsection
+

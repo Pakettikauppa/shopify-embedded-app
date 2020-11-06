@@ -47,6 +47,9 @@ class Shop extends Model
             $receiver->setName2($receiverInfo['company']);
         }
         $receiver->setAddr1($receiverInfo['address']);
+        if (!empty($receiverInfo['address2'])) {
+            $receiver->setAddr2($receiverInfo['address2']);
+        }
         $receiver->setPostcode($receiverInfo['postcode']);
         $receiver->setCity($receiverInfo['city']);
         $receiver->setCountry($receiverInfo['country']);
@@ -92,7 +95,7 @@ class Shop extends Model
                 $pickupPoint = $this->shippingCode2Method($order['shipping_lines'][0]['code']);
                 $pickupPointId = $pickupPoint['pickup_point_id'];
 
-                if (! empty($pickupPointId)) {
+                if (!empty($pickupPointId)) {
                     $method_code = $pickupPoint['method_code'];
                 } else {
                     $pickupPointId = null;
@@ -119,14 +122,14 @@ class Shop extends Model
         $shipment->setShipmentInfo($info);
         $shipment->addParcel($parcel);
 
-        if ($pickupPointId != null and ! $isReturn) {
+        if ($pickupPointId != null and !$isReturn) {
             $additional_service = new AdditionalService();
             $additional_service->setServiceCode(2106);
             $additional_service->addSpecifier('pickup_point_id', $pickupPointId);
             $shipment->addAdditionalService($additional_service);
         }
 
-        if ($this->always_create_return_label == true && ! $isReturn) {
+        if ($this->always_create_return_label == true && !$isReturn) {
             $shipment->includeReturnLabel(true);
         }
 
@@ -175,26 +178,206 @@ class Shop extends Model
         $method_code = null;
 
         if (count($pickupPoint) == 2) {
+            $method_code = $pickupPoint[0];
             $pickupPointId = $pickupPoint[1];
-
-            switch ($pickupPoint[0]) {
-                case 'Posti':
-                    $method_code = 2103;
-                    break;
-                case 'Matkahuolto':
-                    $method_code = 90080;
-                    break;
-                case 'DB Schenker':
-                    $method_code = 80010;
-                    break;
-                default:
-                    $pickupPointId = null;
-            }
         }
 
+        if (!is_numeric($method_code)) {
+            switch ($pickupPoint[0]) {
+                case 'Posti':
+                    $method_code = '2103';
+                    break;
+                case 'Matkahuolto':
+                    $method_code = '90080';
+                    break;
+                case 'DB Schenker':
+                    $method_code = '80010';
+                    break;
+                default:
+                    // reset to defaults.
+                    $method_code = null;
+                    $pickupPointId = null;
+                    break;
+            }
+        }
         return [
             'method_code' => $method_code,
             'pickup_point_id' => $pickupPointId
         ];
+    }
+
+    /**
+     * Saves shop test mode parameter
+     * 
+     * @param bool $test_mode - true to enable test mode, false to go production
+     * 
+     * @return bool true on success
+     */
+    public function saveTestMode($test_mode = true)
+    {
+        $this->test_mode = $test_mode;
+
+        return $this->save();
+    }
+
+    /**
+     * Saves shop api credentials
+     * 
+     * @param string $api_key
+     * @param string $api_secret
+     * 
+     * @return bool true on success
+     */
+    public function saveApiCredentials($api_key = '', $api_secret = '')
+    {
+        $this->api_key = $api_key;
+        $this->api_secret = $api_secret;
+
+        return $this->save();
+    }
+
+    /**
+     * Updates locale setting
+     * 
+     * @param string $locale ISO code for prefered localization
+     * 
+     * @return bool true on success
+     */
+    public function saveLocale($locale = 'en')
+    {
+        $this->locale = $locale;
+
+        return $this->save();
+    }
+
+    /**
+     * Builds shipping settings array available providers
+     * 
+     * @param array|null $shipping_methods shiping methods array 
+     * @param array $productProviderByCode service providers array
+     * 
+     * @return array build shipping settings array
+     */
+    public function buildShippingSettings($shipping_methods, $productProviderByCode = [])
+    {
+        $shipping_settings = array();
+
+        if (!$shipping_methods) {
+            return $shipping_settings;
+        }
+
+        foreach ($shipping_methods as $key => $code) {
+            $shipping_settings[] = [
+                'shipping_rate_id' => $key,
+                'product_code' => $code,
+                'service_provider' => ($code == null ? '' : $productProviderByCode[(string)$code])
+            ];
+        }
+
+        return $shipping_settings;
+    }
+
+    /**
+     * Updates shiping settings
+     * 
+     * @param array $settings array of shipping settings settings [shipping_settings, default_service_code, always_create_return_label, create_activation_code]
+     * @param array $productProviderByCode product providers array
+     * 
+     * @return bool true on success
+     */
+    public function saveShippingSettings($settings)
+    {
+        // if its array serialize it, otherwise assume we got serialized array
+        $this->shipping_settings = is_array($settings['shipping_settings']) ? serialize($settings['shipping_settings']) : $settings['shipping_settings'];
+        $this->default_service_code = $settings['default_service_code'] ? $settings['default_service_code'] : 0;
+        $this->always_create_return_label = $settings['always_create_return_label'];
+        $this->create_activation_code = $settings['create_activation_code'];
+
+        return $this->save();
+    }
+
+    /**
+     * Saves sender information
+     * 
+     * @param array $sender_data sender settings array
+     * 
+     * @return bool true on success
+     */
+    public function saveSender($sender_data)
+    {
+        foreach ($sender_data as $key => $value) {
+            $this->$key = $value;
+        }
+
+        return $this->save();
+    }
+
+    /**
+     * Saves pickup points settings
+     * 
+     * @param array $data pickup points settings array
+     * 
+     * @return bool true on success
+     */
+    public function savePickupPointsSettings($data)
+    {
+        foreach ($data as $key => $value) {
+            $this->$key = $value;
+        }
+
+        return $this->save();
+    }
+
+    /**
+     * Decodes and returns settings as array (if no settings it will be empty array)
+     * 
+     * @return array settings array
+     */
+    public function getSettings()
+    {
+        return $this->settings == null ? array() : json_decode($this->settings, true);
+    }
+
+    /**
+     * Creates pickup points settings array
+     * 
+     * @param array $products shipping methods array
+     * 
+     * @return array pickup points settings array
+     */
+    public function getPickupPointSettings($products)
+    {
+        $pickupPointSettings = $this->getSettings();
+
+        foreach ($products as $product) {
+            $shippingMethodCode = (string) $product['shipping_method_code'];
+
+            if ($product['has_pickup_points'] && empty($pickupPointSettings[$shippingMethodCode])) {
+                $pickupPointSettings[$shippingMethodCode]['active']          = 'false';
+                $pickupPointSettings[$shippingMethodCode]['base_price']      = '0';
+                $pickupPointSettings[$shippingMethodCode]['trigger_price']   = '';
+                $pickupPointSettings[$shippingMethodCode]['triggered_price'] = '';
+            }
+
+            if (!isset($pickupPointSettings[$shippingMethodCode]['active'])) {
+                $pickupPointSettings[$shippingMethodCode]['active'] = 'false';
+            }
+        }
+
+        return $pickupPointSettings;
+    }
+
+    /**
+     * @param int|null $carrierServiceId carrier service id from Shopify
+     * @param int $pickupPointsCount maximum available pickup points
+     * 
+     * @return bool true on success
+     */
+    public function saveCarrierServiceId($carrierServiceId = null, $pickupPointsCount = 10)
+    {
+        $this->carrier_service_id = $carrierServiceId;
+        $this->pickuppoints_count = $pickupPointsCount;
+
+        return $this->save();
     }
 }

@@ -1,8 +1,11 @@
 @extends('layouts.default')
 
 @section('card-content')
+<script>
+console.log({!! json_encode($shopify_shipping) !!});
+</script>
 
-<form id="setting-form" method="GET" action="{{route('shopify.update-settings')}}">
+<form id="setting-form" method="POST" action="{{route('shopify.update-shipping')}}">
 
     <article>
         <div class="card">
@@ -11,6 +14,7 @@
             <div class="row" style="margin-bottom: 2em">
                 <div class="columns four rate-name-column">
                     {{trans('app.settings.default_shipping_method')}}
+                    
                 </div>
                 <div class="columns eight">
                     <div class="row">
@@ -46,36 +50,44 @@
             </div>
 
             @foreach($shipping_rates as $rate)
-
-            <div class="row">
-                <div class="columns four rate-name-column">
-                    {{$rate['zone']}}: {{$rate['name']}}
-                </div>
-                <div class="columns eight">
+                @if(!$rate['same'])
                     <div class="row">
-                        {{--<div class="input-group">--}}
-                            {{--<span class="append">{{trans('app.settings.shipping_method')}}</span>--}}
-                            <select name="shipping_method[{{$rate['name']}}]">
-                                <option value="">{{trans('app.settings.default_shipping')}}</option>
-                                <option value="NO_SHIPPING"  @if($rate['product_code'] == 'NO_SHIPPING') selected @endif>{{trans('app.settings.no_shipping_method')}}</option>
-                                @foreach($shipping_methods as $key => $service_provider)
-                                    @if(count($service_provider) > 0)
-                                        <optgroup label="{{$key}}">
-                                            @foreach($service_provider as $product)
-                                                <option value="{{ $product['shipping_method_code'] }}" data-services="{{json_encode($product['additional_services'])}}"
-                                                        @if($rate['product_code'] == $product['shipping_method_code']) selected @endif>
-                                                    {{ $product['name'] }}
-                                                </option>
-                                            @endforeach
-                                        </optgroup>
-                                    @endif
-                                @endforeach
-                            </select>
-                        {{--</div>--}}
+                        <div class="columns four rate-name-column">
+                            {{$rate['zone']}}: {{$rate['name']}}
+                        </div>
+                        <div class="columns eight">
+                            <div class="row">
+                              <select name="shipping_method[{{$rate['name']}}]">
+                                    <option value="">{{trans('app.settings.default_shipping')}}</option>
+                                      @if(!$rate['duplicate'])
+                                        <option value="NO_SHIPPING"  @if($rate['product_code'] == 'NO_SHIPPING') selected @endif>{{trans('app.settings.no_shipping_method')}}</option>
+                                        @foreach($shipping_methods as $key => $service_provider)
+                                            @if(count($service_provider) > 0)
+                                                <optgroup label="{{$key}}">
+                                                    @foreach($service_provider as $product)
+                                                        <option value="{{ $product['shipping_method_code'] }}" data-services="{{json_encode($product['additional_services'])}}"
+                                                                @if($rate['product_code'] == $product['shipping_method_code']) selected @endif>
+                                                            {{ $product['name'] }}
+                                                        </option>
+                                                    @endforeach
+                                                </optgroup>
+                                            @endif
+                                        @endforeach
+                                      @endif
+                                </select>
+                            </div>
+                        </div>
                     </div>
-                </div>
-            </div>
-
+                    <div class="row">
+                        <div class="columns twelve">
+                            @if($rate['duplicate'])
+                                <small>
+                                    {{trans('app.settings.only_default')}}
+                                </small>
+                            @endif
+                        </div>
+                    </div>
+                @endif
             @endforeach
         </div>
     </article>
