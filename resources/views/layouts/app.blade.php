@@ -15,166 +15,457 @@
     <!-- Styles -->
     <link href="{{url('css/uptown.css')}}" rel='stylesheet' type='text/css'>
     <link href="{{url('css/style.css')}}" rel='stylesheet' type='text/css'>
-@yield('after-style-end')
+    
+    @yield('after-style-end')
 
-<!-- JavaScripts -->
+    <!-- JavaScripts -->
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
-    <script src="https://cdn.shopify.com/s/assets/external/app.js"></script>
+    <script src="https://unpkg.com/@shopify/app-bridge@1.23.0/umd/index.js"></script>
+    <script src="https://unpkg.com/@shopify/app-bridge-utils@1.23.0/umd/index.js"></script>
     <script>
-        ShopifyApp.init({
-            apiKey: '{{ENV('SHOPIFY_API_KEY')}}',
-            shopOrigin: 'https://{{session()->get('shop')}}',
-            debug: false,
+        var AppBridge = window['app-bridge'];
+        console.log(AppBridge);
+
+        var Actions = AppBridge.actions;
+        var createApp = AppBridge.default;
+        var ShopifyApp = createApp({
+            apiKey: '{{config('shopify.api_key')}}',
+            shopOrigin: '{{$shop->shop_origin}}',
+            debug: true,
             forceRedirect: true
         });
 
-        @if(!empty($shop))
-        ShopifyApp.ready(function () {
-            ShopifyApp.Bar.initialize({
-                title: '{{trans('app.settings.settings')}}',
-                icon: '{{url('/img/favicon-96x96.png')}}',
-                buttons: {
-                    @if(!in_array(Route::currentRouteName(), ['shopify.latest-news', 'shopify.settings']))
-                    primary: {
-                        label: "{{trans('app.settings.save_settings')}}",
-                        callback: function () {
-                            saveForm();
-                        }
-                    },
-                    @endif
-                    secondary: [
-                            @if($shop->test_mode)
-                        {
-                            label: "{{trans('app.settings.testmode_off')}}",
-                            callback: function () {
-                                toggleProduction();
-                            }
-                        },
-                            @else
-                        {
-                            label: "{{trans('app.settings.testmode_on')}}",
-                            callback: function () {
-                                toggleTesting();
-                            }
-                        },
+        var AppUtils = window['app-bridge-utils'];
+        var getSessionToken = AppUtils.getSessionToken;
+        var appDiv = null;
 
-                            @endif
-                        {
-                            label: "{{trans('app.settings.latest-news')}}",
-                            href: "{{route('shopify.latest-news')}}",
-                            target: "app"
-                        },
-                        {
-                            label: "{{trans('app.settings.settings')}}",
-                            type: "dropdown",
-                            links: [
-                                {
-                                    label: "{{trans('app.settings.shipment_settings')}}",
-                                    href: "{{route('shopify.settings.shipping-link')}}",
-                                    target: "app"
-                                },
-                                {
-                                    label: "{{trans('app.settings.pickuppoints-settings')}}",
-                                    href: "{{route('shopify.settings.pickuppoints-link')}}",
-                                    target: "app"
-                                },
-                                {
-                                    label: "{{trans('app.settings.company_info')}}",
-                                    href: "{{route('shopify.settings.sender-link')}}",
-                                    target: "app"
-                                },
-                                {
-                                    label: "{{trans('app.settings.api-settings')}}",
-                                    href: "{{route('shopify.settings.api-link')}}",
-                                    target: "app"
-                                },
-                                {
-                                    label: "{{trans('app.settings.generic-settings')}}",
-                                    href: "{{route('shopify.settings.generic-link')}}",
-                                    target: "app"
-                                },
-                            ]
-                        }
-                    ]
-                },
-                icon: 'https://www.pakettikauppa.fi/apple-icon-57x57.png'
-            });
+        // Axios instance with seesionToken attached to all requests
+        var ax = axios.create();
+        ax.interceptors.request.use(  
+            function (config) {  
+                console.log('Intercepted', config);
+                return getSessionToken(window.ShopifyApp)  // requires an App Bridge instance
+                .then((token) => {  
+                    // append your request headers with an authenticated token
+                    config.headers['Authorization'] = `Bearer ${token}`;  
+                    return config;  
+                });
+            }
+        );
+
+        /* LOADING BAR */
+        const loading = Actions.Loading.create(ShopifyApp);
+
+        function startLoading() {
+            let loader = document.getElementById('app-loader');
+            if (!loader) {
+                return;
+            }
+
+            loader.classList.remove('hidden');
+        }
+
+        function stopLoading() {
+            let loader = document.getElementById('app-loader');
+            if (!loader) {
+                return;
+            }
+
+            loader.classList.add('hidden');
+        }
+        /* LOADING BAR END */
+        
+        /* TOAST */
+        const toast = Actions.Toast.create(ShopifyApp, { duration: 2000 });
+
+        function showToast(options) {
+            toast.set(options);
+            toast.dispatch(Actions.Toast.Action.SHOW);
+        }
+        /* TOAST END */
+        
+        const redirect = Actions.Redirect.create(ShopifyApp);
+        redirect.subscribe(
+            Actions.Redirect.Action.REMOTE,
+            (payload) => {
+                // Do something with the redirect
+                console.log(`Navigated to ${payload.path}`, payload);
+                return true;
+            }
+        );
+
+        // -- Buttons
+        /* SAVE BUTTON */
+        const buttonSave = Actions.Button.create(
+            ShopifyApp,
+            {
+                label: '{{trans('app.settings.save_settings')}}',
+                disabled: true
+            }
+        );
+
+        buttonSave.subscribe('click', () => {
+            saveSettings(document.getElementById('setting-form'));
         });
-        @endif
 
-        function saveForm() {
-            var settingsForm = $('#setting-form');
-            var spinner = $('#spinner');
-
-            updateSettings(settingsForm.serialize());
+        function saveBtnDisabled(status) {
+            buttonSave.set({disabled: status});
         }
 
-        function toggleTesting() {
-            toggleTestMode(true);
+        function saveSettings(data) {
+            startLoading();
+            ax(
+                {
+                    method: 'post',
+                    url: data.action,
+                    data: new FormData(data),
+                    headers: {'Content-Type': 'multipart/form-data' }
+                }
+            ).then(
+                response => {
+                    if (response.status === 200) {
+                        showToast({
+                            message: response.data.message,
+                            isError: response.data.status === 'error'
+                        });
+
+                        if (typeof response.data.html !== 'undefined') {
+                            updateInnerHtml(appDiv, response.data.html);
+                        }
+
+                        // if we changing locale need to update UI strings
+                        if (response.data.status !== 'error' && data.action == '{{route('shopify.update-locale')}}') {
+                            getTranslationStrings();
+                        }
+
+                    } else {
+                        showToast({
+                            message: 'Something went wrong',
+                            isError: true
+                        });
+                    }
+                    stopLoading();
+                }
+            ).catch(
+                error => {
+                    stopLoading();
+                }
+            );
+
+            return;
         }
-@php
-$url=Request::url();
-$url=str_replace("http:","https:",$url);
-@endphp
-        function toggleTestMode(mode) {
-            updateSettings({'test_mode': mode}, function (mesg) {
-                ShopifyApp.Modal.alert(mesg, function () {
-                    $(location).attr('href', "{{$url}}");
+
+        function getTranslationStrings() {
+            ax.get('{{route('shopify.button-translations')}}')
+                .then(response => {
+                    if (response.data.status == 'OK') {
+                        updateUITranslation(response.data.data);
+                    }
+                });
+        }
+
+        function updateUITranslation(data) {
+            Object.keys(data).forEach(function(key) {
+                if (key == 'value') {
+                    updateStrings(data[key]);
+                }
+
+                if (key == 'label') {
+                    updateButtons(data[key]);
+                }
+            });
+
+            // this needs separate update
+            buttonTestMode.set({
+                'label': getTestModeBtnText()
+            });
+
+            console.log(UICollection);
+        }
+
+        function updateStrings(data) {
+            Object.keys(data).forEach(function(key) {
+                UIStrings[key] = data[key];
+            });
+        }
+
+        function updateButtons(data) {
+            Object.keys(data).forEach(function(key) {
+                UICollection[key].set({
+                    'label': data[key]
                 });
             });
         }
+        /* SAVE BUTTON END */
 
-        function updateSettings(data, callback) {
-            var settingsForm = $('#setting-form');
-            var spinner = $('#spinner');
+        /* NEWS BUTTON */
+        const buttonNews = Actions.Button.create(ShopifyApp, {
+            label: '{{trans('app.settings.latest-news')}}',
+        });
 
-            $.ajax({
-                type: settingsForm.attr('method'),
-                url: "{{route('shopify.update-settings')}}",
-                data: data,
-                dataType: 'json'
-            }).done(function (resp) {
-                if (resp.status == 'ok' || resp.status == 'ok-reload') {
-                    if (typeof callback === 'undefined') {
-                        showSuccessMessage(resp.message);
-                    } else {
-                        callback(resp.message);
-                    }
-                    if(resp.status == 'ok-reload') {
-                        $(location).attr('href', "{{$url}}");
-                    }
-
-                } else if (resp.result == 'validation_error') {
-                    showDangerMessage(resp.message);
-                } else {
-                    showDangerMessage(resp.message);
+        buttonNews.subscribe('click', () => {
+            loadView(
+                '{{route('shopify.latest-news')}}',
+                () => {
+                    saveBtnDisabled(true);
                 }
-            }).fail(function () {
-                showDangerMessage('{{trans('app.messages.fail')}}');
+            );
+        });
+        /* NEWS BUTTON END */
+
+        /* TEST MODE BUTTON */
+        let UIStrings = {
+            test_mode_enable_text: '{{trans('app.settings.testmode_on')}}',
+            test_mode_disable_text: '{{trans('app.settings.testmode_off')}}'
+        };
+        let test_mode = @if($shop->test_mode) true @else false @endif;
+            
+        const buttonTestMode = Actions.Button.create(
+            ShopifyApp, 
+            { 
+                label: getTestModeBtnText(),
+                style: getTestModeBtnStyle() 
+            }
+        );
+
+        buttonTestMode.subscribe('click', () => {
+            switchMode();
+        });
+
+        function getTestModeBtnText() {
+            return test_mode ? UIStrings.test_mode_disable_text : UIStrings.test_mode_enable_text;
+        }
+
+        function getTestModeBtnStyle() {
+            return test_mode ? Actions.Button.Style.Danger : undefined;
+        }
+            
+        function switchMode() {
+            let data = {'test_mode': !test_mode};
+            startLoading();
+            ax(
+                {
+                    method: 'POST',
+                    url: '{{route('shopify.update-test-mode')}}',
+                    data: data,
+                }
+            ).then(
+                response => {
+                    if (response.status === 200 && response.data.status !== 'error') {
+                        showToast({message: response.data.message, isError: false});
+                        test_mode = !test_mode;
+                        buttonTestMode.set({
+                            label: getTestModeBtnText(),
+                            style: getTestModeBtnStyle()
+                        });
+                    } else if (response.status === 200 && response.data.status === 'error') {
+                        showToast({
+                            message: response.data.message,
+                            isError: true
+                        });
+                        console.error('RESPONSE ERROR:', response.data.message);
+                    } else {
+                        showToast({
+                            message: 'Something went wrong',
+                            isError: true
+                        });
+                    }
+                    stopLoading();
+                }
+            ).catch(
+                error => {
+                    showToast({
+                        message: 'Something went wrong',
+                        isError: true
+                    });
+                    console.error('API ERROR:', error);
+                    stopLoading();
+                }
+            );
+        }
+        /* TEST MODE BUTTON END */
+
+        /* SHIPMENT SETTINGS BUTTON */
+        const buttonShipmentSettings = Actions.Button.create(
+            ShopifyApp,
+            {
+                label: "{{trans('app.settings.shipment_settings')}}" 
+            }
+        );
+        buttonShipmentSettings.subscribe('click', () => {
+            loadView(
+                '{{route('shopify.settings.shipping-link')}}', 
+                () => {
+                    saveBtnDisabled(false);
+                }
+            );
+        });
+        /* SHIPMENT SETTINGS BUTTON END */
+
+        /* PICKUP POINTS SETTINGS BUTTON */
+        const buttonPickupPointsSettings = Actions.Button.create(
+            ShopifyApp,
+            { 
+                label: "{{trans('app.settings.pickuppoints-settings')}}"
+            }
+        );
+
+        buttonPickupPointsSettings.subscribe('click', () => {
+            loadView(
+                '{{route('shopify.settings.pickuppoints-link')}}',
+                () => {
+                    saveBtnDisabled(false);
+                }
+            );
+        });
+        /* PICKUP POINTS SETTINGS BUTTON END */
+
+        /* COMPANY INFORMATION SETTINGS BUTTON */
+        const buttonCompanyInformationSettings = Actions.Button.create(
+            ShopifyApp,
+            { 
+                label: "{{trans('app.settings.company_info')}}"
+            }
+        );
+
+        buttonCompanyInformationSettings.subscribe('click', () => {
+            loadView(
+                '{{route('shopify.settings.sender-link')}}',
+                () => {
+                    saveBtnDisabled(false);
+                }
+            );
+        });
+        /* COMPANY INFORMATION SETTINGS BUTTON END */
+
+        /* API SETTINGS BUTTON */
+        const buttonApiSettings = Actions.Button.create(
+            ShopifyApp,
+            {
+                label: "{{trans('app.settings.api-settings')}}"
+            }
+        );
+
+        buttonApiSettings.subscribe('click', () => {
+            loadView(
+                '{{route('shopify.settings.api-link')}}',
+                () => {
+                    saveBtnDisabled(false);
+                }
+            );
+        });
+        /* API SETTINGS BUTTON END */
+
+        /* OTHER SETTINGS BUTTON */
+        const buttonOtherSettings = Actions.Button.create(
+            ShopifyApp,
+            { 
+                label: "{{trans('app.settings.generic-settings')}}"
+            }
+        );
+
+        buttonOtherSettings.subscribe('click', () => {
+            loadView(
+                '{{route('shopify.settings.generic-link')}}',
+                () => {
+                    saveBtnDisabled(false);
+                }
+            );
+        });
+        /* OTHER SETTINGS BUTTON END */
+            
+        /* VIEWS FUNCTIONS */
+        // Calls api to get view html
+        function loadView(viewUrl, callback = null) {
+            startLoading();
+            ax.get(viewUrl)
+                .then(response => {
+                    updateInnerHtml(appDiv, response.data);
+                    if (callback) {
+                        callback();
+                    }
+                    stopLoading();
+                })
+                .catch(error => {
+                    stopLoading();
+                });
+        }
+
+        // Replaces targets inner html with supplied html, evaling javascript code
+        function updateInnerHtml(target, data) {
+            target.innerHTML = data;
+            let scripts = target.getElementsByTagName('script');
+            Object.keys(scripts).forEach(key => {
+                eval(scripts[key].innerText);
             });
         }
+        /* VIEWS FUNCTIONS END */
+            
+        // Register buttons to shoppify app
+        const optionsBtnGroup = Actions.ButtonGroup.create(
+            ShopifyApp, 
+            {
+                label: '{{trans('app.settings.settings')}}',
+                buttons: [
+                    buttonShipmentSettings, buttonPickupPointsSettings, buttonCompanyInformationSettings,
+                     buttonApiSettings, buttonOtherSettings
+                ]
+            }
+        );
 
-        function toggleProduction() {
-            toggleTestMode(false);
-        }
+        const titleBar = Actions.TitleBar.create(ShopifyApp, {
+            title: 'My page title',
+            buttons: {
+                primary: buttonSave,
+                secondary: [buttonTestMode, buttonNews, optionsBtnGroup],
+            },
+        });
 
-        function showSuccessMessage(mesg) {
-            ShopifyApp.flashNotice(mesg);
-        }
+        const UICollection = {
+            buttonSave: buttonSave,
+            buttonNews: buttonNews,
+            optionsBtnGroup: optionsBtnGroup,
+            buttonShipmentSettings: buttonShipmentSettings, 
+            buttonPickupPointsSettings: buttonPickupPointsSettings,
+            buttonCompanyInformationSettings: buttonCompanyInformationSettings,
+            buttonApiSettings: buttonApiSettings,
+            buttonOtherSettings: buttonOtherSettings,
+            titleBar: titleBar
+        };
 
-        function showDangerMessage(mesg) {
-            ShopifyApp.flashError(mesg);
-        }
+        /* Wait for HTML DOM before loading first page */
+        document.addEventListener('DOMContentLoaded', e => {
+            appDiv = document.getElementById('app-page');
 
+            // Check if there is custom content loaded
+            if (document.getElementById('custom-page')) {
+                customPageInit(); // this function must be created on custom page
+                return;
+            }
+
+            // No custom content - load news page
+            startLoading();
+            ax.get('{{route('shopify.latest-news')}}')
+                .then(response=>{
+                    appDiv.innerHTML = response.data;
+                    buttonSave.set({disabled: true});
+                    stopLoading();
+                })
+                .catch(function(error){
+                    stopLoading();
+                    console.log('Error during view load', error);
+                });
+        });
     </script>
     @yield('after-scripts-end')
 </head>
 <body id="app-layout">
-
-@yield('content')
-
-<div class="loading hidden">
-    <img class="spinner" src="{{url('/img/ajax-loader.gif')}}">
-</div>
+    <div id="app-page">
+        @yield('content')
+    </div>
+    <div id="app-loader" class="loading hidden">
+        <img class="spinner" src="{{url('/img/ajax-loader.gif')}}">
+    </div>
 </body>
 </html>

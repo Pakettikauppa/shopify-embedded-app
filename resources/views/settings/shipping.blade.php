@@ -1,8 +1,11 @@
 @extends('layouts.default')
 
 @section('card-content')
+<script>
+console.log({!! json_encode($shopify_shipping) !!});
+</script>
 
-<form id="setting-form" method="GET" action="{{route('shopify.update-settings')}}">
+<form id="setting-form" method="POST" action="{{route('shopify.update-shipping')}}">
 
     <article>
         <div class="card">
@@ -11,6 +14,7 @@
             <div class="row" style="margin-bottom: 2em">
                 <div class="columns four rate-name-column">
                     {{trans('app.settings.default_shipping_method')}}
+                    
                 </div>
                 <div class="columns eight">
                     <div class="row">

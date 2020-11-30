@@ -15,7 +15,7 @@ class CreateShopifyShipmentsTable extends Migration
     {
         Schema::create('shopify_shipments', function (Blueprint $table) {
             $table->increments('id');
-            $table->integer('shop_id');
+            $table->unsignedInteger('shop_id');
             $table->foreign('shop_id')->references('id')->on('shopify_shops');
             $table->string('order_id');
             $table->string('tracking_code', 200);

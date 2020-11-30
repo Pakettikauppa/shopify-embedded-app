@@ -73,6 +73,7 @@ return [
         'api_key' => 'API key',
         'api_secret' => 'API secret',
         'saved' => 'Settings have been saved',
+        'save_failed' => 'Failed to save changes',
         'setup_wizard' => 'Wizard setup',
         'print_return_labels' => 'Always create shipping label for return. Tracking in Shopify does not include return shipment.',
         'include_discounted_price_in_trigger' => 'Use discounted price for trigger price.',
@@ -113,6 +114,7 @@ return [
         'register_first' => 'You must register first',
         'in-testing' => 'Your integration is now in test mode!',
         'in-production' => 'Your integration is now in production mode!',
+        'failed-test-mode' => 'Could not switch Test Mode',
     ],
     'tracking_info' => [
         'transaction' => 'Transaction',

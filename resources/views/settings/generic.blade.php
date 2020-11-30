@@ -2,7 +2,7 @@
 
 @section('card-content')
 
-<form id="setting-form" method="GET" action="{{route('shopify.update-settings')}}">
+<form id="setting-form" method="POST" action="{{route('shopify.update-locale')}}">
 
     <article>
 

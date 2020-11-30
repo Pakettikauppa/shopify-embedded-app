@@ -1,6 +1,6 @@
-@extends('layouts.app')
+@extends('layouts.default')
 
-@section('content')
+@section('card-content')
 
 <section>
     <div class="column">
@@ -8,7 +8,7 @@
             @if(in_array($_item->category,['Shopify', 'Yleinen']))
         <div class="card" style="margin-top: 1em">
                 <div class="row">
-<h2>{{$_item->title}}</h2>
+                    <h2>{{$_item->title}}</h2>
                         {!! $_item->children("http://purl.org/rss/1.0/modules/content/")->encoded !!}
                     <p>
                         <small>

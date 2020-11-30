@@ -73,6 +73,7 @@ return [
         'api_key' => 'API key',
         'api_secret' => 'API secret',
         'saved' => 'Asetukset ovat tallennettu',
+        'save_failed' => 'Failed to save changes',
         'setup_wizard' => 'Ohjattu asennus',
         'print_return_labels' => 'Luo aina palautuslähetys lähetyksen yhteyssä. Huom! Shopifyssä oleva seuranta toimii vain alkuperäiselle lähetykselle.',
         'include_discounted_price_in_trigger' => 'Ota hintarajan laskennassa mukaan tuotteiden alennukset.',
@@ -113,6 +114,7 @@ return [
         'register_first' => 'Sinun täytyy ensin rekisteröityä',
         'in-testing' => 'Liitäntäsi on nyt testitilassa!',
         'in-production' => 'Liitäntäsi on nyt tuotantotilassa!',
+        'failed-test-mode' => 'Could not switch Test Mode',
     ],
     'tracking_info' => [
         'transaction' => 'Lähetys',

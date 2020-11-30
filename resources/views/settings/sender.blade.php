@@ -1,8 +1,12 @@
 @extends('layouts.default')
 
 @section('card-content')
-
-<form id="setting-form" method="GET" action="{{route('shopify.update-settings')}}">
+<style>
+    .input-group .append {
+        min-width: 15%;
+    }
+</style>
+<form id="setting-form" method="POST" action="{{route('shopify.update-sender')}}">
 
     <article>
         <div class="card">

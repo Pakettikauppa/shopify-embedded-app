@@ -38,7 +38,7 @@ class FetchLatestNews extends Command
      */
     public function handle()
     {
-        $rssFeed = file_get_contents(env('RSS_FEED_URL'));
+        $rssFeed = file_get_contents(config('shopify.rss_feed_url'));
 
         Storage::put(config('shopify.storage_path').'/feed.xml', $rssFeed);
     }
