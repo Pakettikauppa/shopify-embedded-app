@@ -1035,14 +1035,18 @@ class AppController extends Controller
 
     public function trackShipment(Request $request)
     {
+        $shop = request()->get('shop');
+        $this->pk_client = $this->getPakketikauppaClient($shop);
         $is_return = isset($request->is_return) ? $request->is_return : false;
-        $shipment = ShopifyShipment::where('shop_id', $this->shop->id)
+
+        $shipment = ShopifyShipment::where('shop_id', $shop->id)
             ->where('order_id', $request->id)
             ->where('return', $is_return)
             ->first();
 
         if (!isset($shipment)) {
             return view('app.alert', [
+                'shop' => $shop,
                 'type' => 'error',
                 'title' => trans('app.messages.no_tracking_info'),
                 'message' => '',
@@ -1051,20 +1055,22 @@ class AppController extends Controller
 
         $tracking_code = $shipment->test_mode ? 'JJFITESTLABEL100' : $shipment->tracking_code;
 
-        $statuses = json_decode($this->pk_client->getShipmentStatus($tracking_code));
+        $statuses = $this->pk_client->getShipmentStatus($tracking_code);
 
         if (!is_array($statuses) || count($statuses) == 0) {
             return view('app.alert', [
+                'shop' => $shop,
                 'type' => 'error',
                 'title' => trans('app.messages.no_tracking_info'),
                 'message' => '',
             ]);
         }
 
-        $admin_order_url = 'https://' . $this->shop->shop_origin . '/admin/orders/' . $shipment->order_id;
-        $admin_orders_url = 'https://' . $this->shop->shop_origin . '/admin/orders';
+        $admin_order_url = 'https://' . $shop->shop_origin . '/admin/orders/' . $shipment->order_id;
+        $admin_orders_url = 'https://' . $shop->shop_origin . '/admin/orders';
 
         return view('app.shipment-status', [
+            'shop' => $shop,
             'statuses' => $statuses,
             'current_shipment' => $shipment,
             'order_url' => $admin_order_url,
