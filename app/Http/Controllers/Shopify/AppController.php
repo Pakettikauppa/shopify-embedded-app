@@ -206,14 +206,6 @@ class AppController extends Controller
         return $this->shopifyClient;
     }
 
-    private function createHMAC($params)
-    {
-        ksort($params);
-        $computed_hmac = hash_hmac('sha256', http_build_query($params), config('shopify.secret'));
-
-        return $computed_hmac;
-    }
-
     public function printLabels(Request $request)
     {
         if (!isset($request->ids) && !isset($request->id)) {
@@ -290,7 +282,7 @@ class AppController extends Controller
                 'shop' => $shop->shop_origin,
                 'is_return' => $is_return,
             ];
-            $url_params['hmac'] = $this->createHMAC($url_params);
+            $url_params['hmac'] = createShopifyHMAC($url_params);
             $shipment['hmac_print_url'] = http_build_query($url_params);
 
             if (empty($shipment['line_items'])) {
@@ -564,7 +556,7 @@ class AppController extends Controller
             'shop' => $shop->shop_origin,
             'is_return' => $is_return,
         ];
-        $print_all_url_params['hmac'] = $this->createHMAC($print_all_url_params);
+        $print_all_url_params['hmac'] = createShopifyHMAC($print_all_url_params);
         $hmac_print_all_url = http_build_query($print_all_url_params);
 
         return view('app.print-labels', [
