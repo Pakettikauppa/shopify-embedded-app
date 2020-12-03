@@ -11,6 +11,7 @@ matrix:
   include:
     # Arbitrary PHP version to run the sniffs against.
   allow_failures:
+  - php: '8.0'
   - php: nightly  # Old phpunit not compatible with PHP 8.0.0 yet
 
 before_script:
