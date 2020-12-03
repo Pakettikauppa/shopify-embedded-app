@@ -96,34 +96,30 @@ class PickupPointsController extends Controller
             $pickupPointProviders = implode(",", $pickupPointProviders);
 
             // search nearest pickup locations
-            $pickupPoints = /* json_decode( */
-                $pk_client->searchPickupPoints(
-                    $destination->postal_code,
-                    $destination->address1,
-                    $destination->country,
-                    $pickupPointProviders,
-                    $shop->pickuppoints_count
-                );
-            /* ); */
+            $pickupPoints = $pk_client->searchPickupPoints(
+                $destination->postal_code,
+                $destination->address1,
+                $destination->country,
+                $pickupPointProviders,
+                $shop->pickuppoints_count
+            );
 
             if (empty($pickupPoints) && ($destination->country == 'LT' || $destination->country == 'AX' || $destination->country == 'FI')) {
                 // search some pickup points if no pickup locations was found
-                $pickupPoints = /* json_decode( */
-                    $pk_client->searchPickupPoints(
-                        '00100',
-                        null,
-                        'FI',
-                        $pickupPointProviders,
-                        $shop->pickuppoints_count
-                    );
-                /* ); */
+                $pickupPoints = $pk_client->searchPickupPoints(
+                    '00100',
+                    null,
+                    'FI',
+                    $pickupPointProviders,
+                    $shop->pickuppoints_count
+                );
             }
             // generate custom carrier service response
             try {
                 foreach ($pickupPoints as $_pickupPoint) {
                     $_pickupPointName = ucwords(mb_strtolower($_pickupPoint->name));
 
-                    switch($_pickupPoint->provider_code) {
+                    switch ($_pickupPoint->provider_code) {
                         case 'Posti':
                             $_pickupPoint->provider_service = '2103';
                             break;
