@@ -2,7 +2,7 @@
 
 @section('content')
 
-    <section>
+    <section id="custom-page">
         <div class="column">
             <div class="card" style="margin-top: 1em">
                 {{--<h1>{{!!trans('app.tracking_info.title')!!}}</h1>--}}
@@ -46,15 +46,14 @@
 
 @section('after-scripts-end')
 
-    <script type='text/javascript'>
+<script type='text/javascript'>
 
-        ShopifyApp.ready(function(){
-            ShopifyApp.Bar.initialize({
-                title: '{{trans('app.tracking_info.title')}}',
-                icon: '{{url('/img/favicon-96x96.png')}}'
-            });
+    function customPageInit() {
+        titleBar.set({
+            title: '{{trans('app.tracking_info.title')}}'
         });
+    }
 
-    </script>
+</script>
 
 @endsection

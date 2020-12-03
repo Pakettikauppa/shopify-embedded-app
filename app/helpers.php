@@ -1,5 +1,25 @@
 <?php
 
+if (!function_exists('createShopifyHMAC')) {
+    function createShopifyHMAC($params = array())
+    {   
+        ksort($params);
+        
+        foreach ($params as $key => $value) {
+            if (is_array($value)) {
+                $params[$key] = $key . '=["' . implode('", "', $value) . '"]';
+                continue;
+            }
+
+            $params[$key] = $key . '=' . $value;
+        }
+
+        $query = implode('&', $params);
+
+        return hash_hmac('sha256', $query, config('shopify.secret'));
+    }
+}
+
 if (!function_exists('isHMACValid')) {
     function isHMACValid($paramString)
     {
@@ -7,11 +27,13 @@ if (!function_exists('isHMACValid')) {
         parse_str($paramString, $params);
         if (!isset($params['hmac'])) {
             return false;
-          }
+        }
         $hmac = $params['hmac'];
+        
         unset($params['hmac']);
-        ksort($params);
-        $computed_hmac = hash_hmac('sha256', http_build_query($params), config('shopify.secret'));
+        unset($params['signature']); // Depricated
+
+        $computed_hmac = createShopifyHMAC($params);
 
         return hash_equals($computed_hmac, $hmac);
     }

@@ -21,8 +21,6 @@ class SettingsController extends Controller
     const MSG_OK = 'ok';
     const MSG_ERROR = 'error';
 
-    private ShopifyClient $client;
-
     private $shopifyClient;
     private Shop $shop;
     private Client $pk_client;
@@ -227,7 +225,7 @@ class SettingsController extends Controller
                             
                             // Update callbackurl if it has changed
                             if ($_service['callback_url'] != route('shopify.pickuppoints.list')) {
-                                $this->client->call(
+                                $client->call(
                                     'PUT',
                                     'admin',
                                     '/carrier_services/' . $_service['id'] . '.json',

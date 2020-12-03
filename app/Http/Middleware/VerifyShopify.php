@@ -20,11 +20,11 @@ class VerifyShopify
         $hmac = $request->get('hmac');
 
         // TODO: do not forget to remove auth skipping
-        if ($request->get('virtual')) {
-            $request->attributes->add(['shopOrigin' => 'posti-dev.myshopify.com']);
+        // if ($request->get('virtual')) {
+        //     $request->attributes->add(['shopOrigin' => 'posti-dev.myshopify.com']);
 
-            return $next($request);
-        }
+        //     return $next($request);
+        // }
 
         if (!$token && !$hmac) {
             dd('Should have a token you know');
