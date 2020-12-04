@@ -2,8 +2,8 @@
 
 namespace App\Http\Middleware;
 
+use App\Exceptions\ShopifyAuthException;
 use Closure;
-use Symfony\Component\CssSelector\Node\PseudoNode;
 
 class VerifyShopify
 {
@@ -19,42 +19,38 @@ class VerifyShopify
         $token = $request->bearerToken();
         $hmac = $request->get('hmac');
 
-        // TODO: do not forget to remove auth skipping
-        // if ($request->get('virtual')) {
-        //     $request->attributes->add(['shopOrigin' => 'posti-dev.myshopify.com']);
-
-        //     return $next($request);
-        // }
-
         if (!$token && !$hmac) {
-            dd('Should have a token you know');
+            throw new ShopifyAuthException('Missing HMAC or JWT');
         }
 
+        // If HMAC but its not valid redirect to install route
         if ($hmac && !isHMACValid($request->getQueryString())) {
             return redirect()->route('install-link', ['shop' => $request->get('shop')]);
         }
 
+        // If HMAC and its valid move on
         if ($hmac && isHMACValid($request->getQueryString())) {
             $request->attributes->add(['shopOrigin' => $request->get('shop')]);
 
             return $next($request);
         }
 
-        // Priority is actual Bearer token
+
+        // No HMAC found assume JWT is attached to request
         $token_parts = explode('.', $token);
         
         if (count($token_parts) !== 3) {
-            dd('Arent you trying to cheat here?');
+            throw new ShopifyAuthException('Invalid token');
         }
 
         if (!$this->isValidJWT($token_parts[0], $token_parts[1], $token_parts[2])) {
-            dd('Not valid');
+            throw new ShopifyAuthException('Invalid token');
         }
 
         $payload_data = $this->parseTokenPayload($token_parts[1]);
 
         if ($this->isExpired($payload_data)) {
-            dd('Expired token');
+            throw new ShopifyAuthException('Expired token');
         }
 
         $request->attributes->add(['shopOrigin' => parse_url($payload_data['dest'], PHP_URL_HOST)]);

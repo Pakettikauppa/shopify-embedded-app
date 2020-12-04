@@ -25,7 +25,6 @@
     <script src="https://unpkg.com/@shopify/app-bridge-utils@1.23.0/umd/index.js"></script>
     <script>
         var AppBridge = window['app-bridge'];
-        console.log(AppBridge);
 
         var Actions = AppBridge.actions;
         var createApp = AppBridge.default;
@@ -44,7 +43,6 @@
         var ax = axios.create();
         ax.interceptors.request.use(  
             function (config) {  
-                console.log('Intercepted', config);
                 return getSessionToken(window.ShopifyApp)  // requires an App Bridge instance
                 .then((token) => {  
                     // append your request headers with an authenticated token
@@ -90,7 +88,6 @@
             Actions.Redirect.Action.REMOTE,
             (payload) => {
                 // Do something with the redirect
-                console.log(`Navigated to ${payload.path}`, payload);
                 return true;
             }
         );
@@ -161,6 +158,10 @@
                 .then(response => {
                     if (response.data.status == 'OK') {
                         updateUITranslation(response.data.data);
+                        // Language change is only possible in Generic settings page so we can use its title to set Page title in correct language
+                        titleBar.set({
+                            title: buttonOtherSettings.label
+                        });
                     }
                 });
         }
@@ -180,8 +181,6 @@
             buttonTestMode.set({
                 'label': getTestModeBtnText()
             });
-
-            console.log(UICollection);
         }
 
         function updateStrings(data) {
@@ -209,6 +208,9 @@
                 '{{route('shopify.latest-news')}}',
                 () => {
                     saveBtnDisabled(true);
+                    titleBar.set({
+                        title: buttonNews.label
+                    });
                 }
             );
         });
@@ -298,6 +300,9 @@
                 '{{route('shopify.settings.shipping-link')}}', 
                 () => {
                     saveBtnDisabled(false);
+                    titleBar.set({
+                        title: buttonShipmentSettings.label
+                    });
                 }
             );
         });
@@ -316,6 +321,9 @@
                 '{{route('shopify.settings.pickuppoints-link')}}',
                 () => {
                     saveBtnDisabled(false);
+                    titleBar.set({
+                        title: buttonPickupPointsSettings.label
+                    });
                 }
             );
         });
@@ -334,6 +342,9 @@
                 '{{route('shopify.settings.sender-link')}}',
                 () => {
                     saveBtnDisabled(false);
+                    titleBar.set({
+                        title: buttonCompanyInformationSettings.label
+                    });
                 }
             );
         });
@@ -352,6 +363,9 @@
                 '{{route('shopify.settings.api-link')}}',
                 () => {
                     saveBtnDisabled(false);
+                    titleBar.set({
+                        title: buttonApiSettings.label
+                    });
                 }
             );
         });
@@ -370,6 +384,9 @@
                 '{{route('shopify.settings.generic-link')}}',
                 () => {
                     saveBtnDisabled(false);
+                    titleBar.set({
+                        title: buttonOtherSettings.label
+                    });
                 }
             );
         });
@@ -445,17 +462,7 @@
             }
 
             // No custom content - load news page
-            startLoading();
-            ax.get('{{route('shopify.latest-news')}}')
-                .then(response=>{
-                    appDiv.innerHTML = response.data;
-                    buttonSave.set({disabled: true});
-                    stopLoading();
-                })
-                .catch(function(error){
-                    stopLoading();
-                    console.log('Error during view load', error);
-                });
+            buttonNews.dispatch(Actions.Button.Action.CLICK);
         });
     </script>
     @yield('after-scripts-end')

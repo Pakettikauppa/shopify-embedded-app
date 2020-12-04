@@ -1,9 +1,6 @@
 @extends('layouts.default')
 
 @section('card-content')
-<script>
-console.log({!! json_encode($shopify_shipping) !!});
-</script>
 
 <form id="setting-form" method="POST" action="{{route('shopify.update-shipping')}}">
 
