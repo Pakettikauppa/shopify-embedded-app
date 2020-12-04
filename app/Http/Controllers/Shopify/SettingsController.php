@@ -31,66 +31,6 @@ class SettingsController extends Controller
     public function __construct(Request $request)
     {
         $this->shopifyClient = null;
-        //$this->middleware(ShopifyTokenMiddleware::class);
-        // $this->middleware(function ($request, $next) {
-
-
-
-
-        //     return $next($request);
-        // });
-        //$this->request = $request;
-
-        // $shop = Shop::where('shop_origin', $request->get('shopOrigin'))->first();
-
-        //     // if (empty($shop)) {
-        //     //     session()->put('init_request', $request->fullUrl());
-        //     //     Log::debug('redirecting in settings 2');
-        //     //     return redirect()->route('shopify.auth.index', request()->all());
-        //     // }
-
-        //     $this->shop = $shop;
-        //     if ($shop->settings == null) {
-        //         $shop->settings = '{}';
-        //     }
-
-        //     $this->pickupPointSettings = json_decode($shop->settings, true);
-
-        //     $this->client = new ShopifyClient(
-        //         $shop->shop_origin,
-        //         $shop->token,
-        //         config('shopify.api_key'),
-        //         config('shopify.secret')
-        //     );
-
-        //     // TODO how to make this work without this - cache?
-        //     // try {
-        //     //     $this->client->call('GET', 'admin', '/shop.json');
-        //     // } catch (ShopifyApiException $e) {
-        //     //     Log::debug("ARE WE EVER GOING HERE??");
-        //     //     session()->put('init_request', $request->fullUrl());
-        //     //     return redirect()->route('shopify.auth.index', request()->all());
-        //     // }
-
-        //     // set pk_client
-        //     if ($this->shop->test_mode) {
-        //         $pk_client_params = [
-        //             'test_mode' => true,
-        //         ];
-        //     } else {
-        //         if (isset($this->shop->api_key) && isset($this->shop->api_secret)) {
-        //             $pk_client_params = [
-        //                 'api_key' => $this->shop->api_key,
-        //                 'secret' => $this->shop->api_secret,
-        //             ];
-        //         }
-        //     }
-
-        //     if (is_array($pk_client_params)) {
-        //         $this->pk_client = new Client($pk_client_params);
-        //     }
-
-        //     \App::setLocale($this->shop->locale);
     }
 
     /**
@@ -141,9 +81,13 @@ class SettingsController extends Controller
         ]);
     }
 
+    /**
+     * Buttons / Page title translation endpoint
+     * 
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function getButtonsTranslations()
     {
-        //shopify.button-translations
         return response()->json([
             'status' => 'OK',
             'data' => [
@@ -167,9 +111,17 @@ class SettingsController extends Controller
         ]);
     }
 
+    /**
+     * Request carrier service from shopify by service ID
+     * 
+     * @param mixed $carrier_service_id
+     * 
+     * @return mixed carrier service from shopify
+     */
     private function getCarrierServiceFromShopify($carrier_service_id)
     {
         $response = null;
+
         try {
             $response = $this->getShopifyClient()->call(
                 'GET',
@@ -185,6 +137,11 @@ class SettingsController extends Controller
         return $response;
     }
 
+    /**
+     * Saves carrier service to shopify and return its ID
+     * 
+     * @return mixed carrier service ID or null
+     */
     public function saveCarrierServiceToShopify()
     {
         $client = $this->getShopifyClient();
@@ -198,48 +155,46 @@ class SettingsController extends Controller
             )
         );
 
-            // TODO: cache this result so we don't bug users with every request
+        try {
+            $carrierService = $client->call('POST', 'admin', '/carrier_services.json', $carrierServiceData);
 
-            try {
-                $carrierService = $client->call('POST', 'admin', '/carrier_services.json', $carrierServiceData);
+            return $carrierService['id'];
+        } catch (ShopifyApiException $sae) {
+            $exceptionData = array(
+                var_export($sae->getMethod(), true),
+                var_export($sae->getPath(), true),
+                var_export($sae->getParams(), true),
+                var_export($sae->getResponseHeaders(), true),
+                var_export($sae->getResponse(), true)
+            );
 
-                return $carrierService['id'];
-            } catch (ShopifyApiException $sae) {
-                $exceptionData = array(
-                    var_export($sae->getMethod(), true),
-                    var_export($sae->getPath(), true),
-                    var_export($sae->getParams(), true),
-                    var_export($sae->getResponseHeaders(), true),
-                    var_export($sae->getResponse(), true)
-                );
+            Log::debug('ShopiApiException: ' . var_export($exceptionData, true));
 
-                Log::debug('ShopiApiException: ' . var_export($exceptionData, true));
+            // it failed, why? Did carrier service already exists but our db shows that it is not active?
+            $carrierServices = $client->call('GET', 'admin', '/carrier_services.json');
 
-                // it failed, why? Did carrier service already exists but our db shows that it is not active?
-                $carrierServices = $client->call('GET', 'admin', '/carrier_services.json');
+            if (count($carrierServices) > 0) {
+                // yes, we have a carrier service!
+                foreach ($carrierServices as $_service) {
+                    if ($_service['name'] == $carrierServiceName) {
 
-                if (count($carrierServices) > 0) {
-                    // yes, we have a carrier service!
-                    foreach ($carrierServices as $_service) {
-                        if ($_service['name'] == $carrierServiceName) {
-                            
-                            // Update callbackurl if it has changed
-                            if ($_service['callback_url'] != route('shopify.pickuppoints.list')) {
-                                $client->call(
-                                    'PUT',
-                                    'admin',
-                                    '/carrier_services/' . $_service['id'] . '.json',
-                                    $carrierServiceData
-                                );
-                            }
-
-                            return $_service['id'];
+                        // Update callbackurl if it has changed
+                        if ($_service['callback_url'] != route('shopify.pickuppoints.list')) {
+                            $client->call(
+                                'PUT',
+                                'admin',
+                                '/carrier_services/' . $_service['id'] . '.json',
+                                $carrierServiceData
+                            );
                         }
+
+                        return $_service['id'];
                     }
-                } else {
-                    // we just don't know why it failed
                 }
+            } else {
+                // we just don't know why it failed
             }
+        }
         return null;
     }
 
@@ -249,7 +204,7 @@ class SettingsController extends Controller
     public function pickuppoints()
     {
         $shop = request()->get('shop');
-        $client = $this->getShopifyClient();
+
         if ($shop->carrier_service_id != null) {
             $carrier_service = $this->getCarrierServiceFromShopify($shop->carrier_service_id);
         }
@@ -262,12 +217,13 @@ class SettingsController extends Controller
         $pk_client = $this->getPakketikauppaClient($shop);
 
         $products = $pk_client->listShippingMethods();
-        
+
         // dont let it crash and burn
         if (!is_array($products)) {
             $products = array();
         }
 
+        // We want products to be as array and not as object
         $products = json_decode(json_encode($products), true);
 
         $api_valid = !empty($products);
@@ -284,7 +240,7 @@ class SettingsController extends Controller
     }
 
     /**
-     * @return [type]
+     * Sender settings view endpoint
      */
     public function sender()
     {
@@ -299,10 +255,13 @@ class SettingsController extends Controller
     public function generic()
     {
         return view('settings.generic', [
-            'shop' => request()->get('shop') //$this->getShop(request()->get('shopOrigin'))
+            'shop' => request()->get('shop')
         ]);
     }
 
+    /**
+     * Shipping settings view endpoint
+     */
     public function shipping()
     {
         $shop = request()->get('shop');
@@ -312,6 +271,7 @@ class SettingsController extends Controller
         }
 
         $client = $this->getShopifyClient();
+
         $shipping_zones = $client->call('GET', 'admin', '/shipping_zones.json');
         $shipping_settings = unserialize($shop->shipping_settings);
 
@@ -377,8 +337,7 @@ class SettingsController extends Controller
             $resp = $pk_client->listShippingMethods();
             $products = json_decode(json_encode($resp), true);
         } catch (\Exception $ex) {
-            dd($ex);
-            //throw new FatalErrorException();
+            throw new FatalErrorException($ex->getMessage());
         }
 
         $api_valid = isset($products);
@@ -389,7 +348,7 @@ class SettingsController extends Controller
             ksort($grouped_services);
         }
 
-        $pickupPointSettings = $shop->getSettings();//json_decode($shop->settings, true);
+        $pickupPointSettings = $shop->getSettings();
 
         // initialize pickup point settings if needed
         foreach ($grouped_services as $_key => $_service_provider) {
@@ -406,7 +365,7 @@ class SettingsController extends Controller
             'pickuppoint_settings' => $pickupPointSettings,
             'shipping_methods' => $grouped_services,
             'shop' => $shop,
-            'additional_services' => /* $shop->getAdditionalServices()// */unserialize($shop->additional_services),
+            'additional_services' => unserialize($shop->additional_services),
             'api_valid' => $api_valid,
             'shipping_rates' => $result_rates,
             'pickuppoint_providers' => explode(";", $shop->pickuppoint_providers)
@@ -459,6 +418,13 @@ class SettingsController extends Controller
         return is_array($result);
     }
 
+    /**
+     * Gives back test mode message according to its status
+     * 
+     * @param bool $test_mode test mode status
+     * 
+     * @return string test mode message
+     */
     private function testModeMessage($test_mode)
     {
         return $test_mode ? trans('app.messages.in-testing') : trans('app.messages.in-production');
@@ -678,42 +644,6 @@ class SettingsController extends Controller
         return response()->json([
             'status' => $isSaved ? self::MSG_OK : self::MSG_ERROR,
             'message' => $isSaved ? trans('app.settings.saved') : trans('app.settings.save_failed')
-        ]);
-    }
-
-    /**
-     * BELLOW FUNCTIONS NO LONGER IN USE?
-     */
-
-    public function updateSettings()
-    {
-        $responseStatus = 'error';
-        $responseMessage = 'Endpoint no longer in use';
-
-        Log::debug(var_export(request()->all(), true));
-
-        $result = [
-            'status' => $responseStatus,
-            'message' => $responseMessage,
-        ];
-
-        return response()->json($result);
-    }
-
-    public function setApiCredentials(Request $request)
-    {
-
-        $result = [
-            'status' => 'ok'
-        ];
-
-        return response()->json($result);
-    }
-
-    public function setupWizard()
-    {
-        return view('app.setup-wizard', [
-            'shop' => $this->shop
         ]);
     }
 }
