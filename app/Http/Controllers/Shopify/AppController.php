@@ -171,7 +171,7 @@ class AppController extends Controller
             $shipment['admin_order_url'] = 'https://' . $shop->shop_origin . '/admin/orders/' . $order['id'];
             $url_params = [
                 'shop' => $shop->shop_origin,
-                'is_return' => $is_return,
+                'is_return' => $is_return?'1':'0',
             ];
 
             $url_params['hmac'] = createShopifyHMAC($url_params);
