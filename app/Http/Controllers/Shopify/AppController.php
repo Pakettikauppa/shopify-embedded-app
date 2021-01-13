@@ -446,7 +446,7 @@ class AppController extends Controller
 
         $print_all_url_params = [
             'shop' => $shop->shop_origin,
-            'is_return' => $is_return,
+            'is_return' => $is_return?'1':'0',
         ];
 
         $print_all_url_params['hmac'] = createShopifyHMAC($print_all_url_params);
