@@ -153,7 +153,7 @@ class AppController extends Controller
         } catch (ShopifyApiException $sae) {
             Log::debug('Unauthorized thingie');
 
-            return redirect()->route('shopify.install-link', request()->all());
+            return redirect()->route('install-link', request()->all());
         }
 
         $shipments = [];
