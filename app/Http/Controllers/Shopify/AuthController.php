@@ -134,7 +134,7 @@ class AuthController extends Controller
         } else {
             $token = $this->getAccessToken($request->shop, config('shopify.api_key'), config('shopify.secret'), $request->code);
 
-            $this->saveShop($shop, $request->shop, $token);
+            $shop = $this->saveShop($shop, $request->shop, $token);
         }
 
         // Set default locale (this is required to get correct localization upon initial app load) - Default to english
@@ -160,15 +160,17 @@ class AuthController extends Controller
             $shop->nonce = Str::random(20);
             $shop->token = $token;
 
-            return $shop->save();
+            $shop->save();
+
+            return $shop;
         }
 
         if ($shop->token !== $token) {
             $shop->token = $token;
 
-            return $shop->save();
+            $shop->save();
         }
 
-        return true; // nothing changed
+        return $shop;
     }
 }
