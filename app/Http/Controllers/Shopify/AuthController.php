@@ -129,7 +129,7 @@ class AuthController extends Controller
 
         // Since HMAC is validated we can assume to have valid information in the URL
         $shop = Shop::where('shop_origin', $request->shop)->first();
-        if ($shop->token && $this->tokenIsValid($request->shop, $shop->token)) {
+        if ($shop && $shop->token && $this->tokenIsValid($request->shop, $shop->token)) {
             //
         } else {
             $token = $this->getAccessToken($request->shop, config('shopify.api_key'), config('shopify.secret'), $request->code);
