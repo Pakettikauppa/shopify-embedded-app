@@ -82,11 +82,14 @@ class PickupPointsController extends Controller
                 $totalWeightInGrams += $_item->grams * $_item->quantity;
             }
 
+            Log::debug('TotalWeight: '. $totalWeightInGrams);
+
             $pickupPointProviders = array();
 
             foreach ($this->pickupPointSettings as $_provider => $_settings) {
+                Log::debug('Provider = ' . $_provider);
                 if ($_settings['active'] == 'true') {
-                    if (!($totalWeightInGrams > 20000 and $_provider === '80010')) {
+                    if (!($totalWeightInGrams > 20000 and $_provider == '80010')) {
                         $pickupPointProviders[] = $_provider;
                     }
                 }
