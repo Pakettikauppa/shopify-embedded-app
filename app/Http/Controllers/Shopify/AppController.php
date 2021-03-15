@@ -19,8 +19,8 @@ use Storage;
 /**
  * @property \App\Models\Shopify\Shop $shop
  */
-class AppController extends Controller
-{
+class AppController extends Controller {
+
     /**
      * @var ShopifyClient
      */
@@ -30,15 +30,23 @@ class AppController extends Controller
      * @var Client
      */
     private $pk_client;
-
     private $shopifyClient;
-
     private $fullfill_order = false;
     private $is_return = false;
+    private $type;
+    private $test_mode;
+    private $tracking_url;
 
-    public function __construct(Request $request)
-    {
-        //
+    public function __construct(Request $request) {
+        $this->type = config('shopify.type');
+        $this->test_mode = config('shopify.test_mode');
+        if ($this->type == "pakettikauppa") {
+            $this->tracking_url = 'https://www.pakettikauppa.fi/seuranta/?';
+        } else if ($this->type == "posti") {
+            $this->tracking_url = 'https://www.posti.fi/fi/seuranta#/lahetys/';
+        } else if ($this->type == "itella") {
+            $this->tracking_url = 'https://www.posti.fi/fi/seuranta#/lahetys/';
+        }
     }
 
     /**
@@ -47,8 +55,7 @@ class AppController extends Controller
      * @param array $arr
      * @return array
      */
-    private function flattenArray($arr)
-    {
+    private function flattenArray($arr) {
         $values = [];
         foreach ($arr as $item) {
             if (is_array($item)) {
@@ -67,17 +74,35 @@ class AppController extends Controller
      * 
      * @return \Pakettikauppa\Client
      */
-    public function getPakketikauppaClient($shop)
-    {
-        $config = [
-            'test_mode' => true
-        ];
-
-        if (!$shop->test_mode) {
+    public function getPakketikauppaClient($shop) {
+        
+        if ($this->type == "posti" || $this->type == "itella") {
             $config = [
-                'api_key' => $shop->api_key,
-                'secret' => $shop->api_secret,
+                'posti_config' => [
+                    'api_key' => $shop->api_key,
+                    'secret' => $shop->api_secret,
+                    'base_uri' => $this->test_mode?'https://argon.api.posti.fi':'https://nextshipping.posti.fi',
+                    'use_posti_auth' => true,
+                    'posti_auth_url' => $this->test_mode?'https://oauth.barium.posti.com':'https://oauth2.posti.com',
+                ]
             ];
+            $use_config = 'posti_config';
+            $client = new Client($config, $use_config);
+            $token = $client->getToken();
+            if (isset($token->access_token)){
+                $client->setAccessToken($token->access_token);
+            }
+            return $client;
+        } else {
+            $config = [
+                'test_mode' => true
+            ];
+            if (!$shop->test_mode) {
+                $config = [
+                    'api_key' => $shop->api_key,
+                    'secret' => $shop->api_secret,
+                ];
+            }
         }
 
         return new Client($config);
@@ -90,8 +115,7 @@ class AppController extends Controller
      * 
      * @return \App\Models\Shopify\ShopifyClient
      */
-    public function getShopifyClient($getNew = false)
-    {
+    public function getShopifyClient($getNew = false) {
         if (!$getNew && $this->shopifyClient) {
             return $this->shopifyClient;
         }
@@ -99,17 +123,16 @@ class AppController extends Controller
         $shop = request()->get('shop');
 
         $this->shopifyClient = new ShopifyClient(
-            $shop->shop_origin,
-            $shop->token,
-            config('shopify.api_key'),
-            config('shopify.secret')
+                $shop->shop_origin,
+                $shop->token,
+                config('shopify.api_key'),
+                config('shopify.secret')
         );
 
         return $this->shopifyClient;
     }
 
-    public function printLabels(Request $request)
-    {
+    public function printLabels(Request $request) {
         if (!isset($request->ids) && !isset($request->id)) {
             Log::debug('No id found');
             throw new NotFoundHttpException();
@@ -145,10 +168,10 @@ class AppController extends Controller
 
         try {
             $orders = $this->client->call(
-                'GET',
-                'admin',
-                '/orders.json',
-                ['ids' => implode(',', $order_ids), 'status' => 'any']
+                    'GET',
+                    'admin',
+                    '/orders.json',
+                    ['ids' => implode(',', $order_ids), 'status' => 'any']
             );
         } catch (ShopifyApiException $sae) {
             Log::debug('Unauthorized thingie');
@@ -171,7 +194,7 @@ class AppController extends Controller
             $shipment['admin_order_url'] = 'https://' . $shop->shop_origin . '/admin/orders/' . $order['id'];
             $url_params = [
                 'shop' => $shop->shop_origin,
-                'is_return' => $is_return?'1':'0',
+                'is_return' => $is_return ? '1' : '0',
             ];
 
             $url_params['hmac'] = createShopifyHMAC($url_params);
@@ -184,10 +207,10 @@ class AppController extends Controller
             }
 
             $done_shipment = ShopifyShipment::where('shop_id', $shop->id)
-                ->where('order_id', $order['id'])
-                ->where('test_mode', $shop->test_mode)
-                ->where('return', $is_return)
-                ->first();
+                    ->where('order_id', $order['id'])
+                    ->where('test_mode', $shop->test_mode)
+                    ->where('return', $is_return)
+                    ->first();
 
             if ($done_shipment) {
                 $shipment['status'] = 'sent';
@@ -195,13 +218,14 @@ class AppController extends Controller
                 $shipments[] = $shipment;
                 continue;
             }
-            if (!isset($order['shipping_address']) and !isset($order['billing_address'])) {
+            if (!isset($order['shipping_address']) and!isset($order['billing_address'])) {
                 $shipment['status'] = 'need_shipping_address';
                 $shipments[] = $shipment;
                 continue;
             }
 
             if ($order['gateway'] == 'Cash on Delivery (COD)') {
+                
             }
 
             if (isset($order['shipping_address'])) {
@@ -268,12 +292,12 @@ class AppController extends Controller
             $contents = $shipment['line_items'];
 
             $_shipment = $shop->sendShipment(
-                $this->pk_client,
-                $order,
-                $senderInfo,
-                $receiverInfo,
-                $contents,
-                $is_return
+                    $this->pk_client,
+                    $order,
+                    $senderInfo,
+                    $receiverInfo,
+                    $contents,
+                    $is_return
             );
             $shipment['status'] = $_shipment['status'];
 
@@ -283,8 +307,8 @@ class AppController extends Controller
             }
 
             if (
-                !empty($this->pk_client->getResponse()->{'response.trackingcode'}['labelcode']) and
-                $shop->create_activation_code === true
+                    !empty($this->pk_client->getResponse()->{'response.trackingcode'}['labelcode']) and
+                    $shop->create_activation_code === true
             ) {
                 try {
                     if ($this->client->callsLeft() > 0 and $this->client->callLimit() == $this->client->callsLeft()) {
@@ -292,15 +316,15 @@ class AppController extends Controller
                     }
 
                     $this->client->call(
-                        'PUT',
-                        'admin',
-                        '/orders/' . $order['id'] . '.json',
-                        [
-                            'order' => [
-                                'id' => $order['id'],
-                                'note' => sprintf('%s: %s', trans('app.settings.activation_code'), $this->pk_client->getResponse()->{'response.trackingcode'}['labelcode'])
+                            'PUT',
+                            'admin',
+                            '/orders/' . $order['id'] . '.json',
+                            [
+                                'order' => [
+                                    'id' => $order['id'],
+                                    'note' => sprintf('%s: %s', trans('app.settings.activation_code'), $this->pk_client->getResponse()->{'response.trackingcode'}['labelcode'])
+                                ]
                             ]
-                        ]
                     );
                 } catch (\Exception $e) {
                     Log::debug($e->getMessage());
@@ -354,12 +378,12 @@ class AppController extends Controller
                         }
                         // TODO: not the most efficient way to do this
                         $inventoryLevels = $this->client->call(
-                            'GET',
-                            'admin',
-                            '/inventory_levels.json',
-                            [
-                                'inventory_item_ids' => $inventoryId
-                            ]
+                                'GET',
+                                'admin',
+                                '/inventory_levels.json',
+                                [
+                                    'inventory_item_ids' => $inventoryId
+                                ]
                         );
 
                         $makeNull = true;
@@ -398,8 +422,8 @@ class AppController extends Controller
                         $fulfillment = [
                             'tracking_number' => $order['tracking_code'],
                             'location_id' => $locationId,
-                            'tracking_company' => trans('app.settings.company_name'),
-                            'tracking_url' => 'https://www.pakettikauppa.fi/seuranta/?' . $order['tracking_code'],
+                            'tracking_company' => trans('app.settings.company_name_' . $this->type),
+                            'tracking_url' => $this->tracking_url . $order['tracking_code'],
                             'line_items' => $items,
                         ];
 
@@ -409,12 +433,12 @@ class AppController extends Controller
                             }
 
                             $result = $this->client->call(
-                                'POST',
-                                'admin',
-                                '/orders/' . $order['id'] . '/fulfillments.json',
-                                [
-                                    'fulfillment' => $fulfillment
-                                ]
+                                    'POST',
+                                    'admin',
+                                    '/orders/' . $order['id'] . '/fulfillments.json',
+                                    [
+                                        'fulfillment' => $fulfillment
+                                    ]
                             );
                             Log::debug(var_export($result, true));
                         } catch (ShopifyApiException $sae) {
@@ -446,7 +470,7 @@ class AppController extends Controller
 
         $print_all_url_params = [
             'shop' => $shop->shop_origin,
-            'is_return' => $is_return?'1':'0',
+            'is_return' => $is_return ? '1' : '0',
         ];
 
         $print_all_url_params['hmac'] = createShopifyHMAC($print_all_url_params);
@@ -459,33 +483,35 @@ class AppController extends Controller
             'print_all_params' => $hmac_print_all_url,
             'page_title' => $page_title,
             'is_return' => $is_return,
+            'tracking_url' => $this->tracking_url
         ]);
     }
 
-    public function latestNews()
-    {
+    public function latestNews() {
+        $feed_dir = "pakettikauppa";
+        if ($this->type == "posti" || $this->type == "itella") {
+            $feed_dir = $this->type;
+        }
 
-        $rssFeed = simplexml_load_string(Storage::get(config('shopify.storage_path') . '/feed.xml'));
+        $rssFeed = simplexml_load_string(Storage::get(config('shopify.storage_path') . '/' . $feed_dir . '/feed.xml'));
 
         return view('app.latest-news', [
-            'feed' => $rssFeed->channel
+            'feed' => $rssFeed->channel,
+            'type' => $this->type
         ]);
     }
 
-    public function returnLabel(Request $request)
-    {
+    public function returnLabel(Request $request) {
         $this->is_return = true;
         return $this->printLabels($request);
     }
 
-    public function printLabelsFulfill(Request $request)
-    {
+    public function printLabelsFulfill(Request $request) {
         $this->fullfill_order = true;
         return $this->printLabels($request);
     }
 
-    public function getLabels(Request $request)
-    {
+    public function getLabels(Request $request) {
         if (empty(request()->get('tracking_codes'))) {
             throw new NotFoundHttpException();
         }
@@ -498,22 +524,21 @@ class AppController extends Controller
         $pdf = base64_decode($xml->{'response.file'});
 
         return Response::make($pdf, 200, [
-            'Content-Type' => 'application/pdf',
-            'Content-Disposition' => 'inline; filename="multiple-shipping-labels.pdf"'
+                    'Content-Type' => 'application/pdf',
+                    'Content-Disposition' => 'inline; filename="multiple-shipping-labels.pdf"'
         ]);
     }
 
-    public function getLabel(Request $request, $order_id)
-    {
+    public function getLabel(Request $request, $order_id) {
         $shop = request()->get('shop');
         $this->pk_client = $this->getPakketikauppaClient($shop);
         $is_return = isset($request->is_return) ? $request->is_return : false;
 
         $shipment = ShopifyShipment::where('shop_id', $shop->id)
-            ->where('order_id', $order_id)
-            ->where('test_mode', $shop->test_mode)
-            ->where('return', $is_return)
-            ->first();
+                ->where('order_id', $order_id)
+                ->where('test_mode', $shop->test_mode)
+                ->where('return', $is_return)
+                ->first();
 
         if (!isset($shipment)) {
             throw new NotFoundHttpException();
@@ -528,21 +553,20 @@ class AppController extends Controller
         $pdf_content = base64_decode($pk_shipment->getPdf());
 
         return Response::make($pdf_content, 200, [
-            'Content-Type' => 'application/pdf',
-            'Content-Disposition' => 'inline; filename="' . $shipment->tracking_code . '.pdf"'
+                    'Content-Type' => 'application/pdf',
+                    'Content-Disposition' => 'inline; filename="' . $shipment->tracking_code . '.pdf"'
         ]);
     }
 
-    public function trackShipment(Request $request)
-    {
+    public function trackShipment(Request $request) {
         $shop = request()->get('shop');
         $this->pk_client = $this->getPakketikauppaClient($shop);
         $is_return = isset($request->is_return) ? $request->is_return : false;
 
         $shipment = ShopifyShipment::where('shop_id', $shop->id)
-            ->where('order_id', $request->id)
-            ->where('return', $is_return)
-            ->first();
+                ->where('order_id', $request->id)
+                ->where('return', $is_return)
+                ->first();
 
         if (!isset($shipment)) {
             return view('app.alert', [
@@ -577,4 +601,5 @@ class AppController extends Controller
             'orders_url' => $admin_orders_url,
         ]);
     }
+
 }

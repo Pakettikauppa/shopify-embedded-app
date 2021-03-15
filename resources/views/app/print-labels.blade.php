@@ -36,7 +36,7 @@
                             </td>
                             <td>
                                 @if(isset($order['tracking_code']))
-                                <a href="https://www.pakettikauppa.fi/seuranta/?{{$order['tracking_code']}}" target="pakettikauppa-seuranta">{{$order['tracking_code']}}</a>
+                                <a href="{{$tracking_url.$order['tracking_code']}}" target="pakettikauppa-seuranta">{{$order['tracking_code']}}</a>
                                 @endif
                             </td>
                             <td>

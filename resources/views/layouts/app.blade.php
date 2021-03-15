@@ -178,9 +178,11 @@
             });
 
             // this needs separate update
-            buttonTestMode.set({
-                'label': getTestModeBtnText()
-            });
+            if (buttonTestMode !== undefined){
+                buttonTestMode.set({
+                    'label': getTestModeBtnText()
+                });
+            }
         }
 
         function updateStrings(data) {
@@ -217,6 +219,7 @@
         /* NEWS BUTTON END */
 
         /* TEST MODE BUTTON */
+        @if ($type == "pakettikauppa")
         let UIStrings = {
             test_mode_enable_text: '{{trans('app.settings.testmode_on')}}',
             test_mode_disable_text: '{{trans('app.settings.testmode_off')}}'
@@ -286,6 +289,7 @@
                 }
             );
         }
+        @endif
         /* TEST MODE BUTTON END */
 
         /* SHIPMENT SETTINGS BUTTON */
@@ -354,7 +358,7 @@
         const buttonApiSettings = Actions.Button.create(
             ShopifyApp,
             {
-                label: "{{trans('app.settings.api-settings')}}"
+                label: "{{trans('app.settings.api-settings-'.$type)}}"
             }
         );
 
@@ -435,7 +439,7 @@
             title: 'My page title',
             buttons: {
                 primary: buttonSave,
-                secondary: [buttonTestMode, buttonNews, optionsBtnGroup],
+                secondary: (typeof(buttonTestMode) != "undefined" ?[buttonTestMode, buttonNews, optionsBtnGroup] : [buttonNews, optionsBtnGroup]),
             },
         });
 

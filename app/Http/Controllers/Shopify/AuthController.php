@@ -10,6 +10,13 @@ use Illuminate\Support\Str;
 
 class AuthController extends Controller
 {
+    private $type;
+
+    public function __construct(Request $request)
+    {
+        $this->type = config('shopify.type');
+    }
+    
     public function index(Request $request)
     {
         // Check that shopdomain is valid
@@ -142,6 +149,7 @@ class AuthController extends Controller
 
         return view('layouts.app', [
             'shop' => $shop,
+            'type' => $this->type
         ]);
     }
 
@@ -150,7 +158,7 @@ class AuthController extends Controller
         if (!$shop) {
             $shop = new Shop();
             // default values
-            $shop->test_mode = true;
+            $shop->test_mode = $this->type == "pakettikauppa" ? true : false;
             $shop->locale = 'fi';
             $shop->shipping_settings = serialize([]);
             $shop->default_service_code = 2103;

@@ -16,8 +16,8 @@ use Log;
 /**
  * @property \App\Models\Shopify\Shop $shop
  */
-class SettingsController extends Controller
-{
+class SettingsController extends Controller {
+
     const MSG_OK = 'ok';
     const MSG_ERROR = 'error';
 
@@ -26,11 +26,14 @@ class SettingsController extends Controller
     private Client $pk_client;
     private $pickupPointSettings;
     private $settings;
+    private $type;
+    private $test_mode;
     protected Request $request;
 
-    public function __construct(Request $request)
-    {
+    public function __construct(Request $request) {
         $this->shopifyClient = null;
+        $this->type = config('shopify.type');
+        $this->test_mode = config('shopify.test_mode');
     }
 
     /**
@@ -40,8 +43,7 @@ class SettingsController extends Controller
      * 
      * @return \App\Models\Shopify\ShopifyClient
      */
-    public function getShopifyClient($getNew = false)
-    {
+    public function getShopifyClient($getNew = false) {
         if (!$getNew && $this->shopifyClient) {
             return $this->shopifyClient;
         }
@@ -49,10 +51,10 @@ class SettingsController extends Controller
         $shop = request()->get('shop');
 
         $this->shopifyClient = new ShopifyClient(
-            $shop->shop_origin,
-            $shop->token,
-            config('shopify.api_key'),
-            config('shopify.secret')
+                $shop->shop_origin,
+                $shop->token,
+                config('shopify.api_key'),
+                config('shopify.secret')
         );
 
         return $this->shopifyClient;
@@ -65,19 +67,18 @@ class SettingsController extends Controller
      * 
      * @return \App\Models\Shopify\Shop;
      */
-    public function getShop($shopOrigin)
-    {
+    public function getShop($shopOrigin) {
         return Shop::where('shop_origin', $shopOrigin)->first();
     }
 
     /**
      * API settings view endpoint
      */
-    public function api()
-    {
+    public function api() {
         return view('settings.api', [
             'shop' => request()->get('shop'),
-            'api_valid' => true
+            'api_valid' => true,
+            'type' => $this->type
         ]);
     }
 
@@ -86,28 +87,25 @@ class SettingsController extends Controller
      * 
      * @return \Illuminate\Http\JsonResponse
      */
-    public function getButtonsTranslations()
-    {
+    public function getButtonsTranslations() {
         return response()->json([
-            'status' => 'OK',
-            'data' => [
-
-                'value' => [
-                    'test_mode_enable_text' => trans('app.settings.testmode_on'),
-                    'test_mode_disable_text' => trans('app.settings.testmode_off'),
-                ],
-
-                'label' => [
-                    'buttonSave' => trans('app.settings.save_settings'),
-                    'buttonNews' => trans('app.settings.latest-news'),
-                    'buttonShipmentSettings' => trans('app.settings.shipment_settings'),
-                    'buttonPickupPointsSettings' => trans('app.settings.pickuppoints-settings'),
-                    'buttonCompanyInformationSettings' => trans('app.settings.company_info'),
-                    'buttonApiSettings' => trans('app.settings.api-settings'),
-                    'buttonOtherSettings' => trans('app.settings.generic-settings'),
-                    'optionsBtnGroup' => trans('app.settings.settings'),
-                ]
-            ]
+                    'status' => 'OK',
+                    'data' => [
+                        'value' => [
+                            'test_mode_enable_text' => trans('app.settings.testmode_on'),
+                            'test_mode_disable_text' => trans('app.settings.testmode_off'),
+                        ],
+                        'label' => [
+                            'buttonSave' => trans('app.settings.save_settings'),
+                            'buttonNews' => trans('app.settings.latest-news'),
+                            'buttonShipmentSettings' => trans('app.settings.shipment_settings'),
+                            'buttonPickupPointsSettings' => trans('app.settings.pickuppoints-settings'),
+                            'buttonCompanyInformationSettings' => trans('app.settings.company_info'),
+                            'buttonApiSettings' => trans('app.settings.api-settings'),
+                            'buttonOtherSettings' => trans('app.settings.generic-settings'),
+                            'optionsBtnGroup' => trans('app.settings.settings'),
+                        ]
+                    ]
         ]);
     }
 
@@ -118,15 +116,14 @@ class SettingsController extends Controller
      * 
      * @return mixed carrier service from shopify
      */
-    private function getCarrierServiceFromShopify($carrier_service_id)
-    {
+    private function getCarrierServiceFromShopify($carrier_service_id) {
         $response = null;
 
         try {
             $response = $this->getShopifyClient()->call(
-                'GET',
-                'admin',
-                '/carrier_services/' . $carrier_service_id . '.json'
+                    'GET',
+                    'admin',
+                    '/carrier_services/' . $carrier_service_id . '.json'
             );
 
             Log::debug("Carrier Service: " . var_export($response, true));
@@ -142,10 +139,16 @@ class SettingsController extends Controller
      * 
      * @return mixed carrier service ID or null
      */
-    public function saveCarrierServiceToShopify()
-    {
+    public function saveCarrierServiceToShopify() {
         $client = $this->getShopifyClient();
-        $carrierServiceName = 'Pakettikauppa: Noutopisteet / Pickup points';
+        $carrierName = "Pakettikauppa";
+        if ($this->type == "itella"){
+            $carrierName = "Itella";
+        }
+        if ($this->type == "posti"){
+            $carrierName = "Posti";
+        }
+        $carrierServiceName = $carrierName.': Noutopisteet / Pickup points';
 
         $carrierServiceData = array(
             'carrier_service' => array(
@@ -181,10 +184,10 @@ class SettingsController extends Controller
                         // Update callbackurl if it has changed
                         if ($_service['callback_url'] != route('shopify.pickuppoints.list')) {
                             $client->call(
-                                'PUT',
-                                'admin',
-                                '/carrier_services/' . $_service['id'] . '.json',
-                                $carrierServiceData
+                                    'PUT',
+                                    'admin',
+                                    '/carrier_services/' . $_service['id'] . '.json',
+                                    $carrierServiceData
                             );
                         }
 
@@ -201,8 +204,7 @@ class SettingsController extends Controller
     /**
      * Pickup points settings view endpoint
      */
-    public function pickuppoints()
-    {
+    public function pickuppoints() {
         $shop = request()->get('shop');
 
         if ($shop->carrier_service_id != null) {
@@ -236,34 +238,34 @@ class SettingsController extends Controller
             'shipping_methods' => $products,
             'shop' => $shop,
             'api_valid' => $api_valid,
+            'type' => $this->type
         ]);
     }
 
     /**
      * Sender settings view endpoint
      */
-    public function sender()
-    {
+    public function sender() {
         return view('settings.sender', [
-            'shop' => request()->get('shop')
+            'shop' => request()->get('shop'),
+            'type' => $this->type
         ]);
     }
 
     /**
      * Generic (currently only locale) settings view endpoint
      */
-    public function generic()
-    {
+    public function generic() {
         return view('settings.generic', [
-            'shop' => request()->get('shop')
+            'shop' => request()->get('shop'),
+            'type' => $this->type
         ]);
     }
 
     /**
      * Shipping settings view endpoint
      */
-    public function shipping()
-    {
+    public function shipping() {
         $shop = request()->get('shop');
 
         if ($shop->settings == null) {
@@ -368,7 +370,8 @@ class SettingsController extends Controller
             'additional_services' => unserialize($shop->additional_services),
             'api_valid' => $api_valid,
             'shipping_rates' => $result_rates,
-            'pickuppoint_providers' => explode(";", $shop->pickuppoint_providers)
+            'pickuppoint_providers' => explode(";", $shop->pickuppoint_providers),
+            'type' => $this->type
         ]);
     }
 
@@ -379,20 +382,38 @@ class SettingsController extends Controller
      * 
      * @return \Pakettikauppa\Client
      */
-    public function getPakketikauppaClient($shop)
-    {
-        $config = [
-            'test_mode' => true
-        ];
-
-        if (!$shop->test_mode) {
+    public function getPakketikauppaClient($shop) {
+        $use_config = null;
+        if ($this->type == "posti" || $this->type == "itella") {
             $config = [
-                'api_key' => $shop->api_key,
-                'secret' => $shop->api_secret,
+                'posti_config' => [
+                    'api_key' => $shop->api_key,
+                    'secret' => $shop->api_secret,
+                    'base_uri' => 'https://nextshipping.posti.fi',
+                    'use_posti_auth' => true,
+                    'posti_auth_url' => $this->test_mode?'https://oauth.barium.posti.com':'https://oauth2.posti.com',
+                ]
             ];
+            $use_config = "posti_config";
+            $client = new Client($config, $use_config);
+            $token = $client->getToken();
+            if (isset($token->access_token)){
+                $client->setAccessToken($token->access_token);
+            }
+            return $client;
+        } else {
+            $config = [
+                'test_mode' => true
+            ];
+            if (!$shop->test_mode) {
+                $config = [
+                    'api_key' => $shop->api_key,
+                    'secret' => $shop->api_secret,
+                ];
+            }
         }
 
-        return new Client($config);
+        return new Client($config, $use_config);
     }
 
     /**
@@ -403,17 +424,39 @@ class SettingsController extends Controller
      * 
      * @return bool true if credentials valid, false otherwise
      */
-    public function isApiCredentialsValid($api_key, $api_secret)
-    {
+    public function isApiCredentialsValid($api_key, $api_secret) {
         if (!$api_secret || !$api_secret) {
             return false;
         }
 
-        $client = new Client([
-            'api_key' => $api_key,
-            'secret' => $api_secret,
-        ]);
-        $result = $client->listShippingMethods();
+        if ($this->type == "posti" || $this->type == "itella") {
+            
+            $config = [
+                'posti_config' => [
+                    'api_key' => $api_key,
+                    'secret' => $api_secret,
+                    'base_uri' => $this->test_mode?'https://argon.api.posti.fi/ecommerce/v3/':'https://nextshipping.posti.fi',
+                    'use_posti_auth' => true,
+                    'posti_auth_url' => $this->test_mode?'https://oauth.barium.posti.com':'https://oauth2.posti.com',
+                ]
+            ];
+            $client = new Client($config, 'posti_config');
+            $token = $client->getToken();
+            if (isset($token->access_token)){
+                $client->setAccessToken($token->access_token);
+            }
+            
+        } else {
+            $client = new Client([
+                'api_key' => $api_key,
+                'secret' => $api_secret,
+            ]);
+        }
+        try {
+            $result = $client->listShippingMethods();
+        } catch (\Exception $e){
+            return false;
+        }
 
         return is_array($result);
     }
@@ -425,8 +468,7 @@ class SettingsController extends Controller
      * 
      * @return string test mode message
      */
-    private function testModeMessage($test_mode)
-    {
+    private function testModeMessage($test_mode) {
         return $test_mode ? trans('app.messages.in-testing') : trans('app.messages.in-production');
     }
 
@@ -435,8 +477,7 @@ class SettingsController extends Controller
      * 
      * @return \Illuminate\Http\JsonResponse
      */
-    public function updateTestMode()
-    {
+    public function updateTestMode() {
         $shop = request()->get('shop');
         $test_mode = (bool) request()->get('test_mode', true);
 
@@ -445,16 +486,16 @@ class SettingsController extends Controller
         // Test mode OFF but missing either api_key or secret
         if (!$test_mode && (!$shop->api_key || !$shop->api_secret)) {
             return response()->json([
-                'status' => self::MSG_ERROR,
-                'message' => trans('app.messages.credentials_missing')
+                        'status' => self::MSG_ERROR,
+                        'message' => trans('app.messages.credentials_missing')
             ]);
         }
 
         $isSaved = $shop->saveTestMode($test_mode);
 
         return response()->json([
-            'status' => $isSaved ? self::MSG_OK : self::MSG_ERROR,
-            'message' => $isSaved ? $this->testModeMessage($test_mode) : trans('app.settings.save_failed')
+                    'status' => $isSaved ? self::MSG_OK : self::MSG_ERROR,
+                    'message' => $isSaved ? $this->testModeMessage($test_mode) : trans('app.settings.save_failed')
         ]);
     }
 
@@ -463,8 +504,7 @@ class SettingsController extends Controller
      * 
      * @return \Illuminate\Http\JsonResponse
      */
-    public function updateApiSettings()
-    {
+    public function updateApiSettings() {
         $api_key = request()->get('api_key');
         $api_secret = request()->get('api_secret');
         $shop = request()->get('shop');
@@ -483,8 +523,8 @@ class SettingsController extends Controller
         $isSaved = $shop->saveApiCredentials($api_key, $api_secret);
 
         return response()->json([
-            'status' => $isSaved ? self::MSG_OK : self::MSG_ERROR,
-            'message' => $isSaved ? trans('app.settings.saved') : trans('app.settings.save_failed')
+                    'status' => $isSaved ? self::MSG_OK : self::MSG_ERROR,
+                    'message' => $isSaved ? trans('app.settings.saved') : trans('app.settings.save_failed')
         ]);
     }
 
@@ -495,8 +535,7 @@ class SettingsController extends Controller
      * 
      * @return array product providers array with method code as key and service provider as value
      */
-    private function getProductProvidersByCode($products)
-    {
+    private function getProductProvidersByCode($products) {
         $productProviderByCode = array('NO_SHIPPING' => '');
         foreach ($products as $_product) {
             $productProviderByCode[$_product->shipping_method_code] = $_product->service_provider;
@@ -510,8 +549,7 @@ class SettingsController extends Controller
      * 
      * @return \Illuminate\Http\JsonResponse
      */
-    public function updateShippingSettings()
-    {
+    public function updateShippingSettings() {
         $shop = request()->get('shop');
 
         $pk_client = $this->getPakketikauppaClient($shop);
@@ -539,8 +577,8 @@ class SettingsController extends Controller
         $isSaved = $shop->saveShippingSettings($shop_shipping_settings);
 
         return response()->json([
-            'status' => $isSaved ? self::MSG_OK : self::MSG_ERROR,
-            'message' => $isSaved ? trans('app.settings.saved') : trans('app.settings.save_failed')
+                    'status' => $isSaved ? self::MSG_OK : self::MSG_ERROR,
+                    'message' => $isSaved ? trans('app.settings.saved') : trans('app.settings.save_failed')
         ]);
     }
 
@@ -549,27 +587,27 @@ class SettingsController extends Controller
      * 
      * @return \Illuminate\Http\JsonResponse
      */
-    public function updateLocale()
-    {
+    public function updateLocale() {
         $shop = request()->get('shop');
         $locale = request()->get('language');
 
         if (!$shop || !$locale || !$shop->saveLocale($locale)) {
 
             return response()->json([
-                'status' => self::MSG_ERROR,
-                'message' => trans('app.settings.save_failed')
+                        'status' => self::MSG_ERROR,
+                        'message' => trans('app.settings.save_failed')
             ]);
         }
 
         \App::setLocale($shop->locale);
 
         return response()->json([
-            'status' => self::MSG_OK,
-            'message' => trans('app.settings.saved'),
-            'html' => view('settings.generic', [
-                'shop' => request()->get('shop')
-            ])->toHtml()
+                    'status' => self::MSG_OK,
+                    'message' => trans('app.settings.saved'),
+                    'html' => view('settings.generic', [
+                        'shop' => request()->get('shop'),
+                        'type' => $this->type
+                    ])->toHtml()
         ]);
     }
 
@@ -578,8 +616,7 @@ class SettingsController extends Controller
      * 
      * @return \Illuminate\Http\JsonResponse
      */
-    public function updateSender()
-    {
+    public function updateSender() {
         $shop = request()->get('shop');
 
         $sender_data = array(
@@ -597,8 +634,8 @@ class SettingsController extends Controller
         $isSaved = $shop->saveSender($sender_data);
 
         return response()->json([
-            'status' => $isSaved ? self::MSG_OK : self::MSG_ERROR,
-            'message' => $isSaved ? trans('app.settings.saved') : trans('app.settings.save_failed')
+                    'status' => $isSaved ? self::MSG_OK : self::MSG_ERROR,
+                    'message' => $isSaved ? trans('app.settings.saved') : trans('app.settings.save_failed')
         ]);
     }
 
@@ -609,8 +646,7 @@ class SettingsController extends Controller
      * 
      * @return array
      */
-    public function prepPickupPointsData($pickuppoints)
-    {
+    public function prepPickupPointsData($pickuppoints) {
         foreach ($pickuppoints as $_pickupPoint) {
             if ($_pickupPoint['base_price'] == '') {
                 $_pickupPoint['base_price'] = 0;
@@ -629,8 +665,7 @@ class SettingsController extends Controller
      * 
      * @return \Illuminate\Http\JsonResponse
      */
-    public function updatePickupPoints()
-    {
+    public function updatePickupPoints() {
         $shop = request()->get('shop');
 
         $data = array(
@@ -642,8 +677,9 @@ class SettingsController extends Controller
         $isSaved = $shop->savePickupPointsSettings($data);
 
         return response()->json([
-            'status' => $isSaved ? self::MSG_OK : self::MSG_ERROR,
-            'message' => $isSaved ? trans('app.settings.saved') : trans('app.settings.save_failed')
+                    'status' => $isSaved ? self::MSG_OK : self::MSG_ERROR,
+                    'message' => $isSaved ? trans('app.settings.saved') : trans('app.settings.save_failed')
         ]);
     }
+
 }

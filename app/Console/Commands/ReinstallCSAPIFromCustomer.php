@@ -21,6 +21,9 @@ class ReinstallCSAPIFromCustomer extends Command
      * @var string
      */
     protected $description = 'Remove Custome Carrier Service API from a customer';
+    
+    
+    private $type;
 
     /**
      * Create a new command instance.
@@ -30,6 +33,9 @@ class ReinstallCSAPIFromCustomer extends Command
     public function __construct()
     {
         parent::__construct();
+        
+        
+        $this->type = config('shopify.type');
     }
 
     /**
@@ -57,8 +63,15 @@ class ReinstallCSAPIFromCustomer extends Command
         $shop->carrier_service_id = null;
         $shop->save();
 
-        $carrierServiceName = 'Pakettikauppa: Noutopisteet / Pickup points';
-
+        $carrierName = "Pakettikauppa";
+        if ($this->type == "itella"){
+            $carrierName = "Itella";
+        }
+        if ($this->type == "posti"){
+            $carrierName = "Posti";
+        }
+        $carrierServiceName = $carrierName.': Noutopisteet / Pickup points';
+        
         $carrierServiceData = array(
             'carrier_service' => array(
                 'name' => $carrierServiceName,

@@ -8,7 +8,7 @@
     <footer>
         <article class="help">
             <span></span>
-            <p>{!! trans('app.settings.instructions', ['company_name' => trans('app.settings.company_name'), 'instruction_url' => '#']) !!}</p>
+            <p>{!! trans('app.settings.instructions', ['company_name' => trans('app.settings.company_name_'.$type), 'instruction_url' => '#']) !!}</p>
         </article>
     </footer>
 
