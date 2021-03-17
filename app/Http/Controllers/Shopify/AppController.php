@@ -92,7 +92,6 @@ class AppController extends Controller {
             } else {
                 $token = $shop->api_token;
             }
-            $token = $client->getToken();
             if (isset($token->access_token)){
                 $client->setAccessToken($token->access_token);
             }
