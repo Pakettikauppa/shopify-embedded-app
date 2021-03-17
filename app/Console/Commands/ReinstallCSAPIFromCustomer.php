@@ -24,6 +24,7 @@ class ReinstallCSAPIFromCustomer extends Command
     
     
     private $type;
+    private $carrierName;
 
     /**
      * Create a new command instance.
@@ -36,6 +37,7 @@ class ReinstallCSAPIFromCustomer extends Command
         
         
         $this->type = config('shopify.type');
+        $this->carrierName = config('shopify.carrier_name');
     }
 
     /**
@@ -63,19 +65,12 @@ class ReinstallCSAPIFromCustomer extends Command
         $shop->carrier_service_id = null;
         $shop->save();
 
-        $carrierName = "Pakettikauppa";
-        if ($this->type == "itella"){
-            $carrierName = "Itella";
-        }
-        if ($this->type == "posti"){
-            $carrierName = "Posti";
-        }
-        $carrierServiceName = $carrierName.': Noutopisteet / Pickup points';
+        $carrierServiceName = $this->carrierName . ': Noutopisteet / Pickup points';
         
         $carrierServiceData = array(
             'carrier_service' => array(
                 'name' => $carrierServiceName,
-                'callback_url' => 'http://209.50.56.85/api/pickup-points',
+                'callback_url' => route('shopify.pickuppoints.list'),
                 'service_discovery' => true,
             )
         );

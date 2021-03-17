@@ -8,4 +8,6 @@ return [
   'rss_feed_url' => env('RSS_FEED_URL'),
   'type' => env('SHOPIFY_TYPE', 'pakettikauppa'),
   'test_mode' => env('SHOPIFY_TEST_MODE', false),
+  'tracking_url' => env('TRACKING_URL', ''),
+  'carrier_name' => env('CARRIER_NAME', ''),
 ];

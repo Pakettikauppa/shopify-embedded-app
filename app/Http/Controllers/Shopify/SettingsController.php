@@ -27,6 +27,7 @@ class SettingsController extends Controller {
     private $pickupPointSettings;
     private $settings;
     private $type;
+    private $carrierName;
     private $test_mode;
     protected Request $request;
 
@@ -34,6 +35,7 @@ class SettingsController extends Controller {
         $this->shopifyClient = null;
         $this->type = config('shopify.type');
         $this->test_mode = config('shopify.test_mode');
+        $this->carrierName = config('shopify.carrier_name');
     }
 
     /**
@@ -141,14 +143,7 @@ class SettingsController extends Controller {
      */
     public function saveCarrierServiceToShopify() {
         $client = $this->getShopifyClient();
-        $carrierName = "Pakettikauppa";
-        if ($this->type == "itella"){
-            $carrierName = "Itella";
-        }
-        if ($this->type == "posti"){
-            $carrierName = "Posti";
-        }
-        $carrierServiceName = $carrierName.': Noutopisteet / Pickup points';
+        $carrierServiceName = $this->carrierName . ': Noutopisteet / Pickup points';
 
         $carrierServiceData = array(
             'carrier_service' => array(
@@ -396,7 +391,17 @@ class SettingsController extends Controller {
             ];
             $use_config = "posti_config";
             $client = new Client($config, $use_config);
-            $token = $client->getToken();
+            
+            if (!is_object($shop->api_token) || !$shop->api_token || $shop->api_token->expires_in < time()){
+                $token = $client->getToken();
+                if (isset($token->access_token)){
+                    $token->expires_in += time();
+                    $shop->api_token = json_encode($token);
+                    $shop->save();
+                }
+            } else {
+                $token = $shop->api_token;
+            }
             if (isset($token->access_token)){
                 $client->setAccessToken($token->access_token);
             }

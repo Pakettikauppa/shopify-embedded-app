@@ -24,6 +24,7 @@ class UpdateCustomCarrierServiceInfoForAllCustomers extends Command
     
     
     private $type;
+    private $carrierName;
 
     /**
      * Create a new command instance.
@@ -35,6 +36,7 @@ class UpdateCustomCarrierServiceInfoForAllCustomers extends Command
         parent::__construct();
         
         $this->type = config('shopify.type');
+        $this->carrierName = config('shopify.carrier_name');
     }
 
     /**
@@ -45,15 +47,7 @@ class UpdateCustomCarrierServiceInfoForAllCustomers extends Command
     public function handle()
     {
         $shops = Shop::whereNotNull('shop_origin')->get();
-
-        $carrierName = "Pakettikauppa";
-        if ($this->type == "itella"){
-            $carrierName = "Itella";
-        }
-        if ($this->type == "posti"){
-            $carrierName = "Posti";
-        }
-        $carrierServiceName = $carrierName.': Noutopisteet / Pickup points';
+        $carrierServiceName = $this->carrierName . ': Noutopisteet / Pickup points';
         
         $carrierServiceData = array(
             'carrier_service' => array(

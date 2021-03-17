@@ -40,13 +40,7 @@ class AppController extends Controller {
     public function __construct(Request $request) {
         $this->type = config('shopify.type');
         $this->test_mode = config('shopify.test_mode');
-        if ($this->type == "pakettikauppa") {
-            $this->tracking_url = 'https://www.pakettikauppa.fi/seuranta/?';
-        } else if ($this->type == "posti") {
-            $this->tracking_url = 'https://www.posti.fi/fi/seuranta#/lahetys/';
-        } else if ($this->type == "itella") {
-            $this->tracking_url = 'https://www.posti.fi/fi/seuranta#/lahetys/';
-        }
+        $this->tracking_url = config('shopify.tracking_url');
     }
 
     /**
@@ -88,6 +82,16 @@ class AppController extends Controller {
             ];
             $use_config = 'posti_config';
             $client = new Client($config, $use_config);
+            if (!is_object($shop->api_token) || !$shop->api_token || $shop->api_token->expires_in < time()){
+                $token = $client->getToken();
+                if (isset($token->access_token)){
+                    $token->expires_in += time();
+                    $shop->api_token = json_encode($token);
+                    $shop->save();
+                }
+            } else {
+                $token = $shop->api_token;
+            }
             $token = $client->getToken();
             if (isset($token->access_token)){
                 $client->setAccessToken($token->access_token);
