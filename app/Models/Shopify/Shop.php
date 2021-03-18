@@ -15,7 +15,7 @@ use Psy\Exception\FatalErrorException;
 class Shop extends Model
 {
     protected $table = 'shopify_shops';
-
+ 
     /**
      * @var $pk_client \Pakettikauppa\Client
      */
@@ -379,5 +379,10 @@ class Shop extends Model
         $this->pickuppoints_count = $pickupPointsCount;
 
         return $this->save();
+    }
+    
+    public function getApiTokenAttribute($value)
+    {
+        return @json_decode($value);
     }
 }

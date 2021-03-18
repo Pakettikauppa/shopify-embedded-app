@@ -6,8 +6,8 @@
     <article>
         <div class="card" id="generic-card">
             <div class="row">
-                <h1>{{trans('app.settings.api-settings')}}</h1>
-                <p>{!! trans('app.settings.api-info') !!}</p>
+                <h1>{{trans('app.settings.api-settings-' . $type)}}</h1>
+                <p>{!! trans('app.settings.api-info-' . $type) !!}</p>
             </div>
         <div class="row">
             <div class="input-group">

@@ -20,7 +20,11 @@ class UpdateCustomCarrierServiceInfoForAllCustomers extends Command
      *
      * @var string
      */
-    protected $description = 'Updates all customers carrier serives';
+    protected $description = 'Updates all customers carrier services';
+    
+    
+    private $type;
+    private $carrierName;
 
     /**
      * Create a new command instance.
@@ -30,6 +34,9 @@ class UpdateCustomCarrierServiceInfoForAllCustomers extends Command
     public function __construct()
     {
         parent::__construct();
+        
+        $this->type = config('shopify.type');
+        $this->carrierName = config('shopify.carrier_name');
     }
 
     /**
@@ -40,13 +47,12 @@ class UpdateCustomCarrierServiceInfoForAllCustomers extends Command
     public function handle()
     {
         $shops = Shop::whereNotNull('shop_origin')->get();
-
-        $carrierServiceName = 'Pakettikauppa: Noutopisteet / Pickup points';
-
+        $carrierServiceName = $this->carrierName . ': Noutopisteet / Pickup points';
+        
         $carrierServiceData = array(
             'carrier_service' => array(
                 'name' => $carrierServiceName,
-                'callback_url' => 'http://shopify.pakettikauppa.fi/api/pickup-points',
+                'callback_url' => route('shopify.pickuppoints.list'),
                 'service_discovery' => true,
             )
         );
