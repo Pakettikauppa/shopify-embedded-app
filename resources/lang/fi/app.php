@@ -56,7 +56,7 @@ return [
         'company_name_pakettikauppa' => 'Pakettikauppa',
         'company_name_posti' => 'Posti',
         'company_name_itella' => 'Itella',
-        'instructions' => 'Lue lisää  palveluista <a href=":instruction_url">Pakettikaupan kotisivuilta</a>.',
+        'instructions' => 'Lue lisää  palveluista <a href=":instruction_url">:company_name kotisivuilta</a>.',
         'shipping_method' => 'Toimitustapa',
         'additional_services' => 'Lisäpalvelut',
         'business_name' => 'Yritys',

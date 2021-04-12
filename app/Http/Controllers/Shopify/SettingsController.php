@@ -212,7 +212,16 @@ class SettingsController extends Controller {
         }
 
         $pk_client = $this->getPakketikauppaClient($shop);
-
+        
+        if (!$shop->api_token || $shop->api_token->expires_in < time()){
+            return view('settings.api', [
+                'shop' => $shop,
+                'api_valid' => true,
+                'type' => $this->type,
+                'error_message' => trans('app.messages.invalid_credentials')
+            ]);
+        }
+        
         $products = $pk_client->listShippingMethods();
 
         // dont let it crash and burn
@@ -331,6 +340,16 @@ class SettingsController extends Controller {
 
         try {
             $pk_client = $this->getPakketikauppaClient($shop);
+            
+            if (!$shop->api_token || $shop->api_token->expires_in < time()){
+                return view('settings.api', [
+                    'shop' => $shop,
+                    'api_valid' => true,
+                    'type' => $this->type,
+                    'error_message' => trans('app.messages.invalid_credentials')
+                ]);
+            }
+            
             $resp = $pk_client->listShippingMethods();
             $products = json_decode(json_encode($resp), true);
         } catch (\Exception $ex) {
