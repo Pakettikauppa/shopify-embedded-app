@@ -146,19 +146,22 @@ class PickupPointsController extends Controller
             try {
                 foreach ($pickupPoints as $_pickupPoint) {
                     $_pickupPointName = ucwords(mb_strtolower($_pickupPoint->name));
-
-                    switch ($_pickupPoint->provider_code) {
-                        case 'Posti':
-                            $_pickupPoint->provider_service = '2103';
-                            break;
-                        case 'Matkahuolto':
-                            $_pickupPoint->provider_service = '90080';
-                            break;
-                        case 'DB Schenker':
-                            $_pickupPoint->provider_service = '80010';
-                            break;
+   
+                    if ($_pickupPoint->service->service_code) {
+                        $_pickupPoint->provider_service = $_pickupPoint->service->service_code;
+                    } else {
+                        switch ($_pickupPoint->provider_code) {
+                                case 'Posti':
+                                    $_pickupPoint->provider_service = '2103';
+                                    break;
+                                case 'Matkahuolto':
+                                    $_pickupPoint->provider_service = '90080';
+                                    break;
+                                case 'DB Schenker':
+                                    $_pickupPoint->provider_service = '80010';
+                                    break;
+                         }
                     }
-
                     if ($_pickupPoint->provider_service == '80010') {
                         $_descriptionArray = [];
                         preg_match(
