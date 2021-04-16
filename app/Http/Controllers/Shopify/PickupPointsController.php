@@ -147,21 +147,8 @@ class PickupPointsController extends Controller
                 foreach ($pickupPoints as $_pickupPoint) {
                     $_pickupPointName = ucwords(mb_strtolower($_pickupPoint->name));
    
-                    if ($_pickupPoint->service->service_code) {
-                        $_pickupPoint->provider_service = $_pickupPoint->service->service_code;
-                    } else {
-                        switch ($_pickupPoint->provider_code) {
-                                case 'Posti':
-                                    $_pickupPoint->provider_service = '2103';
-                                    break;
-                                case 'Matkahuolto':
-                                    $_pickupPoint->provider_service = '90080';
-                                    break;
-                                case 'DB Schenker':
-                                    $_pickupPoint->provider_service = '80010';
-                                    break;
-                         }
-                    }
+                    $_pickupPoint->provider_service = $_pickupPoint->service->service_code;
+
                     if ($_pickupPoint->provider_service == '80010') {
                         $_descriptionArray = [];
                         preg_match(
@@ -188,7 +175,7 @@ class PickupPointsController extends Controller
 
                     $rates[] = array(
                         'service_name' => "{$_pickupPointName}, " . "{$_pickupPoint->street_address}, {$_pickupPoint->postcode}, {$_pickupPoint->city}",
-                        'description' => $_pickupPoint->provider . ($_pickupPoint->description == null ? '' : " ({$_pickupPoint->description})"),
+                        'description' => $_pickupPoint->provider . ' (' . $_pickupPoint->service->name . ') ' . ($_pickupPoint->description == null ? '' : " ({$_pickupPoint->description})"),
                         'service_code' => "{$_pickupPoint->provider_service}:{$_pickupPoint->pickup_point_id}",
                         'currency' => 'EUR',
                         'total_price' => $this->priceForPickupPoint($_pickupPoint->provider_service, $totalValue)
