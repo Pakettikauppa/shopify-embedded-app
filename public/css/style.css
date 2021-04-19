@@ -43,7 +43,7 @@ header.card-header{
 }
 
 .loading .spinner{
-    position: absolute;
+    position: fixed;
     left: calc(50% - 33px);
     top: 35%;
 }
