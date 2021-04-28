@@ -42,7 +42,7 @@
                     <h5>{{trans('app.settings.shopify_method')}}</h5>
                 </div>
                 <div class="columns eight">
-                    <h5>{{trans('app.settings.pk_method')}}</h5>
+                    <h5>{{trans('app.settings.'.$type.'_method')}}</h5>
                 </div>
             </div>
 
