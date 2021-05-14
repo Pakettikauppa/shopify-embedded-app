@@ -120,7 +120,7 @@ class ShopifyClient
         if (isset($response['errors']) or ($this->last_response_headers['http_status_code'] >= 400)) {
             throw new ShopifyApiException($method, $path, $params, $this->last_response_headers, $response);
         }
-
+        //Log::debug("Shopify call: ".$url);
         return (is_array($response) and (count($response) > 0)) ? array_shift($response) : $response;
     }
 
