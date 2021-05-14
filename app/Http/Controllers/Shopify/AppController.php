@@ -486,7 +486,8 @@ class AppController extends Controller {
             'print_all_params' => $hmac_print_all_url,
             'page_title' => $page_title,
             'is_return' => $is_return,
-            'tracking_url' => $this->tracking_url
+            'tracking_url' => $this->tracking_url,
+            'type' => $this->type
         ]);
     }
 
