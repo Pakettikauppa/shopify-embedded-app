@@ -103,6 +103,7 @@ return [
             'back_to_settings' => 'Takaisin asetuksiin',
             'next' => 'Seuraava',
         ],
+        'support' => 'Tuki',
     ],
 
     'messages' => [

@@ -217,6 +217,21 @@
             );
         });
         /* NEWS BUTTON END */
+        
+        /* SUPPORT BUTTON */
+        @if (config('shopify.support_url'))
+        const buttonSupport = Actions.Button.create(ShopifyApp, {
+            label: '{{trans('app.settings.support')}}',
+        });
+
+        buttonSupport.subscribe('click', () => {
+              redirect.dispatch(Actions.Redirect.Action.REMOTE, {
+                url: '{{config('shopify.support_url')}}',
+                newContext: true,
+              });
+        });
+        @endif
+        /* SUPPORT BUTTON END */
 
         /* TEST MODE BUTTON */
         @if ($type == "pakettikauppa")
@@ -434,12 +449,21 @@
                 ]
             }
         );
-
+        
+        const buttons = [];
+        if (typeof(buttonTestMode) != "undefined"){
+            buttons.push(buttonTestMode);
+        }
+        buttons.push(buttonNews);
+        buttons.push(optionsBtnGroup);
+        if (typeof(buttonSupport) != "undefined"){
+            buttons.push(buttonSupport);
+        }
         const titleBar = Actions.TitleBar.create(ShopifyApp, {
             title: 'My page title',
             buttons: {
                 primary: buttonSave,
-                secondary: (typeof(buttonTestMode) != "undefined" ?[buttonTestMode, buttonNews, optionsBtnGroup] : [buttonNews, optionsBtnGroup]),
+                secondary: buttons,
             },
         });
 

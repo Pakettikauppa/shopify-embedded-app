@@ -104,6 +104,7 @@ return [
             'back_to_settings' => 'Back to settings',
             'next' => 'Next',
         ],
+        'support' => 'Support',
     ],
 
     'messages' => [

@@ -10,4 +10,5 @@ return [
   'test_mode' => env('SHOPIFY_TEST_MODE', false),
   'tracking_url' => env('TRACKING_URL', ''),
   'carrier_name' => env('CARRIER_NAME', ''),
+  'support_url' => env('SUPPORT_URL', ''),
 ];
