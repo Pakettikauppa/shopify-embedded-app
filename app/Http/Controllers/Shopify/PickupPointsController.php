@@ -108,6 +108,13 @@ class PickupPointsController extends Controller
             }
 
             Log::debug('TotalWeight: '. $totalWeightInGrams);
+            //if weight is more than 35kg, do not return
+            if ($totalWeightInGrams > 35000){
+                $json = json_encode(['rates' => $rates]);
+                Log::debug($json);
+                echo $json;
+                return;
+            }
 
             $pickupPointProviders = array();
 
