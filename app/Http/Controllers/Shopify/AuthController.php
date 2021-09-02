@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Shopify\Shop;
 use Illuminate\Support\Str;
+use Log;
 
 class AuthController extends Controller
 {
@@ -78,6 +79,9 @@ class AuthController extends Controller
         );
         curl_setopt_array($curl, $curlOptions);
         $response = curl_exec($curl);
+        if ($response === false) {
+            throw new \Exception(curl_error($curl), curl_errno($curl));
+        }
         $jsonResponse = json_decode($response, TRUE);
         curl_close($curl);
 
