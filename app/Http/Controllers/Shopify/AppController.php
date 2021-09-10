@@ -491,6 +491,92 @@ class AppController extends Controller {
         ]);
     }
 
+    public function customShipment(Request $request)
+    {
+        $shop = request()->get('shop');
+        if (!$shop->api_token || $shop->api_token->expires_in < time()){
+            return view('settings.api', [
+                'shop' => $shop,
+                'api_valid' => true,
+                'type' => $this->type,
+                'error_message' => trans('app.messages.invalid_credentials')
+            ]);
+        }
+
+        $order_id = request()->get('id');
+        $this->client = $this->getShopifyClient();
+        try {
+            $order = $this->client->call(
+                'GET',
+                'admin',
+                "/orders/{$order_id}.json",
+            );
+        } catch (ShopifyApiException $sae) {
+            Log::debug('Unauthorized.');
+            return redirect()->route('install-link', request()->all());
+        }
+
+        $pk_client = $this->getPakketikauppaClient($shop);
+        $shipping_methods = $pk_client->listShippingMethods();
+
+        if (!is_array($shipping_methods)) {
+            $shipping_methods = array();
+        }
+
+        // Make sure that child elements are not objects.
+        $shipping_methods = json_decode(json_encode($shipping_methods), true);
+
+        $api_valid = isset($shipping_methods);
+        if ($api_valid) {
+            $shipping_methods = array_group_by($shipping_methods, function ($i) {
+                return $i['service_provider'];
+            });
+            ksort($shipping_methods);
+        }
+        $hmac = $request->get('hmac');
+        $shipping_address = $this->getShippingAddressFromOrder($order);
+        return view('app.custom-shipment', [
+            'hmac' => $hmac,
+            'shop' => $shop,
+            'shipping_methods' => $shipping_methods,
+            'type' => $this->type,
+            'shipping_address' => $shipping_address
+        ]);
+    }
+
+    public function getShippingAddressFromOrder($order)
+    {
+        return [
+            'first_name' => $order['shipping_address']['first_name'],
+            'last_name' => $order['shipping_address']['last_name'],
+            'company' => $order['shipping_address']['company'],
+            'address1' => $order['shipping_address']['address1'],
+            'address2' => $order['shipping_address']['address2'],
+            'zip' => $order['shipping_address']['zip'],
+            'city' => $order['shipping_address']['city'],
+            'country_code' => $order['shipping_address']['country_code'],
+            'phone' => $order['shipping_address']['phone'],
+        ];
+    }
+
+    public function updateOrder($order_data)
+    {
+        die('all good');
+//        $this->getShopifyClient()->call(
+//            'PUT',
+//            'admin',
+//            '/orders/' . $order_data['id'] . '.json',
+//            [
+//                'order' => [
+//                    'id' => $order_data['id'],
+//                    'shipping_address' => []
+//                ]
+//            ]
+//        );
+    }
+
+
+
     public function latestNews() {
         $feed_dir = "pakettikauppa";
         if ($this->type == "posti" || $this->type == "itella") {
