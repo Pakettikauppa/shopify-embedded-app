@@ -16,6 +16,9 @@
                     </tr>
                     </thead>
                     <tbody>
+                    @php
+                        $custom_error = false
+                    @endphp
                     @foreach($orders as $order)
                         <tr>
                             <td><a href="{{$order['admin_order_url']}}" target="_top">{{$order['id']}}</a></td>
@@ -31,12 +34,15 @@
                                 @elseif($order['status'] == 'not_in_inventory')
                                     <span class="tag red">{{trans('app.print_labels.statuses.not_in_inventory')}}</span>
                                 @elseif($order['status'] == 'custom_error')
+                                    @php
+                                        $custom_error = true
+                                    @endphp
                                     <span class="tag red">{{$order['error_message']}}</span>
                                 @endif
                             </td>
                             <td>
                                 @if(isset($order['tracking_code']))
-                                <a href="{{$tracking_url.$order['tracking_code']}}" target="pakettikauppa-seuranta">{{$order['tracking_code']}}</a>
+                                    <a href="{{$tracking_url.$order['tracking_code']}}" target="pakettikauppa-seuranta">{{$order['tracking_code']}}</a>
                                 @endif
                             </td>
                             <td>
@@ -49,15 +55,17 @@
                     </tbody>
                 </table>
                 {{-- TODO: remove csrf tokens, as it is no longer needed and instead hmac should be attached to request url --}}
-            <form id="print-labels-form" method="post" action="{{route('shopify.get_labels')}}?{{$print_all_params}}" target="_blank">
-                    <input type="hidden" name="_token" id="csrf-token" value="{{ Session::token() }}" />
-                    @foreach($orders as $order)
-                        @if(isset($order['tracking_code']))
-                        <input type="hidden" name="tracking_codes[]" value="{{$order['tracking_code']}}">
-                        @endif
-                    @endforeach
-                    <button name="submit">{{trans('app.print_labels.fetch_all')}}</button>
-                </form>
+                @if(!$custom_error)
+                    <form id="print-labels-form" method="post" action="{{route('shopify.get_labels')}}?{{$print_all_params}}" target="_blank">
+                        <input type="hidden" name="_token" id="csrf-token" value="{{ Session::token() }}" />
+                        @foreach($orders as $order)
+                            @if(isset($order['tracking_code']))
+                                <input type="hidden" name="tracking_codes[]" value="{{$order['tracking_code']}}">
+                            @endif
+                        @endforeach
+                        <button name="submit">{{trans('app.print_labels.fetch_all')}}</button>
+                    </form>
+                @endif
                 <p><a href="{{$orders_url}}" target="_top">{{trans('app.print_labels.back_to_orders')}}</a></p>
             </div>
         </div>
