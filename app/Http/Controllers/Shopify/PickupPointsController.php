@@ -153,8 +153,17 @@ class PickupPointsController extends Controller
             try {
                 foreach ($pickupPoints as $_pickupPoint) {
                     $_pickupPointName = ucwords(mb_strtolower($_pickupPoint->name));
-   
-                    $_pickupPoint->provider_service = $_pickupPoint->service->service_code;
+
+                    $_pickupPoint->provider_service = 0;
+                    if(isset($_pickupPoint->service->service_code) && $_pickupPoint->service->service_code)
+                    {
+                        $_pickupPoint->provider_service = $_pickupPoint->service->service_code;
+                    }
+                    else if(isset($_pickupPoint->service_code) && $_pickupPoint->service_code)
+                    {
+                        $_pickupPoint->provider_service = $_pickupPoint->service_code;
+                    }
+
 
                     if ($_pickupPoint->provider_service == '80010') {
                         $_descriptionArray = [];
@@ -182,7 +191,7 @@ class PickupPointsController extends Controller
 
                     $rates[] = array(
                         'service_name' => "{$_pickupPointName}, " . "{$_pickupPoint->street_address}, {$_pickupPoint->postcode}, {$_pickupPoint->city}",
-                        'description' => $_pickupPoint->provider . ' (' . $_pickupPoint->service->name . ') ' . ($_pickupPoint->description == null ? '' : " ({$_pickupPoint->description})"),
+                        'description' => $_pickupPoint->provider . ' (' . ((is_object($_pickupPoint->service) && isset($_pickupPoint->service->name) && $_pickupPoint->service->name != null) ? $_pickupPoint->service->name : '') . ') ' . ($_pickupPoint->description == null ? '' : " ({$_pickupPoint->description})"),
                         'service_code' => "{$_pickupPoint->provider_service}:{$_pickupPoint->pickup_point_id}",
                         'currency' => 'EUR',
                         'total_price' => $this->priceForPickupPoint($_pickupPoint->provider_service, $totalValue)
@@ -190,6 +199,7 @@ class PickupPointsController extends Controller
                 }
             } catch (\Exception $e) {
                 Log::debug($e->getTraceAsString());
+                Log::debug(var_export($_pickupPoint, true));
                 Log::debug(var_export($pickupPoints, true));
                 Log::debug(var_export($request->all(), true));
             }
