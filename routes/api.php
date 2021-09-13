@@ -25,5 +25,7 @@ Route::group(['namespace' => 'Shopify'], function () {
         Route::post('/settings/update/locale', 'SettingsController@updateLocale')->name('shopify.update-locale');
         Route::post('/settings/update/sender', 'SettingsController@updateSender')->name('shopify.update-sender');
         Route::post('/settings/update/pickuppoints', 'SettingsController@updatePickupPoints')->name('shopify.update-pickuppoints');
+        Route::post('/update-order', 'AppController@updateOrder')->name('shopify.update-order');
+        Route::post('/ajax-load-pickups', 'AppController@ajaxLoadPickups')->name('shopify.ajax-load-pickups');
     });
 });

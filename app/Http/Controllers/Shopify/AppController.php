@@ -12,6 +12,7 @@ use App\Models\Shopify\Shop;
 use App\Models\Shopify\Shipment as ShopifyShipment;
 use Pakettikauppa\Client;
 use Pakettikauppa\Shipment;
+use Psy\Exception\FatalErrorException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 //use Log;
 use Storage;
@@ -518,7 +519,21 @@ class AppController extends Controller {
 
         $pk_client = $this->getPakketikauppaClient($shop);
         $shipping_methods = $pk_client->listShippingMethods();
+        $services = array_keys(json_decode($shop->settings, true));
+        $services[] = $shop->default_service_code;
+        foreach (unserialize($shop->shipping_settings) as $setting)
+        {
+            if($setting['product_code'])
+                $services[] = $setting['product_code'];
+        }
 
+        // Remove inactive services
+        foreach ($shipping_methods as $key => $shipping_method) {
+            if (!in_array($shipping_method->shipping_method_code, $services))
+            {
+                unset($shipping_methods[$key]);
+            }
+        }
         if (!is_array($shipping_methods)) {
             $shipping_methods = array();
         }
@@ -539,6 +554,7 @@ class AppController extends Controller {
             'hmac' => $hmac,
             'shop' => $shop,
             'shipping_methods' => $shipping_methods,
+            'order_id' => $order_id,
             'type' => $this->type,
             'shipping_address' => $shipping_address
         ]);
@@ -559,20 +575,210 @@ class AppController extends Controller {
         ];
     }
 
-    public function updateOrder($order_data)
+    public function ajaxLoadPickups()
     {
-        die('all good');
-//        $this->getShopifyClient()->call(
-//            'PUT',
-//            'admin',
-//            '/orders/' . $order_data['id'] . '.json',
-//            [
-//                'order' => [
-//                    'id' => $order_data['id'],
-//                    'shipping_address' => []
-//                ]
-//            ]
-//        );
+        $shop = Shop::where('shop_origin', request()->get('shop')->shop_origin)->first();
+        if ($shop == null) {
+            return response()->json([
+                'message' => 'Could not get shop object.',
+                'status' => 'error',
+            ]);
+        }
+
+        if ($this->type == "posti" || $this->type == "itella") {
+            $pk_client_params = [
+                'posti_config' => [
+                    'api_key' => $shop->api_key,
+                    'secret' => $shop->api_secret,
+                    'base_uri' => 'https://nextshipping.posti.fi',
+                    'use_posti_auth' => true,
+                    'posti_auth_url' => 'https://oauth2.posti.com',
+                ]
+            ];
+            $pk_use_config = "posti_config";
+        } else {
+            if ($shop->test_mode) {
+                $pk_client_params = [
+                    'test_mode' => true,
+                ];
+            } else {
+                if (!empty($shop->api_key) && !empty($shop->api_secret)) {
+                    $pk_client_params = [
+                        'api_key' => $shop->api_key,
+                        'secret' => $shop->api_secret,
+                    ];
+                }
+            }
+        }
+
+        if ($pk_client_params == null) {
+            Log::debug("Pikcup points: fatal error");
+            throw new FatalErrorException();
+        }
+
+        $pk_client = new Client($pk_client_params, $pk_use_config);
+        if ($pk_use_config == "posti_config"){
+            $token = $pk_client->getToken();
+            if (isset($token->access_token)){
+                $pk_client->setAccessToken($token->access_token);
+            }
+        }
+
+        // test if pickup points are available in settings
+        if (!(isset($shop->pickuppoints_count) && $shop->pickuppoints_count > 0)) {
+            Log::debug("no pickup point counts");
+            return;
+        }
+
+        if ($shop->settings == null) {
+            $shop->settings = '{}';
+        }
+        $this->pickupPointSettings = json_decode($shop->settings, true);
+        $order_id = request()->get('order_id');
+        $this->client = $this->getShopifyClient();
+        try {
+            $order = $this->client->call(
+                'GET',
+                'admin',
+                "/orders/{$order_id}.json",
+            );
+        } catch (ShopifyApiException $sae) {
+            Log::debug('Unauthorized.');
+            return redirect()->route('install-link', request()->all());
+        }
+
+        $rates = [];
+        if (count($this->pickupPointSettings) > 0) {
+            // calculate total value of the cart
+            $totalValue = $order['total_price'];
+            $totalWeightInGrams = $order['total_weight'];
+            Log::debug('TotalWeight: '. $totalWeightInGrams);
+            //if weight is more than 35kg, do not return
+            if ($totalWeightInGrams > 35000){
+                $json = json_encode(['rates' => $rates]);
+                Log::debug($json);
+                echo $json;
+                return;
+            }
+            $service_id = request()->get('shipping_method');
+            // search nearest pickup locations
+            $pickupPoints = $pk_client->searchPickupPoints(
+                request()->get('zip'),
+                request()->get('address1'),
+                request()->get('country'),
+                $service_id,
+                $shop->pickuppoints_count
+            );
+
+            if (empty($pickupPoints) && (request()->get('country') == 'LT' || request()->get('country')->country == 'AX' || request()->get('country')->country == 'FI')) {
+                // search some pickup points if no pickup locations was found
+                $pickupPoints = $pk_client->searchPickupPoints(
+                    '00100',
+                    null,
+                    'FI',
+                    $service_id,
+                    $shop->pickuppoints_count
+                );
+            }
+            // generate custom carrier service response
+            try {
+                foreach ($pickupPoints as $_pickupPoint) {
+                    $_pickupPointName = ucwords(mb_strtolower($_pickupPoint->name));
+
+                    $_pickupPoint->provider_service = 0;
+                    if(isset($_pickupPoint->service->service_code) && $_pickupPoint->service->service_code)
+                    {
+                        $_pickupPoint->provider_service = $_pickupPoint->service->service_code;
+                    }
+                    else if(isset($_pickupPoint->service_code) && $_pickupPoint->service_code)
+                    {
+                        $_pickupPoint->provider_service = $_pickupPoint->service_code;
+                    }
+
+
+                    if ($_pickupPoint->provider_service == '80010') {
+                        $_descriptionArray = [];
+                        preg_match(
+                            "/V(?<week>[0-9-]*)[ ]*L?(?<sat>[0-9-]*)[ ]*S?(?<sun>[0-9-]?.*)/",
+                            $_pickupPoint->description,
+                            $_descriptionArray
+                        );
+
+                        if (count($_descriptionArray) > 0) {
+                            $_weekHours = 'ma-pe ' . $this->convertDBSTime($_descriptionArray['week']);
+                            $_satHours = '';
+                            $_sunHours = '';
+
+                            if (isset($_descriptionArray['sat'])) {
+                                $_satHours = ', la ' . $this->convertDBSTime($_descriptionArray['sat']);
+                            }
+                            if (isset($_descriptionArray['sun'])) {
+                                $_sunHours = ', su ' . $this->convertDBSTime($_descriptionArray['sun']);
+                            }
+
+                            $_pickupPoint->description = "{$_weekHours}{$_satHours}{$_sunHours}";
+                        }
+                    }
+                    $rates[] = array(
+                        'service_name' => "{$_pickupPointName}, " . "{$_pickupPoint->street_address}, {$_pickupPoint->postcode}, {$_pickupPoint->city}",
+                        'description' => $_pickupPoint->provider . ' (' . ((is_object($_pickupPoint->service) && isset($_pickupPoint->service->name) && $_pickupPoint->service->name != null) ? $_pickupPoint->service->name : '') . ') ' . ($_pickupPoint->description == null ? '' : " ({$_pickupPoint->description})"),
+                        'service_code' => "{$_pickupPoint->provider_service}:{$_pickupPoint->pickup_point_id}",
+                        'currency' => 'EUR',
+                        'total_price' => $this->priceForPickupPoint($_pickupPoint->provider_service, $totalValue)
+                    );
+
+                }
+            } catch (\Exception $e) {
+                Log::debug($e->getMessage());
+                Log::debug($e->getTraceAsString());
+                Log::debug(var_export($_pickupPoint, true));
+            }
+        }
+        return response()->json([
+            'pickups' => $rates
+        ]);
+    }
+
+    public function updateOrder()
+    {
+        $order_id = request()->get('order_id');
+        $shipping_lines = [];
+        if(request()->get('pickup'))
+        {
+            $pickup = json_decode(trim(request()->get('pickup'), '"'), true);
+            $shipping_lines[] = [
+                'code' => $pickup['service_code'],
+                'price' => $pickup['total_price'] / 100.0,
+                'discounted_price' => $pickup['total_price'] / 100.0,
+                'title' => $pickup['service_name']
+            ];
+        }
+        $response = $this->getShopifyClient()->call(
+            'PUT',
+            'admin',
+            '/orders/' . $order_id . '.json',
+            [
+                'order' => [
+                    'id' => $order_id,
+                    'shipping_address' => [
+                        'first_name' => request()->get('first_name'),
+                        'last_name' => request()->get('last_name'),
+                        'company' => request()->get('company'),
+                        'address1' => request()->get('address1'),
+                        'address2' => request()->get('address2'),
+                        'zip' => request()->get('zip'),
+                        'city' => request()->get('city'),
+                        'country' => request()->get('country'),
+                        'phone' => request()->get('phone'),
+                    ],
+                    'shipping_lines' => $shipping_lines
+                ]
+            ]
+        );
+        return response()->json([
+            'status' => $response ? 'ok' : 'error',
+            'message' => $response ? trans('app.custom_shipment.save_successful') : trans('app.custom_shipment.save_failed')
+        ]);
     }
 
 
@@ -690,6 +896,17 @@ class AppController extends Controller {
             'order_url' => $admin_order_url,
             'orders_url' => $admin_orders_url,
         ]);
+    }
+
+    private function priceForPickupPoint($provider, $totalValue)
+    {
+        $pickupPointSettings = $this->pickupPointSettings[$provider];
+
+        if ($pickupPointSettings['trigger_price'] > 0 and $pickupPointSettings['trigger_price'] * 100 <= $totalValue) {
+            return (int)round($pickupPointSettings['triggered_price'] * 100.0);
+        }
+
+        return (int)round($pickupPointSettings['base_price'] * 100.0);
     }
 
 }

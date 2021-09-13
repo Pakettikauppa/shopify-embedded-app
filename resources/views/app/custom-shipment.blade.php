@@ -3,15 +3,14 @@
 @section('content')
     <section id="custom-page">
         <div class="column">
-    <form id="custom-shipment" method="POST" action="{{ route('shopify.update-order') }}">
+    <form id="setting-form" method="POST" action="{{ route('shopify.update-order') }}">
         <article>
             <div class="card column ten">
-                <h2>{{trans('app.custom_shipment.title')}}</h2>
                 <div class="row" style="margin-bottom: 2em">
-                    <h3>{{trans('app.custom_shipment.service_title')}}</h3>
-                    <div class="column six">
+                    <div class="columns six">
                         <div class="row">
-                            <select name="default_shipping_method">
+                            <h3>{{trans('app.custom_shipment.service_title')}}</h3>
+                            <select id="shipping-method" name="shipping_method">
                                 <option value="">—</option>
                                 @foreach($shipping_methods as $key => $service_provider)
                                     @if(count($service_provider) > 0)
@@ -25,6 +24,13 @@
                                         </optgroup>
                                     @endif
                                 @endforeach
+                            </select>
+                        </div>
+                    </div>
+                    <div id="pickup-select-block" class="columns six">
+                        <div class="row">
+                            <h3>{{trans('app.custom_shipment.pickups_title')}}</h3>
+                            <select id="pickup-select" name="pickup">
                             </select>
                         </div>
                     </div>
@@ -104,7 +110,7 @@
                         </div>
                     </div>
                 </div>
-                <button name="submit">Update Shipment Info</button>
+                <input type="hidden" name="order_id" value="{{ $order_id }}">
             </div>
         </article>
     </form>
@@ -114,16 +120,67 @@
 
 @section('after-scripts-end')
     <script type='text/javascript'>
+        buttonSave.set({label: '{{ trans('app.custom_shipment.update_button') }}'});
+        saveBtnDisabled(false);
+        function customPageInit() {
+            titleBar.set({
+                title: '{{trans('app.custom_shipment.title')}}'
+            });
+        }
+        $(document).on('ready', () => {
+            $('#pickup-select-block').hide();
+            $('#shipping-method').on('change', e => {
+                $('#pickup-select-block').hide();
+                $('#pickup-select-block option').remove();
+                if(!$('#shipping-method').val())
+                {
+                    return;
+                }
+                startLoading();
+                ax(
+                    {
+                        method: 'POST',
+                        url: '{{route('shopify.ajax-load-pickups')}}',
+                        data:
+                            $.param($('#setting-form').serializeArray()),
+                    }
+                ).then(
+                    response => {
+                        if (response.status === 200 && response.data.status !== 'error') {
+                            showToast({message: response.data.message, isError: false});
+                            if(response.data.pickups.length > 0)
+                            {
+                                response.data.pickups.forEach((pickup) => {
+                                    $('#pickup-select').append(`<option value='"${JSON.stringify(pickup)}"'>${pickup.service_name}</option>`);
+                                });
+                                $('#pickup-select-block').show();
+                            }
+                        } else if (response.status === 200 && response.data.status === 'error') {
+                            showToast({
+                                message: response.data.message,
+                                isError: true
+                            });
+                            console.error('RESPONSE ERROR:', response.data.message);
+                        } else {
+                            showToast({
+                                message: 'Something went wrong',
+                                isError: true
+                            });
+                        }
+                        stopLoading();
+                    }
+                ).catch(
+                    error => {
+                        showToast({
+                            message: 'Something went wrong',
+                            isError: true
+                        });
+                        console.error('API ERROR:', error);
+                        stopLoading();
+                    }
+                );
+            });
+        });
 
-        {{--$spinner = $('.loading');--}}
-        {{--$spinner.show();--}}
-        {{--$.ajax({--}}
-        {{--    url: '{{route('shopify.ajax-load-pickups')}}' + '?hmac=' + '{{ $hmac }}' + '&shop=' + '{{ $shop->shop_origin }}',--}}
-        {{--}).success(function(resp){--}}
-        {{--    $spinner.hide();--}}
-        {{--    console.log(resp);--}}
-
-        {{--    ShopifyApp.flashNotice('{{trans('app.messages.api_credentials_saved')}}');--}}
-        {{--});--}}
     </script>
 @endsection
