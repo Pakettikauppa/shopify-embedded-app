@@ -4,6 +4,7 @@ namespace App\Models\Shopify;
 
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Shopify\Shipment as ShopifyShipment;
+use Illuminate\Support\Facades\Log;
 use Pakettikauppa\Shipment;
 use Pakettikauppa\Shipment\Info;
 use Pakettikauppa\Shipment\Parcel;
@@ -59,25 +60,6 @@ class Shop extends Model
         $info = new Info();
         $info->setReference($order['id']);
 
-        $parcel = new Parcel();
-        $parcel->setReference($order['id']);
-        $parcel->setWeight(number_format($order['total_weight'] * 0.001, 3)); // kg
-        $parcel->setVolume(number_format($order['total_weight'] * 0.000001, 6)); // m3
-        $parcel->setContents('');
-
-        foreach ($contents as $item) {
-            $contentLine = new Shipment\ContentLine();
-            $contentLine->currency = 'EUR';
-            $contentLine->country_of_origin = 'FI';
-            $contentLine->description = $item['name'];
-            $contentLine->quantity = $item['quantity'];
-            $contentLine->netweight = $item['grams'];
-            $contentLine->tariff_code = '';
-            $contentLine->value = $item['price'];
-            $parcel->addContentLine($contentLine);
-        }
-
-
         $pickupPointId = null;
         $method_code = null;
 
@@ -120,7 +102,36 @@ class Shop extends Model
         $shipment->setSender($sender);
         $shipment->setReceiver($receiver);
         $shipment->setShipmentInfo($info);
-        $shipment->addParcel($parcel);
+
+        $parcel_total_count = $order['packets'] ?? 1;
+        for ($i = 0; $i < $parcel_total_count; $i++) {
+            $parcel = new Parcel();
+            $parcel->setReference($order['id']);
+            $parcel->setWeight(number_format(($order['total_weight'] * 0.001) / $parcel_total_count, 3)); // kg
+            $parcel->setVolume(number_format(($order['total_weight'] * 0.000001) / $parcel_total_count, 6)); // m3
+            $parcel->setContents('');
+
+            foreach ($contents as $item) {
+                $contentLine = new Shipment\ContentLine();
+                $contentLine->currency = 'EUR';
+                $contentLine->country_of_origin = 'FI';
+                $contentLine->description = $item['name'];
+                $contentLine->quantity = $item['quantity'];
+                $contentLine->netweight = $item['grams'];
+                $contentLine->tariff_code = '';
+                $contentLine->value = $item['price'];
+                $parcel->addContentLine($contentLine);
+            }
+            $shipment->addParcel($parcel);
+        }
+
+        if ($parcel_total_count > 1)
+        {
+            $additional_service = new AdditionalService();
+            $additional_service->setServiceCode(3102);
+            $additional_service->addSpecifier('count', $parcel_total_count);
+            $shipment->addAdditionalService($additional_service);
+        }
 
         if ($pickupPointId != null and !$isReturn) {
             $additional_service = new AdditionalService();
@@ -146,9 +157,25 @@ class Shop extends Model
         }
 
         try {
-            $pk_client->createTrackingCode($shipment);
+            $resp = $pk_client->createTrackingCode($shipment);
 
-            $tracking_code = (string)$shipment->getTrackingCode();
+            if($parcel_total_count > 1)
+            {
+                $tracking_codes = [];
+                for($i = 0; $i < $parcel_total_count; $i++)
+                {
+                    if(isset($resp[$i]))
+                    {
+                        $tracking_codes[] = $resp[$i];
+                    }
+                }
+                $tracking_code = implode(', ', $tracking_codes);
+            }
+            else
+            {
+                $tracking_code = (string)$shipment->getTrackingCode();
+            }
+
             $reference = (string)$shipment->getReference();
 
             $shopify_shipment = new ShopifyShipment();
@@ -160,6 +187,7 @@ class Shop extends Model
             $shopify_shipment->return = $isReturn;
             $shopify_shipment->save();
         } catch (\Exception $ex) {
+            Log::debug('Failed creating tracking code: ' . $ex->getMessage());
             $order['status'] = 'custom_error';
             $order['error_message'] = $ex->getMessage();
             return $order;

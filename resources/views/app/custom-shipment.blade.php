@@ -35,6 +35,14 @@
                     </div>
                 </div>
                 <div class="row" style="margin-bottom: 2em">
+                    <div id="multi-parcel-block" class="columns six hidden">
+                        <div class="row">
+                            <h3>{{trans('app.custom_shipment.multiparcel_title')}}</h3>
+                            <input type="number" name="packets" value="1" style="width: 3em;" min="1" step="1" max="15">
+                        </div>
+                    </div>
+                </div>
+                <div class="row" style="margin-bottom: 2em">
                     <h3>{{trans('app.custom_shipment.address_title')}}</h3>
                     <div class="column twelve">
                         <div class="row">
@@ -146,6 +154,13 @@
                     return;
                 }
                 startLoading();
+                $('#multi-parcel-block').hide();
+                $(e.target).find(':selected').data('services').forEach((service) => {
+                    if(service['service_code'] == '3102')
+                    {
+                        $('#multi-parcel-block').show();
+                    }
+                });
                 ax(
                     {
                         method: 'POST',

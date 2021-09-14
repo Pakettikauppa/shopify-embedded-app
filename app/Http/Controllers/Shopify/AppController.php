@@ -860,6 +860,7 @@ class AppController extends Controller {
 
         $contents = $shipment['line_items'];
 
+        $order['packets'] = request()->get('packets');
         $_shipment = $shop->sendShipment(
             $this->pk_client,
             $order,
@@ -957,6 +958,7 @@ class AppController extends Controller {
 
     public function getLabels(Request $request) {
         if (empty(request()->get('tracking_codes'))) {
+            Log::debug('Tracking codes not found');
             throw new NotFoundHttpException();
         }
 
@@ -977,13 +979,11 @@ class AppController extends Controller {
         $shop = request()->get('shop');
         $this->pk_client = $this->getPakketikauppaClient($shop);
         $is_return = isset($request->is_return) ? $request->is_return : false;
-        $tracking_code = request()->get('tracking_code');
 
         $shipment = ShopifyShipment::where('shop_id', $shop->id)
                 ->where('order_id', $order_id)
                 ->where('test_mode', $shop->test_mode)
                 ->where('return', $is_return)
-                ->where('tracking_code', $tracking_code)
                 ->first();
 
         if (!isset($shipment)) {
