@@ -556,7 +556,8 @@ class AppController extends Controller {
             'shipping_methods' => $shipping_methods,
             'order_id' => $order_id,
             'type' => $this->type,
-            'shipping_address' => $shipping_address
+            'shipping_address' => $shipping_address,
+            'email' => $order['email']
         ]);
     }
 
@@ -739,10 +740,39 @@ class AppController extends Controller {
         ]);
     }
 
-    public function updateOrder()
+    public function createCustomShipment()
     {
         $order_id = request()->get('order_id');
+        if (!$order_id) {
+            Log::debug('No id found');
+            throw new NotFoundHttpException();
+        }
         $shipping_lines = [];
+
+        $shop = request()->get('shop');
+        // api check
+        $this->pk_client = $this->getPakketikauppaClient($shop);
+        $result = $this->pk_client->listShippingMethods();
+
+        if (!is_array($result)) {
+            return response()->json([
+                'message' => trans('app.messages.invalid_credentials'),
+                'status' => 'error',
+            ]);
+        }
+
+        $this->client = $this->getShopifyClient();
+        try {
+            $order = $this->client->call(
+                'GET',
+                'admin',
+                "/orders/{$order_id}.json",
+            );
+        } catch (ShopifyApiException $sae) {
+            Log::debug('Unauthorized thingie');
+            return redirect()->route('install-link', request()->all());
+        }
+
         if(request()->get('pickup'))
         {
             $pickup = json_decode(trim(request()->get('pickup'), '"'), true);
@@ -752,32 +782,150 @@ class AppController extends Controller {
                 'discounted_price' => $pickup['total_price'] / 100.0,
                 'title' => $pickup['service_name']
             ];
+            $order['shipping_lines'] = $shipping_lines;
         }
-        $response = $this->getShopifyClient()->call(
-            'PUT',
-            'admin',
-            '/orders/' . $order_id . '.json',
-            [
-                'order' => [
-                    'id' => $order_id,
-                    'shipping_address' => [
-                        'first_name' => request()->get('first_name'),
-                        'last_name' => request()->get('last_name'),
-                        'company' => request()->get('company'),
-                        'address1' => request()->get('address1'),
-                        'address2' => request()->get('address2'),
-                        'zip' => request()->get('zip'),
-                        'city' => request()->get('city'),
-                        'country' => request()->get('country'),
-                        'phone' => request()->get('phone'),
-                    ],
-                    'shipping_lines' => $shipping_lines
-                ]
-            ]
+        else
+        {
+            return response()->json([
+                'message' => trans('app.custom_shipment.not_selected'),
+                'status' => 'error',
+            ]);
+        }
+
+        $shipment = [];
+        $shipment['fulfillment_status'] = $order['fulfillment_status'];
+        $shipment['line_items'] = [];
+        foreach ($order['line_items'] as $line_item) {
+            if ($line_item['requires_shipping']) {
+                $shipment['line_items'][] = $line_item;
+            }
+        }
+
+        $shipment['id'] = $order['id'];
+        $shipment['admin_order_url'] = 'https://' . $shop->shop_origin . '/admin/orders/' . $order['id'];
+        $url_params = [
+            'shop' => $shop->shop_origin,
+        ];
+        $url_params['hmac'] = createShopifyHMAC($url_params);
+        $shipment['hmac_print_url'] = http_build_query($url_params);
+
+        $senderInfo = [
+            'name' => $shop->business_name,
+            'company' => '',
+            'address' => $shop->address,
+            'postcode' => $shop->postcode,
+            'city' => $shop->city,
+            'country' => $shop->country,
+            'phone' => $shop->phone,
+            'email' => $shop->email,
+        ];
+
+        $receiverPhone = request()->get('phone');
+
+        if (empty($receiverPhone) and isset($order['billing_address']['phone'])) {
+            $receiverPhone = $order['billing_address']['phone'];
+        }
+
+        if (empty($receiverPhone)) {
+            $receiverPhone = $order['phone'];
+        }
+
+        if (empty($receiverPhone) and isset($order['customer']['phone'])) {
+            $receiverPhone = $order['customer']['phone'];
+        }
+
+        $receiverName = request()->get('first_name') . " " . request()->get('last_name');
+        $receiverCompany = request()->get('company');
+        if (empty($receiverCompany)) {
+            $receiverCompany = null;
+        }
+        $receiverAddress = request()->get('address1');
+        $receiverAddress2 = empty(request()->get('address2')) ? null : request()->get('address2');
+
+        $receiverZip = request()->get('zip');
+        $receiverCity = request()->get('city');
+        $receiverCountry = request()->get('country');
+
+        $receiverInfo = [
+            'name' => $receiverName,
+            'company' => $receiverCompany,
+            'address' => $receiverAddress,
+            'address2' => $receiverAddress2,
+            'postcode' => $receiverZip,
+            'city' => $receiverCity,
+            'country' => $receiverCountry,
+            'phone' => $receiverPhone,
+            'email' => request()->get('email') ?? $order['email'],
+        ];
+
+        $contents = $shipment['line_items'];
+
+        $_shipment = $shop->sendShipment(
+            $this->pk_client,
+            $order,
+            $senderInfo,
+            $receiverInfo,
+            $contents,
         );
+        $shipment['status'] = $_shipment['status'];
+
+        $shipment['tracking_code'] = '';
+        if (isset($_shipment['tracking_code'])) {
+            $shipment['tracking_code'] = $_shipment['tracking_code'];
+        }
+
+        if (
+            !empty($this->pk_client->getResponse()->{'response.trackingcode'}['labelcode']) and
+            $shop->create_activation_code === true
+        ) {
+            try {
+                if ($this->client->callsLeft() > 0 and $this->client->callLimit() == $this->client->callsLeft()) {
+                    sleep(2);
+                }
+
+                $this->client->call(
+                    'PUT',
+                    'admin',
+                    '/orders/' . $order['id'] . '.json',
+                    [
+                        'order' => [
+                            'id' => $order['id'],
+                            'note' => sprintf('%s: %s', trans('app.settings.activation_code'), $this->pk_client->getResponse()->{'response.trackingcode'}['labelcode'])
+                        ]
+                    ]
+                );
+            } catch (\Exception $e) {
+                Log::debug($e->getMessage());
+                Log::debug($e->getTraceAsString());
+            }
+        }
+
+        if (isset($_shipment['error_message'])) {
+            $shipment['error_message'] = $_shipment['error_message'];
+        }
+
+        Log::debug("Processed order: {$shipment['tracking_code']} - {$order['id']}");
+        $page_title = 'print_label';
+
+        $print_all_url_params = [
+            'shop' => $shop->shop_origin,
+        ];
+
+        $print_all_url_params['hmac'] = createShopifyHMAC($print_all_url_params);
+        $hmac_print_all_url = http_build_query($print_all_url_params);
+        $shipments[] = $shipment;
+
         return response()->json([
-            'status' => $response ? 'ok' : 'error',
-            'message' => $response ? trans('app.custom_shipment.save_successful') : trans('app.custom_shipment.save_failed')
+            'html' => view('app.print-labels', [
+                'shop' => $shop,
+                'orders' => $shipments,
+                'orders_url' => 'https://' . $shop->shop_origin . '/admin/orders',
+                'print_all_params' => $hmac_print_all_url,
+                'page_title' => $page_title,
+                'is_return' => false,
+                'tracking_url' => $this->tracking_url,
+                'type' => $this->type
+            ])->toHtml()
         ]);
     }
 
@@ -829,14 +977,17 @@ class AppController extends Controller {
         $shop = request()->get('shop');
         $this->pk_client = $this->getPakketikauppaClient($shop);
         $is_return = isset($request->is_return) ? $request->is_return : false;
+        $tracking_code = request()->get('tracking_code');
 
         $shipment = ShopifyShipment::where('shop_id', $shop->id)
                 ->where('order_id', $order_id)
                 ->where('test_mode', $shop->test_mode)
                 ->where('return', $is_return)
+                ->where('tracking_code', $tracking_code)
                 ->first();
 
         if (!isset($shipment)) {
+            Log::debug("Could not find shipment");
             throw new NotFoundHttpException();
         }
 

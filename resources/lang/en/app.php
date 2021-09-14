@@ -32,10 +32,11 @@ return [
         'title' => 'Custom Shipment',
         'service_title' => 'Shipping service',
         'address_title' => 'Shipping address',
-        'update_button' => 'Update Shipment Info',
+        'create_button' => 'Create Shipment',
         'save_successful' => 'Shipment updated successfully',
         'save_failed' => 'Shipment update failed',
         'pickups_title' => 'Pickup points',
+        'not_selected' => 'Shipping method not selected',
 
     ],
     'settings' => [

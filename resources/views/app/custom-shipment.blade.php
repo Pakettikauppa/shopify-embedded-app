@@ -3,7 +3,7 @@
 @section('content')
     <section id="custom-page">
         <div class="column">
-    <form id="setting-form" method="POST" action="{{ route('shopify.update-order') }}">
+    <form id="setting-form" method="POST" action="{{ route('shopify.create-shipment') }}">
         <article>
             <div class="card column ten">
                 <div class="row" style="margin-bottom: 2em">
@@ -16,8 +16,7 @@
                                     @if(count($service_provider) > 0)
                                         <optgroup label="{{$key}}">
                                             @foreach($service_provider as $product)
-                                                <option value="{{ $product['shipping_method_code'] }}" data-services="{{json_encode($product['additional_services'])}}"
-                                                        @if($shop->default_service_code == $product['shipping_method_code']) selected @endif>
+                                                <option value="{{ $product['shipping_method_code'] }}" data-services="{{json_encode($product['additional_services'])}}">
                                                     {{ $product['name'] }}
                                                 </option>
                                             @endforeach
@@ -110,6 +109,16 @@
                         </div>
                     </div>
                 </div>
+                <div class="row" style="margin-bottom: 2em">
+                    <div class="column twelve">
+                        <div class="row">
+                            <div class="columns twelve">
+                                <label for="email">E-mail</label>
+                                <input type="text" name="email" value="{{ $email }}">
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 <input type="hidden" name="order_id" value="{{ $order_id }}">
             </div>
         </article>
@@ -120,7 +129,7 @@
 
 @section('after-scripts-end')
     <script type='text/javascript'>
-        buttonSave.set({label: '{{ trans('app.custom_shipment.update_button') }}'});
+        buttonSave.set({label: '{{ trans('app.custom_shipment.create_button') }}'});
         saveBtnDisabled(false);
         function customPageInit() {
             titleBar.set({
