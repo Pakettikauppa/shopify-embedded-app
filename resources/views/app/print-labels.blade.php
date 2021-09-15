@@ -35,13 +35,15 @@
                                 @endif
                             </td>
                             <td>
-                                @if(isset($order['tracking_code']))
-                                <a href="{{$tracking_url.$order['tracking_code']}}" target="pakettikauppa-seuranta">{{$order['tracking_code']}}</a>
+                                @if(isset($order['tracking_codes']) && !empty($order['tracking_codes']))
+                                    @foreach($order['tracking_codes'] as $tracking_code)
+                                        <a href="{{$tracking_url.$tracking_code}}" target="pakettikauppa-seuranta">{{$tracking_code}}</a><br>
+                                    @endforeach
                                 @endif
                             </td>
                             <td>
                                 @if($order['status'] == 'created' || $order['status'] == 'sent')
-                                    <a class="print-label" href="{{route('shopify.label', ['order_id' => $order['id']])}}?{{$order['hmac_print_url']}}" target="_blank">{{trans('app.print_labels.get_label_link')}}</a>
+                                    <a class="print-label" href="{{route('shopify.label', ['order_id' => $order['id'], 'tracking_code' => $order['tracking_codes'][0]])}}?{{$order['hmac_print_url']}}" target="_blank">{{trans('app.print_labels.get_label_link')}}</a>
                                 @endif
                             </td>
                         </tr>
@@ -52,8 +54,10 @@
             <form id="print-labels-form" method="post" action="{{route('shopify.get_labels')}}?{{$print_all_params}}" target="_blank">
                     <input type="hidden" name="_token" id="csrf-token" value="{{ Session::token() }}" />
                     @foreach($orders as $order)
-                        @if(isset($order['tracking_code']))
-                        <input type="hidden" name="tracking_codes[]" value="{{$order['tracking_code']}}">
+                        @if(isset($order['tracking_codes']) && !empty($order['tracking_codes']))
+                            @foreach($order['tracking_codes'] as $tracking_code)
+                                <input type="hidden" name="tracking_codes[]" value="{{$tracking_code}}">
+                            @endforeach
                         @endif
                     @endforeach
                     <button name="submit">{{trans('app.print_labels.fetch_all')}}</button>

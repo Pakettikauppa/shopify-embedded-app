@@ -31,7 +31,7 @@ Route::group(['namespace' => 'Shopify'], function () {
         Route::get('/return-label', 'AppController@returnLabel')->name('shopify.return-label');
         Route::get('/custom-shipment', 'AppController@customShipment')->name('shopify.custom-shipment');
 
-        Route::get('/get-label/{order_id}', 'AppController@getLabel')->name('shopify.label');
+        Route::get('/get-label/{order_id}/{tracking_code?}', 'AppController@getLabel')->name('shopify.label');
         Route::post('/get-labels', 'AppController@getLabels')->name('shopify.get_labels');
 
         Route::get('/track-shipment', 'AppController@trackShipment')->name('shopify.track-shipment');

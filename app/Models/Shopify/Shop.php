@@ -169,11 +169,11 @@ class Shop extends Model
                         $tracking_codes[] = $resp[$i];
                     }
                 }
-                $tracking_code = implode(', ', $tracking_codes);
+                $order['tracking_code'] = $tracking_codes;
             }
             else
             {
-                $tracking_code = (string)$shipment->getTrackingCode();
+                $order['tracking_code'] = $shipment->getTrackingCode();
             }
 
             $reference = (string)$shipment->getReference();
@@ -181,7 +181,7 @@ class Shop extends Model
             $shopify_shipment = new ShopifyShipment();
             $shopify_shipment->shop_id = $this->id;
             $shopify_shipment->order_id = $order['id'];
-            $shopify_shipment->tracking_code = $tracking_code;
+            $shopify_shipment->tracking_code = isset($tracking_codes) ? implode(', ', $tracking_codes) : $shipment->getTrackingCode();
             $shopify_shipment->reference = $reference;
             $shopify_shipment->test_mode = $this->test_mode;
             $shopify_shipment->return = $isReturn;
@@ -194,7 +194,6 @@ class Shop extends Model
         }
 
         $order['status'] = 'created';
-        $order['tracking_code'] = $tracking_code;
 
         return $order;
     }

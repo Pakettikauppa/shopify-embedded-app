@@ -218,7 +218,16 @@ class AppController extends Controller {
 
             if ($done_shipment) {
                 $shipment['status'] = 'sent';
-                $shipment['tracking_code'] = $done_shipment->tracking_code;
+
+                if(strpos($done_shipment->tracking_code, ','))
+                {
+                    $tracking_codes = explode(', ', $done_shipment->tracking_code);
+                }
+                else
+                {
+                    $tracking_codes[] = $done_shipment->tracking_code;
+                }
+                $shipment['tracking_codes'] = $tracking_codes;
                 $shipments[] = $shipment;
                 continue;
             }
@@ -307,7 +316,15 @@ class AppController extends Controller {
 
             $shipment['tracking_code'] = '';
             if (isset($_shipment['tracking_code'])) {
-                $shipment['tracking_code'] = $_shipment['tracking_code'];
+                if(strpos($shipment['tracking_code'], ','))
+                {
+                    $tracking_codes = explode(', ', $shipment['tracking_code']);
+                }
+                else
+                {
+                    $tracking_codes[] = $shipment['tracking_code'];
+                }
+                $shipment['tracking_codes'] = $tracking_codes;
             }
 
             if (
@@ -671,7 +688,7 @@ class AppController extends Controller {
                 $shop->pickuppoints_count
             );
 
-            if (empty($pickupPoints) && (request()->get('country') == 'LT' || request()->get('country')->country == 'AX' || request()->get('country')->country == 'FI')) {
+            if (empty($pickupPoints) && (request()->get('country') == 'LT' || request()->get('country') == 'AX' || request()->get('country') == 'FI')) {
                 // search some pickup points if no pickup locations was found
                 $pickupPoints = $pk_client->searchPickupPoints(
                     '00100',
@@ -732,7 +749,6 @@ class AppController extends Controller {
             } catch (\Exception $e) {
                 Log::debug($e->getMessage());
                 Log::debug($e->getTraceAsString());
-                Log::debug(var_export($_pickupPoint, true));
             }
         }
         return response()->json([
@@ -870,11 +886,6 @@ class AppController extends Controller {
         );
         $shipment['status'] = $_shipment['status'];
 
-        $shipment['tracking_code'] = '';
-        if (isset($_shipment['tracking_code'])) {
-            $shipment['tracking_code'] = $_shipment['tracking_code'];
-        }
-
         if (
             !empty($this->pk_client->getResponse()->{'response.trackingcode'}['labelcode']) and
             $shop->create_activation_code === true
@@ -905,21 +916,34 @@ class AppController extends Controller {
             $shipment['error_message'] = $_shipment['error_message'];
         }
 
-        Log::debug("Processed order: {$shipment['tracking_code']} - {$order['id']}");
         $page_title = 'print_label';
-
         $print_all_url_params = [
             'shop' => $shop->shop_origin,
         ];
 
         $print_all_url_params['hmac'] = createShopifyHMAC($print_all_url_params);
         $hmac_print_all_url = http_build_query($print_all_url_params);
-        $shipments[] = $shipment;
+
+        $tracking_codes = [];
+        if(isset($_shipment['tracking_code']) && is_array($_shipment['tracking_code']))
+        {
+            $tracking_codes = [];
+            foreach ($_shipment['tracking_code'] as $tracking_code)
+            {
+                $tracking_codes[] = $tracking_code;
+            }
+            $shipment['tracking_code'] = implode(', ', $tracking_codes);
+        }
+        else if (isset($_shipment['tracking_code'])) {
+            $shipment['tracking_code'] = $_shipment['tracking_code'];
+            $tracking_codes[] = $_shipment['tracking_code'];
+        }
 
         return response()->json([
-            'html' => view('app.print-labels', [
+            'html' => view('app.custom-labels', [
                 'shop' => $shop,
-                'orders' => $shipments,
+                'shipment' => $shipment,
+                'tracking_codes' => $tracking_codes,
                 'orders_url' => 'https://' . $shop->shop_origin . '/admin/orders',
                 'print_all_params' => $hmac_print_all_url,
                 'page_title' => $page_title,
@@ -965,7 +989,12 @@ class AppController extends Controller {
         $shop = request()->get('shop');
         $this->pk_client = $this->getPakketikauppaClient($shop);
 
-        $xml = $this->pk_client->fetchShippingLabels(request()->get('tracking_codes'));
+        $tracking_codes = request()->get('tracking_codes');
+        if(count($tracking_codes) == 1 && strpos($tracking_codes[0], ','))
+        {
+            $tracking_codes = explode(', ', $tracking_codes[0]);
+        }
+        $xml = $this->pk_client->fetchShippingLabels($tracking_codes);
 
         $pdf = base64_decode($xml->{'response.file'});
 
@@ -975,16 +1004,26 @@ class AppController extends Controller {
         ]);
     }
 
-    public function getLabel(Request $request, $order_id) {
+    public function getLabel(Request $request, $order_id, $tracking_code = null) {
         $shop = request()->get('shop');
         $this->pk_client = $this->getPakketikauppaClient($shop);
         $is_return = isset($request->is_return) ? $request->is_return : false;
-
-        $shipment = ShopifyShipment::where('shop_id', $shop->id)
+        if($tracking_code)
+        {
+            $shipment = ShopifyShipment::where('shop_id', $shop->id)
+                ->where('order_id', $order_id)
+                ->where('tracking_code', $tracking_code)
+                ->orWhere('tracking_code', 'like', "%{$tracking_code}%")
+                ->first();
+        }
+        else
+        {
+            $shipment = ShopifyShipment::where('shop_id', $shop->id)
                 ->where('order_id', $order_id)
                 ->where('test_mode', $shop->test_mode)
                 ->where('return', $is_return)
                 ->first();
+        }
 
         if (!isset($shipment)) {
             Log::debug("Could not find shipment");
@@ -992,7 +1031,10 @@ class AppController extends Controller {
         }
 
         $pk_shipment = new Shipment();
-        $pk_shipment->setTrackingCode($shipment->tracking_code);
+        if($tracking_code)
+            $pk_shipment->setTrackingCode($tracking_code);
+        else
+            $pk_shipment->setTrackingCode($shipment->tracking_code);
         $pk_shipment->setReference($shipment->reference);
 
         $this->pk_client->fetchShippingLabel($pk_shipment);
