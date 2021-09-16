@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.app-no-menu')
 
 @section('content')
     <section id="custom-page">
