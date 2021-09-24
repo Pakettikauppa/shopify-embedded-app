@@ -15,6 +15,7 @@ use Illuminate\Http\Request;
 
 Route::group(['namespace' => 'Shopify'], function () {
     Route::post('/pickup-points', 'PickupPointsController@list')->name('shopify.pickuppoints.list');
+    Route::post('/fulfillmentservice', 'AppController@fulfillmentProcess')->name('shopify.fulfillmentservice');
 
     Route::group(['middleware' => ['shopify', 'shopify.shop', 'shopify.localize']], function () {
         Route::get('/buttons-translation', 'SettingsController@getButtonsTranslations')->name('shopify.button-translations');

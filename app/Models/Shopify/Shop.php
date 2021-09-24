@@ -61,8 +61,8 @@ class Shop extends Model
 
         $parcel = new Parcel();
         $parcel->setReference($order['id']);
-        $parcel->setWeight(number_format($order['total_weight'] * 0.001, 3)); // kg
-        $parcel->setVolume(number_format($order['total_weight'] * 0.000001, 6)); // m3
+        $parcel->setWeight(number_format($order['totalWeight'] * 0.001, 3)); // kg
+        $parcel->setVolume(number_format($order['totalWeight'] * 0.000001, 6)); // m3
         $parcel->setContents('');
 
         foreach ($contents as $item) {
@@ -71,9 +71,9 @@ class Shop extends Model
             $contentLine->country_of_origin = 'FI';
             $contentLine->description = $item['name'];
             $contentLine->quantity = $item['quantity'];
-            $contentLine->netweight = $item['grams'];
+            $contentLine->netweight = $item['variant']['weight'];//convert by weightUnit
             $contentLine->tariff_code = '';
-            $contentLine->value = $item['price'];
+            $contentLine->value = $item['variant']['price'];
             $parcel->addContentLine($contentLine);
         }
 
@@ -91,8 +91,8 @@ class Shop extends Model
                 }
             }
 
-            if (isset($order['shipping_lines'][0]['code']) && $order['shipping_lines'][0]['code'] != null) {
-                $pickupPoint = $this->shippingCode2Method($order['shipping_lines'][0]['code']);
+            if ($order['shippingLine'] != null) {
+                $pickupPoint = $this->shippingCode2Method($order['shippingLine']['code']);
                 $pickupPointId = $pickupPoint['pickup_point_id'];
 
                 if (!empty($pickupPointId)) {

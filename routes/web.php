@@ -23,6 +23,7 @@ Route::group(['namespace' => 'Shopify'], function () {
         Route::get('/settings/api', 'SettingsController@api')->name('shopify.settings.api-link');
         Route::get('/settings/generic', 'SettingsController@generic')->name('shopify.settings.generic-link');
         Route::get('/settings/pickuppoints', 'SettingsController@pickuppoints')->name('shopify.settings.pickuppoints-link');
+        
 
         // TODO: needs to be split into separate jobs
         // Print labels and fullfill
