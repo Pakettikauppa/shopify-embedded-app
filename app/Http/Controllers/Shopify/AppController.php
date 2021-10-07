@@ -194,6 +194,8 @@ class AppController extends Controller {
                                     weightUnit
                                     price
                                     inventoryItem {
+                                        countryCodeOfOrigin
+                                      	harmonizedSystemCode
                                         inventoryLevels(first: 10) {
                                           edges {
                                             node {
