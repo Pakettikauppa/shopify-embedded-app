@@ -707,7 +707,7 @@ class AppController extends Controller {
         $tracking_code = $shipment->test_mode ? 'JJFITESTLABEL100' : $shipment->tracking_code;
 
         $statuses = $this->pk_client->getShipmentStatus($tracking_code);
-        
+
         if (!is_array($statuses) || count($statuses) == 0) {
             return view('app.alert', [
                 'shop' => $shop,
