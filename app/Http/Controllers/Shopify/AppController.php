@@ -194,6 +194,8 @@ class AppController extends Controller {
                                     weightUnit
                                     price
                                     inventoryItem {
+                                        countryCodeOfOrigin
+                                      	harmonizedSystemCode
                                         inventoryLevels(first: 10) {
                                           edges {
                                             node {
@@ -378,7 +380,6 @@ class AppController extends Controller {
             }
 
             $contents = $shipment['line_items'];
-
             $_shipment = $shop->sendShipment(
                     $this->pk_client,
                     $order,
