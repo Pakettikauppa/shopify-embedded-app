@@ -68,11 +68,11 @@ class Shop extends Model
         foreach ($contents as $item) {
             $contentLine = new Shipment\ContentLine();
             $contentLine->currency = 'EUR';
-            $contentLine->country_of_origin = $item['variant']['inventoryItem']['countryCodeOfOrigin'] ?? 'FI';
+            $contentLine->country_of_origin = 'FI';
             $contentLine->description = $item['name'];
             $contentLine->quantity = $item['quantity'];
             $contentLine->netweight = $item['variant']['weight'];//convert by weightUnit
-            $contentLine->tariff_code = $item['variant']['inventoryItem']['harmonizedSystemCode'] ?? '';
+            $contentLine->tariff_code = '';
             $contentLine->value = $item['variant']['price'];
             $parcel->addContentLine($contentLine);
         }
