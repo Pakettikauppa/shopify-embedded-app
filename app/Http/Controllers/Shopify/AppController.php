@@ -69,22 +69,22 @@ class AppController extends Controller {
      * @return \Pakettikauppa\Client
      */
     public function getPakketikauppaClient($shop) {
-        
+
         if ($this->type == "posti" || $this->type == "itella") {
             $config = [
                 'posti_config' => [
                     'api_key' => $shop->api_key,
                     'secret' => $shop->api_secret,
-                    'base_uri' => $this->test_mode?'https://argon.api.posti.fi':'https://nextshipping.posti.fi',
+                    'base_uri' => $this->test_mode ? 'https://argon.api.posti.fi' : 'https://nextshipping.posti.fi',
                     'use_posti_auth' => true,
-                    'posti_auth_url' => $this->test_mode?'https://oauth.barium.posti.com':'https://oauth2.posti.com',
+                    'posti_auth_url' => $this->test_mode ? 'https://oauth.barium.posti.com' : 'https://oauth2.posti.com',
                 ]
             ];
             $use_config = 'posti_config';
             $client = new Client($config, $use_config);
-            if (!is_object($shop->api_token) || !$shop->api_token || $shop->api_token->expires_in < time()){
+            if (!is_object($shop->api_token) || !$shop->api_token || $shop->api_token->expires_in < time()) {
                 $token = $client->getToken();
-                if (isset($token->access_token)){
+                if (isset($token->access_token)) {
                     $token->expires_in += time();
                     $shop->api_token = json_encode($token);
                     $shop->save();
@@ -92,7 +92,7 @@ class AppController extends Controller {
             } else {
                 $token = $shop->api_token;
             }
-            if (isset($token->access_token)){
+            if (isset($token->access_token)) {
                 $client->setAccessToken($token->access_token);
             }
             return $client;
@@ -170,12 +170,90 @@ class AppController extends Controller {
         }
 
         try {
-            $orders = $this->client->call(
-                    'GET',
-                    'admin',
-                    '/orders.json',
-                    ['ids' => implode(',', $order_ids), 'status' => 'any']
-            );
+            $total_orders = count($order_ids);
+            $filter = implode(' OR id:', $order_ids);
+            $query = <<<GQL
+            {
+                orders(first: $total_orders, query: "$filter") {
+                  edges {
+                    node {
+                      id
+                      legacyResourceId
+                      email
+                      phone
+                      totalWeight
+                      lineItems(first: 10) {
+                        edges {
+                            node {
+                                id
+                                requiresShipping
+                                quantity
+                                name
+                                variant {
+                                    weight
+                                    weightUnit
+                                    price
+                                    inventoryItem {
+                                        inventoryLevels(first: 10) {
+                                          edges {
+                                            node {
+                                                available
+                                                location {
+                                                    id
+                                                    legacyResourceId
+                                                }
+                                            }
+                                          }
+                                        }
+                                    }
+                                    fulfillmentService {
+                                        type
+                                    }
+                                }
+                            }
+                        }
+                      }
+                      billingAddress {
+                        address1
+                        address2
+                        city
+                        company
+                        name
+                        phone
+                        countryCode
+                        zip
+                        phone
+                      }
+                      shippingAddress {
+                        address1
+                        address2
+                        city
+                        company
+                        name
+                        phone
+                        countryCode
+                        zip
+                        phone
+                      }
+                      fulfillments {
+                        status
+                      }
+                      shippingLine {
+                        code
+                      }
+                    }
+                  }
+                }
+              }
+            GQL;
+            $orders = $this->client->call($query);
+            /*
+              $orders = $this->client->call(
+              'GET',
+              'admin',
+              '/orders.json',
+              ['ids' => implode(',', $order_ids), 'status' => 'any']
+              ); */
         } catch (ShopifyApiException $sae) {
             Log::debug('Unauthorized thingie');
 
@@ -184,17 +262,22 @@ class AppController extends Controller {
 
         $shipments = [];
 
-        foreach ($orders as $order) {
+        foreach ($orders['orders']['edges'] as $orderNode) {
+            $order = $orderNode['node'];
+            //assign to id in case somewhere not changed
+            $order['gid'] = $order['id'];
+            $order['id'] = $order['legacyResourceId'];
             $shipment = [];
-            $shipment['fulfillment_status'] = $order['fulfillment_status'];
+            $shipment['fulfillment_status'] = !empty($order['fulfillments']) ? $order['fulfillments'][0]['status'] : '';
             $shipment['line_items'] = [];
-            foreach ($order['line_items'] as $line_item) {
-                if ($line_item['requires_shipping']) {
-                    $shipment['line_items'][] = $line_item;
+            foreach ($order['lineItems']['edges'] as $line_item) {
+                if ($line_item['node']['requiresShipping']) {
+                    $shipment['line_items'][] = $line_item['node'];
                 }
             }
-            $shipment['id'] = $order['id'];
-            $shipment['admin_order_url'] = 'https://' . $shop->shop_origin . '/admin/orders/' . $order['id'];
+            $shipment['id'] = $order['legacyResourceId'];
+            $shipment['gid'] = $order['gid'];
+            $shipment['admin_order_url'] = 'https://' . $shop->shop_origin . '/admin/orders/' . $order['legacyResourceId'];
             $url_params = [
                 'shop' => $shop->shop_origin,
                 'is_return' => $is_return ? '1' : '0',
@@ -210,7 +293,7 @@ class AppController extends Controller {
             }
 
             $done_shipment = ShopifyShipment::where('shop_id', $shop->id)
-                    ->where('order_id', $order['id'])
+                    ->where('order_id', $order['legacyResourceId'])
                     ->where('test_mode', $shop->test_mode)
                     ->where('return', $is_return)
                     ->first();
@@ -221,20 +304,23 @@ class AppController extends Controller {
                 $shipments[] = $shipment;
                 continue;
             }
-            if (!isset($order['shipping_address']) and!isset($order['billing_address'])) {
+
+            if (!isset($order['shippingAddress']) and!isset($order['billingAddress'])) {
                 $shipment['status'] = 'need_shipping_address';
                 $shipments[] = $shipment;
                 continue;
             }
 
-            if ($order['gateway'] == 'Cash on Delivery (COD)') {
-                
-            }
+            /*
+              if ($order['gateway'] == 'Cash on Delivery (COD)') {
 
-            if (isset($order['shipping_address'])) {
-                $shipping_address = $order['shipping_address'];
+              }
+             */
+
+            if (isset($order['shippingAddress'])) {
+                $shipping_address = $order['shippingAddress'];
             } else {
-                $shipping_address = $order['billing_address'];
+                $shipping_address = $order['billingAddress'];
             }
 
             $senderInfo = [
@@ -250,8 +336,8 @@ class AppController extends Controller {
 
             $receiverPhone = $shipping_address['phone'];
 
-            if (empty($receiverPhone) and isset($order['billing_address']['phone'])) {
-                $receiverPhone = $order['billing_address']['phone'];
+            if (empty($receiverPhone) and isset($order['billingAddress']['phone'])) {
+                $receiverPhone = $order['billingAddress']['phone'];
             }
 
             if (empty($receiverPhone)) {
@@ -262,7 +348,7 @@ class AppController extends Controller {
                 $receiverPhone = $order['customer']['phone'];
             }
 
-            $receiverName = $shipping_address['first_name'] . " " . $shipping_address['last_name'];
+            $receiverName = $shipping_address['name'];
             $receiverCompany = $shipping_address['company'];
             if (empty($receiverCompany)) {
                 $receiverCompany = null;
@@ -272,7 +358,7 @@ class AppController extends Controller {
 
             $receiverZip = $shipping_address['zip'];
             $receiverCity = $shipping_address['city'];
-            $receiverCountry = $shipping_address['country_code'];
+            $receiverCountry = $shipping_address['countryCode'];
 
             $receiverInfo = [
                 'name' => $receiverName,
@@ -285,7 +371,6 @@ class AppController extends Controller {
                 'phone' => $receiverPhone,
                 'email' => $order['email'],
             ];
-
             if ($is_return) {
                 $tmp = $receiverInfo;
                 $receiverInfo = $senderInfo;
@@ -314,21 +399,30 @@ class AppController extends Controller {
                     $shop->create_activation_code === true
             ) {
                 try {
-                    if ($this->client->callsLeft() > 0 and $this->client->callLimit() == $this->client->callsLeft()) {
-                        sleep(2);
-                    }
+                    $query_params = $this->buildGraphQLInput(['id' => $order['gid'], 'note' => sprintf('%s: %s', trans('app.settings.activation_code'), $this->pk_client->getResponse()->{'response.trackingcode'}['labelcode'])]);
+                    $query = <<<GQL
+                            mutation UpdateOrder {
+                                orderUpdate(input: $query_params)
+                            }        
+                            GQL;
+                    $this->client->call($query);
+                    /*
+                      if ($this->client->callsLeft() > 0 and $this->client->callLimit() == $this->client->callsLeft()) {
+                      sleep(2);
+                      }
 
-                    $this->client->call(
-                            'PUT',
-                            'admin',
-                            '/orders/' . $order['id'] . '.json',
-                            [
-                                'order' => [
-                                    'id' => $order['id'],
-                                    'note' => sprintf('%s: %s', trans('app.settings.activation_code'), $this->pk_client->getResponse()->{'response.trackingcode'}['labelcode'])
-                                ]
-                            ]
-                    );
+                      $this->client->call(
+                      'PUT',
+                      'admin',
+                      '/orders/' . $order['id'] . '.json',
+                      [
+                      'order' => [
+                      'id' => $order['id'],
+                      'note' => sprintf('%s: %s', trans('app.settings.activation_code'), $this->pk_client->getResponse()->{'response.trackingcode'}['labelcode'])
+                      ]
+                      ]
+                      );
+                     */
                 } catch (\Exception $e) {
                     Log::debug($e->getMessage());
                     Log::debug($e->getTraceAsString());
@@ -365,36 +459,39 @@ class AppController extends Controller {
                 $services = [];
 
                 foreach ($order['line_items'] as $item) {
-                    $variantId = $item['variant_id'];
+                    //$variantId = $item['variant_id'];
 
                     try {
-                        if ($this->client->callsLeft() > 0 and $this->client->callLimit() == $this->client->callsLeft()) {
-                            sleep(2);
-                        }
+                        /*
+                          if ($this->client->callsLeft() > 0 and $this->client->callLimit() == $this->client->callsLeft()) {
+                          sleep(2);
+                          }
 
-                        $variants = $this->client->call('GET', 'admin', '/variants/' . $variantId . '.json');
+                          $variants = $this->client->call('GET', 'admin', '/variants/' . $variantId . '.json');
 
-                        $inventoryId = $variants['inventory_item_id'];
+                          $inventoryId = $variants['inventory_item_id'];
 
-                        if ($this->client->callsLeft() > 0 and $this->client->callLimit() == $this->client->callsLeft()) {
-                            sleep(2);
-                        }
-                        // TODO: not the most efficient way to do this
-                        $inventoryLevels = $this->client->call(
-                                'GET',
-                                'admin',
-                                '/inventory_levels.json',
-                                [
-                                    'inventory_item_ids' => $inventoryId
-                                ]
-                        );
+                          if ($this->client->callsLeft() > 0 and $this->client->callLimit() == $this->client->callsLeft()) {
+                          sleep(2);
+                          }
+                          // TODO: not the most efficient way to do this
+                          // got from graphql
 
+                          $inventoryLevels = $this->client->call(
+                          'GET',
+                          'admin',
+                          '/inventory_levels.json',
+                          [
+                          'inventory_item_ids' => $inventoryId
+                          ]
+                          );
+                         */
                         $makeNull = true;
-
+                        $inventoryLevels = $item['variant']['inventoryItem']['inventoryLevels']['edges'];
                         foreach ($inventoryLevels as $_inventory) {
-                            if ($_inventory['available'] > 0 || $_inventory['available'] == null) {
-                                $service = $item['fulfillment_service'];
-                                $services[$service][$_inventory['location_id']][] = ['id' => $item['id']];
+                            if ($_inventory['node']['available'] > 0 || $_inventory['node']['available'] == null) {
+                                $service = $item['variant']['fulfillmentService']['type'];
+                                $services[$service][$_inventory['node']['location']['id']] = ['id' => $item['id']];
                                 $makeNull = false;
                             } else {
                                 $shipments[$orderKey]['status'] = 'not_in_inventory';
@@ -420,29 +517,51 @@ class AppController extends Controller {
                     }
                 }
 
+
                 foreach ($services as $line_items) {
                     foreach ($line_items as $locationId => $items) {
                         $fulfillment = [
-                            'tracking_number' => $order['tracking_code'],
-                            'location_id' => $locationId,
-                            'tracking_company' => trans('app.settings.company_name_' . $this->type),
-                            'tracking_url' => $this->tracking_url . $order['tracking_code'],
-                            'line_items' => $items,
+                            'orderId' => $order['gid'],
+                            'trackingNumbers' => $order['tracking_code'],
+                            'locationId' => $locationId,
+                            'trackingCompany' => trans('app.settings.company_name_' . $this->type),
+                            'trackingUrls' => $this->tracking_url . $order['tracking_code'],
+                            'lineItems' => $items,
                         ];
 
                         try {
-                            if ($this->client->callsLeft() > 0 and $this->client->callLimit() == $this->client->callsLeft()) {
-                                sleep(2);
-                            }
-
-                            $result = $this->client->call(
-                                    'POST',
-                                    'admin',
-                                    '/orders/' . $order['id'] . '/fulfillments.json',
-                                    [
-                                        'fulfillment' => $fulfillment
-                                    ]
-                            );
+                            /*
+                              if ($this->client->callsLeft() > 0 and $this->client->callLimit() == $this->client->callsLeft()) {
+                              sleep(2);
+                              }
+                             * 
+                             */
+                            $query_params = $this->buildGraphQLInput($fulfillment);
+                            $query = <<<GQL
+                            mutation CreateFulfillment {
+                                fulfillmentCreate(
+                                  input: $query_params
+                                )
+                                {
+                                    userErrors {
+                                      field
+                                      message
+                                    }
+                                }
+                              }        
+                            GQL;
+                            $result = $this->client->call($query);
+                            /*
+                              $result = $this->client->call(
+                              'POST',
+                              'admin',
+                              '/orders/' . $order['id'] . '/fulfillments.json',
+                              [
+                              'fulfillment' => $fulfillment
+                              ]
+                              );
+                             * 
+                             */
                             Log::debug(var_export($result, true));
                         } catch (ShopifyApiException $sae) {
                             $exceptionData = array(
@@ -489,6 +608,10 @@ class AppController extends Controller {
             'tracking_url' => $this->tracking_url,
             'type' => $this->type
         ]);
+    }
+
+    public function fulfillmentProcess(Request $request) {
+        Logg::debug(var_export($request->all()));
     }
 
     public function latestNews() {
@@ -584,7 +707,7 @@ class AppController extends Controller {
         $tracking_code = $shipment->test_mode ? 'JJFITESTLABEL100' : $shipment->tracking_code;
 
         $statuses = $this->pk_client->getShipmentStatus($tracking_code);
-
+        
         if (!is_array($statuses) || count($statuses) == 0) {
             return view('app.alert', [
                 'shop' => $shop,
@@ -604,6 +727,29 @@ class AppController extends Controller {
             'order_url' => $admin_order_url,
             'orders_url' => $admin_orders_url,
         ]);
+    }
+
+    private function buildGraphQLInput($array) {
+        $output = '';
+        $total = count($array);
+        $counter = 0;
+        foreach ($array as $key => $value) {
+            $counter++;
+            if (is_array($value)) {
+                $output .= $key . ': ' . $this->buildGraphQLInput($value);
+            } else {
+                $output .= $key . ': "' . $value . '"';
+            }
+            if ($counter != $total) {
+                $output .= ', ';
+            }
+        }
+        return '{' . $output . '}';
+    }
+
+    private function getGraphId($gid) {
+        $data = explode('/', $gid);
+        return end($data);
     }
 
 }
