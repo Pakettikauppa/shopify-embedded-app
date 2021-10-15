@@ -628,6 +628,10 @@ class AppController extends Controller {
         ]);
     }
 
+    public function fulfillmentProcess(Request $request) {
+        Logg::debug(var_export($request->all()));
+    }
+
     public function customShipment(Request $request)
     {
         $shop = request()->get('shop');
