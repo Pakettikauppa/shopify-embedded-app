@@ -481,7 +481,7 @@
 
         /* Wait for HTML DOM before loading first page */
         document.addEventListener('DOMContentLoaded', e => {
-            appDiv = document.getElementById('app-page');
+            appDiv = document.getElementById('app-layout');
 
             // Check if there is custom content loaded
             if (document.getElementById('custom-page')) {

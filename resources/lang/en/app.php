@@ -28,6 +28,17 @@ return [
             'nothing_to_ship' => 'No products to ship',
         ],
     ],
+    'custom_shipment' => [
+        'title' => 'Custom Shipment',
+        'service_title' => 'Shipping service',
+        'address_title' => 'Shipping address',
+        'create_button' => 'Create Shipment',
+        'save_successful' => 'Shipment updated successfully',
+        'save_failed' => 'Shipment update failed',
+        'pickups_title' => 'Pickup points',
+        'not_selected' => 'Shipping method not selected',
+
+    ],
     'settings' => [
         'only_default' => 'Only "Default shipping method" works on a order using above method. Limit in Shopify requires name of the price to be unique in different shipping zones.',
         'default_shipping' => 'Use default shipping method',
