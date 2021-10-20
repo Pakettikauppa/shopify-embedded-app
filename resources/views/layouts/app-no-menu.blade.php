@@ -15,10 +15,10 @@
     <!-- Styles -->
     <link href="{{url('css/uptown.css')}}" rel='stylesheet' type='text/css'>
     <link href="{{url('css/style.css')}}" rel='stylesheet' type='text/css'>
-    
-    @yield('after-style-end')
 
-    <!-- JavaScripts -->
+@yield('after-style-end')
+
+<!-- JavaScripts -->
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
     <script src="https://unpkg.com/@shopify/app-bridge@1.23.0/umd/index.js"></script>
@@ -41,14 +41,14 @@
 
         // Axios instance with seesionToken attached to all requests
         var ax = axios.create();
-        ax.interceptors.request.use(  
-            function (config) {  
+        ax.interceptors.request.use(
+            function (config) {
                 return getSessionToken(window.ShopifyApp)  // requires an App Bridge instance
-                .then((token) => {  
-                    // append your request headers with an authenticated token
-                    config.headers['Authorization'] = `Bearer ${token}`;  
-                    return config;  
-                });
+                    .then((token) => {
+                        // append your request headers with an authenticated token
+                        config.headers['Authorization'] = `Bearer ${token}`;
+                        return config;
+                    });
             }
         );
 
@@ -73,7 +73,7 @@
             loader.classList.add('hidden');
         }
         /* LOADING BAR END */
-        
+
         /* TOAST */
         const toast = Actions.Toast.create(ShopifyApp, { duration: 2000 });
 
@@ -82,7 +82,7 @@
             toast.dispatch(Actions.Toast.Action.SHOW);
         }
         /* TOAST END */
-        
+
         const redirect = Actions.Redirect.create(ShopifyApp);
         redirect.subscribe(
             Actions.Redirect.Action.REMOTE,
@@ -176,13 +176,6 @@
                     updateButtons(data[key]);
                 }
             });
-
-            // this needs separate update
-            if (buttonTestMode !== undefined){
-                buttonTestMode.set({
-                    'label': getTestModeBtnText()
-                });
-            }
         }
 
         function updateStrings(data) {
@@ -200,58 +193,13 @@
         }
         /* SAVE BUTTON END */
 
-        /* NEWS BUTTON */
-        const buttonNews = Actions.Button.create(ShopifyApp, {
-            label: '{{trans('app.settings.latest-news')}}',
-        });
 
-        buttonNews.subscribe('click', () => {
-            loadView(
-                '{{route('shopify.latest-news')}}',
-                () => {
-                    saveBtnDisabled(true);
-                    titleBar.set({
-                        title: buttonNews.label
-                    });
-                }
-            );
-        });
-        /* NEWS BUTTON END */
-        
-        /* SUPPORT BUTTON */
-        @if (config('shopify.support_url'))
-        const buttonSupport = Actions.Button.create(ShopifyApp, {
-            label: '{{trans('app.settings.support')}}',
-        });
-
-        buttonSupport.subscribe('click', () => {
-              redirect.dispatch(Actions.Redirect.Action.REMOTE, {
-                url: '{{config('shopify.support_url')}}',
-                newContext: true,
-              });
-        });
-        @endif
-        /* SUPPORT BUTTON END */
-
-        /* TEST MODE BUTTON */
         @if ($type == "pakettikauppa")
         let UIStrings = {
             test_mode_enable_text: '{{trans('app.settings.testmode_on')}}',
             test_mode_disable_text: '{{trans('app.settings.testmode_off')}}'
         };
         let test_mode = @if($shop->test_mode) true @else false @endif;
-            
-        const buttonTestMode = Actions.Button.create(
-            ShopifyApp, 
-            { 
-                label: getTestModeBtnText(),
-                style: getTestModeBtnStyle() 
-            }
-        );
-
-        buttonTestMode.subscribe('click', () => {
-            switchMode();
-        });
 
         function getTestModeBtnText() {
             return test_mode ? UIStrings.test_mode_disable_text : UIStrings.test_mode_enable_text;
@@ -260,7 +208,7 @@
         function getTestModeBtnStyle() {
             return test_mode ? Actions.Button.Style.Danger : undefined;
         }
-            
+
         function switchMode() {
             let data = {'test_mode': !test_mode};
             startLoading();
@@ -275,10 +223,6 @@
                     if (response.status === 200 && response.data.status !== 'error') {
                         showToast({message: response.data.message, isError: false});
                         test_mode = !test_mode;
-                        buttonTestMode.set({
-                            label: getTestModeBtnText(),
-                            style: getTestModeBtnStyle()
-                        });
                     } else if (response.status === 200 && response.data.status === 'error') {
                         showToast({
                             message: response.data.message,
@@ -307,110 +251,6 @@
         @endif
         /* TEST MODE BUTTON END */
 
-        /* SHIPMENT SETTINGS BUTTON */
-        const buttonShipmentSettings = Actions.Button.create(
-            ShopifyApp,
-            {
-                label: "{{trans('app.settings.shipment_settings')}}" 
-            }
-        );
-        buttonShipmentSettings.subscribe('click', () => {
-            loadView(
-                '{{route('shopify.settings.shipping-link')}}', 
-                () => {
-                    saveBtnDisabled(false);
-                    titleBar.set({
-                        title: buttonShipmentSettings.label
-                    });
-                }
-            );
-        });
-        /* SHIPMENT SETTINGS BUTTON END */
-
-        /* PICKUP POINTS SETTINGS BUTTON */
-        const buttonPickupPointsSettings = Actions.Button.create(
-            ShopifyApp,
-            { 
-                label: "{{trans('app.settings.pickuppoints-settings')}}"
-            }
-        );
-
-        buttonPickupPointsSettings.subscribe('click', () => {
-            loadView(
-                '{{route('shopify.settings.pickuppoints-link')}}',
-                () => {
-                    saveBtnDisabled(false);
-                    titleBar.set({
-                        title: buttonPickupPointsSettings.label
-                    });
-                }
-            );
-        });
-        /* PICKUP POINTS SETTINGS BUTTON END */
-
-        /* COMPANY INFORMATION SETTINGS BUTTON */
-        const buttonCompanyInformationSettings = Actions.Button.create(
-            ShopifyApp,
-            { 
-                label: "{{trans('app.settings.company_info')}}"
-            }
-        );
-
-        buttonCompanyInformationSettings.subscribe('click', () => {
-            loadView(
-                '{{route('shopify.settings.sender-link')}}',
-                () => {
-                    saveBtnDisabled(false);
-                    titleBar.set({
-                        title: buttonCompanyInformationSettings.label
-                    });
-                }
-            );
-        });
-        /* COMPANY INFORMATION SETTINGS BUTTON END */
-
-        /* API SETTINGS BUTTON */
-        const buttonApiSettings = Actions.Button.create(
-            ShopifyApp,
-            {
-                label: "{{trans('app.settings.api-settings-'.$type)}}"
-            }
-        );
-
-        buttonApiSettings.subscribe('click', () => {
-            loadView(
-                '{{route('shopify.settings.api-link')}}',
-                () => {
-                    saveBtnDisabled(false);
-                    titleBar.set({
-                        title: buttonApiSettings.label
-                    });
-                }
-            );
-        });
-        /* API SETTINGS BUTTON END */
-
-        /* OTHER SETTINGS BUTTON */
-        const buttonOtherSettings = Actions.Button.create(
-            ShopifyApp,
-            { 
-                label: "{{trans('app.settings.generic-settings')}}"
-            }
-        );
-
-        buttonOtherSettings.subscribe('click', () => {
-            loadView(
-                '{{route('shopify.settings.generic-link')}}',
-                () => {
-                    saveBtnDisabled(false);
-                    titleBar.set({
-                        title: buttonOtherSettings.label
-                    });
-                }
-            );
-        });
-        /* OTHER SETTINGS BUTTON END */
-            
         /* VIEWS FUNCTIONS */
         // Calls api to get view html
         function loadView(viewUrl, callback = null) {
@@ -437,25 +277,8 @@
             });
         }
         /* VIEWS FUNCTIONS END */
-            
-        // Register buttons to shoppify app
-        const optionsBtnGroup = Actions.ButtonGroup.create(
-            ShopifyApp, 
-            {
-                label: '{{trans('app.settings.settings')}}',
-                buttons: [
-                    buttonShipmentSettings, buttonPickupPointsSettings, buttonCompanyInformationSettings,
-                     buttonApiSettings, buttonOtherSettings
-                ]
-            }
-        );
-        
+
         const buttons = [];
-        if (typeof(buttonTestMode) != "undefined"){
-            buttons.push(buttonTestMode);
-        }
-        buttons.push(buttonNews);
-        buttons.push(optionsBtnGroup);
         if (typeof(buttonSupport) != "undefined"){
             buttons.push(buttonSupport);
         }
@@ -469,38 +292,28 @@
 
         const UICollection = {
             buttonSave: buttonSave,
-            buttonNews: buttonNews,
-            optionsBtnGroup: optionsBtnGroup,
-            buttonShipmentSettings: buttonShipmentSettings, 
-            buttonPickupPointsSettings: buttonPickupPointsSettings,
-            buttonCompanyInformationSettings: buttonCompanyInformationSettings,
-            buttonApiSettings: buttonApiSettings,
-            buttonOtherSettings: buttonOtherSettings,
             titleBar: titleBar
         };
 
         /* Wait for HTML DOM before loading first page */
         document.addEventListener('DOMContentLoaded', e => {
-            appDiv = document.getElementById('app-page');
+            appDiv = document.getElementById('app-layout');
 
             // Check if there is custom content loaded
             if (document.getElementById('custom-page')) {
                 customPageInit(); // this function must be created on custom page
                 return;
             }
-
-            // No custom content - load news page
-            buttonNews.dispatch(Actions.Button.Action.CLICK);
         });
     </script>
     @yield('after-scripts-end')
 </head>
 <body id="app-layout">
-    <div id="app-page">
-        @yield('content')
-    </div>
-    <div id="app-loader" class="loading hidden">
-        <img class="spinner" src="{{url('/img/ajax-loader.gif')}}">
-    </div>
+<div id="app-page">
+    @yield('content')
+</div>
+<div id="app-loader" class="loading hidden">
+    <img class="spinner" src="{{url('/img/ajax-loader.gif')}}">
+</div>
 </body>
 </html>

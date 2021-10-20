@@ -37,6 +37,7 @@ return [
         'save_failed' => 'Shipment update failed',
         'pickups_title' => 'Pickup points',
         'not_selected' => 'Shipping method not selected',
+        'multiparcel_title' => 'Packets'
 
     ],
     'settings' => [

@@ -41,13 +41,15 @@
                                 @endif
                             </td>
                             <td>
-                                @if(isset($order['tracking_code']))
-                                <a href="{{$tracking_url.$order['tracking_code']}}" target="pakettikauppa-seuranta">{{$order['tracking_code']}}</a>
+                                @if(isset($order['tracking_codes']) && !empty($order['tracking_codes']))
+                                    @foreach($order['tracking_codes'] as $tracking_code)
+                                        <a href="{{$tracking_url.$tracking_code}}" target="pakettikauppa-seuranta">{{$tracking_code}}</a><br>
+                                    @endforeach
                                 @endif
                             </td>
                             <td>
                                 @if($order['status'] == 'created' || $order['status'] == 'sent')
-                                    <a class="print-label" href="{{route('shopify.label', ['order_id' => $order['id']])}}?{{$order['hmac_print_url']}}" target="_blank">{{trans('app.print_labels.get_label_link')}}</a>
+                                    <a class="print-label" href="{{route('shopify.label', ['order_id' => $order['id'], 'tracking_code' => $order['tracking_codes'][0]])}}?{{$order['hmac_print_url']}}" target="_blank">{{trans('app.print_labels.get_label_link')}}</a>
                                 @endif
                             </td>
                         </tr>
@@ -55,6 +57,7 @@
                     </tbody>
                 </table>
                 {{-- TODO: remove csrf tokens, as it is no longer needed and instead hmac should be attached to request url --}}
+
                 @if(!$custom_error)
                     <form id="print-labels-form" method="post" action="{{route('shopify.get_labels')}}?{{$print_all_params}}" target="_blank">
                         <input type="hidden" name="_token" id="csrf-token" value="{{ Session::token() }}" />
