@@ -128,7 +128,7 @@ class SettingsController extends Controller {
                     '/carrier_services/' . $carrier_service_id . '.json'
             );
 
-            Log::debug("Carrier Service: " . var_export($response, true));
+            //Log::debug("Carrier Service: " . var_export($response, true));
         } catch (\Exception $e) {
             Log::debug("Carrier Service Not Found: " . $e->getMessage());
         }
@@ -170,14 +170,14 @@ class SettingsController extends Controller {
 
             // it failed, why? Did carrier service already exists but our db shows that it is not active?
             $carrierServices = $client->call('GET', 'admin', '/carrier_services.json');
-
+            
             if (count($carrierServices) > 0) {
                 // yes, we have a carrier service!
                 foreach ($carrierServices as $_service) {
                     if ($_service['name'] == $carrierServiceName) {
 
                         // Update callbackurl if it has changed
-                        if ($_service['callback_url'] != route('shopify.pickuppoints.list')) {
+                        if (($_service['callback_url'] != route('shopify.pickuppoints.list')) || !isset($_service['callback_url'])) {
                             $client->call(
                                     'PUT',
                                     'admin',
@@ -205,14 +205,14 @@ class SettingsController extends Controller {
         if ($shop->carrier_service_id != null) {
             $carrier_service = $this->getCarrierServiceFromShopify($shop->carrier_service_id);
         }
-
+        
         if ($shop->carrier_service_id == null || $carrier_service == null) {
             $carrier_service_id = $this->saveCarrierServiceToShopify();
             $shop->saveCarrierServiceId($carrier_service_id);
         }
-
-        $pk_client = $this->getPakketikauppaClient($shop);
         
+        $pk_client = $this->getPakketikauppaClient($shop);
+
         if (!$shop->api_token || $shop->api_token->expires_in < time()){
             return view('settings.api', [
                 'shop' => $shop,
@@ -221,7 +221,7 @@ class SettingsController extends Controller {
                 'error_message' => trans('app.messages.invalid_credentials')
             ]);
         }
-        
+
         $products = $pk_client->listShippingMethods();
 
         // dont let it crash and burn
@@ -340,8 +340,8 @@ class SettingsController extends Controller {
 
         try {
             $pk_client = $this->getPakketikauppaClient($shop);
-            
-            if (!$shop->api_token || $shop->api_token->expires_in < time()){
+
+            if (!$shop->api_token || $shop->api_token->expires_in < time()) {
                 return view('settings.api', [
                     'shop' => $shop,
                     'api_valid' => true,
@@ -349,7 +349,7 @@ class SettingsController extends Controller {
                     'error_message' => trans('app.messages.invalid_credentials')
                 ]);
             }
-            
+
             $resp = $pk_client->listShippingMethods();
             $products = json_decode(json_encode($resp), true);
         } catch (\Exception $ex) {
@@ -405,15 +405,15 @@ class SettingsController extends Controller {
                     'secret' => $shop->api_secret,
                     'base_uri' => 'https://nextshipping.posti.fi',
                     'use_posti_auth' => true,
-                    'posti_auth_url' => $this->test_mode?'https://oauth.barium.posti.com':'https://oauth2.posti.com',
+                    'posti_auth_url' => $this->test_mode ? 'https://oauth.barium.posti.com' : 'https://oauth2.posti.com',
                 ]
             ];
             $use_config = "posti_config";
             $client = new Client($config, $use_config);
-            
-            if (!is_object($shop->api_token) || !$shop->api_token || $shop->api_token->expires_in < time()){
+
+            if (!is_object($shop->api_token) || !$shop->api_token || $shop->api_token->expires_in < time()) {
                 $token = $client->getToken();
-                if (isset($token->access_token)){
+                if (isset($token->access_token)) {
                     $token->expires_in += time();
                     $shop->api_token = json_encode($token);
                     $shop->save();
@@ -421,7 +421,7 @@ class SettingsController extends Controller {
             } else {
                 $token = $shop->api_token;
             }
-            if (isset($token->access_token)){
+            if (isset($token->access_token)) {
                 $client->setAccessToken($token->access_token);
             }
             return $client;
@@ -454,22 +454,21 @@ class SettingsController extends Controller {
         }
 
         if ($this->type == "posti" || $this->type == "itella") {
-            
+
             $config = [
                 'posti_config' => [
                     'api_key' => $api_key,
                     'secret' => $api_secret,
-                    'base_uri' => $this->test_mode?'https://argon.api.posti.fi/ecommerce/v3/':'https://nextshipping.posti.fi',
+                    'base_uri' => $this->test_mode ? 'https://argon.api.posti.fi/ecommerce/v3/' : 'https://nextshipping.posti.fi',
                     'use_posti_auth' => true,
-                    'posti_auth_url' => $this->test_mode?'https://oauth.barium.posti.com':'https://oauth2.posti.com',
+                    'posti_auth_url' => $this->test_mode ? 'https://oauth.barium.posti.com' : 'https://oauth2.posti.com',
                 ]
             ];
             $client = new Client($config, 'posti_config');
             $token = $client->getToken();
-            if (isset($token->access_token)){
+            if (isset($token->access_token)) {
                 $client->setAccessToken($token->access_token);
             }
-            
         } else {
             $client = new Client([
                 'api_key' => $api_key,
@@ -478,7 +477,7 @@ class SettingsController extends Controller {
         }
         try {
             $result = $client->listShippingMethods();
-        } catch (\Exception $e){
+        } catch (\Exception $e) {
             return false;
         }
 
