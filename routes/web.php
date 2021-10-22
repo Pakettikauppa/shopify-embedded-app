@@ -23,14 +23,16 @@ Route::group(['namespace' => 'Shopify'], function () {
         Route::get('/settings/api', 'SettingsController@api')->name('shopify.settings.api-link');
         Route::get('/settings/generic', 'SettingsController@generic')->name('shopify.settings.generic-link');
         Route::get('/settings/pickuppoints', 'SettingsController@pickuppoints')->name('shopify.settings.pickuppoints-link');
+        
 
         // TODO: needs to be split into separate jobs
         // Print labels and fullfill
         Route::get('/print-labels-fulfill', 'AppController@printLabelsFulfill')->name('shopify.print-labels-fulfill');
         Route::get('/print-labels', 'AppController@printLabels')->name('shopify.print-labels');
         Route::get('/return-label', 'AppController@returnLabel')->name('shopify.return-label');
+        Route::get('/custom-shipment', 'AppController@customShipment')->name('shopify.custom-shipment');
 
-        Route::get('/get-label/{order_id}', 'AppController@getLabel')->name('shopify.label');
+        Route::get('/get-label/{order_id}/{tracking_code?}', 'AppController@getLabel')->name('shopify.label');
         Route::post('/get-labels', 'AppController@getLabels')->name('shopify.get_labels');
 
         Route::get('/track-shipment', 'AppController@trackShipment')->name('shopify.track-shipment');

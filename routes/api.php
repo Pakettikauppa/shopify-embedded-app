@@ -15,6 +15,7 @@ use Illuminate\Http\Request;
 
 Route::group(['namespace' => 'Shopify'], function () {
     Route::post('/pickup-points', 'PickupPointsController@list')->name('shopify.pickuppoints.list');
+    Route::post('/fulfillmentservice', 'AppController@fulfillmentProcess')->name('shopify.fulfillmentservice');
 
     Route::group(['middleware' => ['shopify', 'shopify.shop', 'shopify.localize']], function () {
         Route::get('/buttons-translation', 'SettingsController@getButtonsTranslations')->name('shopify.button-translations');
@@ -25,5 +26,7 @@ Route::group(['namespace' => 'Shopify'], function () {
         Route::post('/settings/update/locale', 'SettingsController@updateLocale')->name('shopify.update-locale');
         Route::post('/settings/update/sender', 'SettingsController@updateSender')->name('shopify.update-sender');
         Route::post('/settings/update/pickuppoints', 'SettingsController@updatePickupPoints')->name('shopify.update-pickuppoints');
+        Route::post('/create-shipment', 'AppController@createCustomShipment')->name('shopify.create-shipment');
+        Route::post('/ajax-load-pickups', 'AppController@ajaxLoadPickups')->name('shopify.ajax-load-pickups');
     });
 });

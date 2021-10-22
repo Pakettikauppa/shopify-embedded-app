@@ -28,6 +28,18 @@ return [
             'nothing_to_ship' => 'No products to ship',
         ],
     ],
+    'custom_shipment' => [
+        'title' => 'Custom Shipment',
+        'service_title' => 'Shipping service',
+        'address_title' => 'Shipping address',
+        'create_button' => 'Create Shipment',
+        'save_successful' => 'Shipment updated successfully',
+        'save_failed' => 'Shipment update failed',
+        'pickups_title' => 'Pickup points',
+        'not_selected' => 'Shipping method not selected',
+        'multiparcel_title' => 'Packets'
+
+    ],
     'settings' => [
         'only_default' => 'Only "Default shipping method" works on a order using above method. Limit in Shopify requires name of the price to be unique in different shipping zones.',
         'default_shipping' => 'Use default shipping method',
@@ -52,6 +64,9 @@ return [
         'default_shipping_method' => 'Default shipping method',
         'shopify_method' => 'Shipping method from shopify',
         'pk_method' => 'Shipping method in PK',
+        'pakettikauppa_method' => 'Shipping method in Pakettikauppa',
+        'posti_method' => 'Shipping method in Posti',
+        'itella_method' => 'Shipping method in Itella',
         'company_info' => 'Company information',
         'testing' => 'Testing',
         'company_name_pakettikauppa' => 'Pakettikauppa',
@@ -101,6 +116,7 @@ return [
             'back_to_settings' => 'Back to settings',
             'next' => 'Next',
         ],
+        'support' => 'Support',
     ],
 
     'messages' => [
