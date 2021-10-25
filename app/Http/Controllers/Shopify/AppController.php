@@ -1078,11 +1078,6 @@ class AppController extends Controller {
     }
 
 
-
-    public function fulfillmentProcess(Request $request) {
-        Logg::debug(var_export($request->all()));
-    }
-
     public function latestNews() {
         $feed_dir = "pakettikauppa";
         if ($this->type == "posti" || $this->type == "itella") {

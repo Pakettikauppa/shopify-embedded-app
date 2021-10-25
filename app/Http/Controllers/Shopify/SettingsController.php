@@ -29,6 +29,7 @@ class SettingsController extends Controller {
     private $type;
     private $carrierName;
     private $test_mode;
+    private $pkUseToken = false;
     protected Request $request;
 
     public function __construct(Request $request) {
@@ -213,7 +214,7 @@ class SettingsController extends Controller {
         
         $pk_client = $this->getPakketikauppaClient($shop);
 
-        if (!$shop->api_token || $shop->api_token->expires_in < time()){
+        if ($this->pkUseToken && (!$shop->api_token || $shop->api_token->expires_in < time())){
             return view('settings.api', [
                 'shop' => $shop,
                 'api_valid' => true,
@@ -341,7 +342,7 @@ class SettingsController extends Controller {
         try {
             $pk_client = $this->getPakketikauppaClient($shop);
 
-            if (!$shop->api_token || $shop->api_token->expires_in < time()) {
+            if ($this->pkUseToken && (!$shop->api_token || $shop->api_token->expires_in < time())) {
                 return view('settings.api', [
                     'shop' => $shop,
                     'api_valid' => true,
@@ -399,6 +400,7 @@ class SettingsController extends Controller {
     public function getPakketikauppaClient($shop) {
         $use_config = null;
         if ($this->type == "posti" || $this->type == "itella") {
+            $this->pkUseToken = true;
             $config = [
                 'posti_config' => [
                     'api_key' => $shop->api_key,
@@ -454,7 +456,7 @@ class SettingsController extends Controller {
         }
 
         if ($this->type == "posti" || $this->type == "itella") {
-
+            $this->pkUseToken = true;
             $config = [
                 'posti_config' => [
                     'api_key' => $api_key,
