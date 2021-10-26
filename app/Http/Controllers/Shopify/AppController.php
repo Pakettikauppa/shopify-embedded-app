@@ -171,83 +171,8 @@ class AppController extends Controller {
         }
 
         try {
-            $total_orders = count($order_ids);
-            $filter = implode(' OR id:', $order_ids);
-            $query = <<<GQL
-            {
-                orders(first: $total_orders, query: "$filter") {
-                  edges {
-                    node {
-                      id
-                      legacyResourceId
-                      email
-                      phone
-                      totalWeight
-                      lineItems(first: 10) {
-                        edges {
-                            node {
-                                id
-                                requiresShipping
-                                quantity
-                                name
-                                variant {
-                                    weight
-                                    weightUnit
-                                    price
-                                    inventoryItem {
-                                        inventoryLevels(first: 10) {
-                                          edges {
-                                            node {
-                                                available
-                                                location {
-                                                    id
-                                                    legacyResourceId
-                                                }
-                                            }
-                                          }
-                                        }
-                                    }
-                                    fulfillmentService {
-                                        type
-                                    }
-                                }
-                            }
-                        }
-                      }
-                      billingAddress {
-                        address1
-                        address2
-                        city
-                        company
-                        name
-                        phone
-                        countryCode
-                        zip
-                        phone
-                      }
-                      shippingAddress {
-                        address1
-                        address2
-                        city
-                        company
-                        name
-                        phone
-                        countryCode
-                        zip
-                        phone
-                      }
-                      fulfillments {
-                        status
-                      }
-                      shippingLine {
-                        code
-                      }
-                    }
-                  }
-                }
-              }
-            GQL;
-            $orders = $this->client->call($query);
+            
+            $orders = $this->client->getOrders($order_ids);
             /*
               $orders = $this->client->call(
               'GET',
@@ -892,7 +817,7 @@ class AppController extends Controller {
         // api check
         $this->pk_client = $this->getPakketikauppaClient($shop);
         $result = $this->pk_client->listShippingMethods();
-
+        //var_dump($result);
         if (!is_array($result)) {
             return response()->json([
                 'message' => trans('app.messages.invalid_credentials'),
@@ -902,11 +827,20 @@ class AppController extends Controller {
 
         $this->client = $this->getShopifyClient();
         try {
+            $orders = $this->client->getOrders([$order_id]);
+            if (!isset($orders['orders']['edges']) || !count($orders['orders']['edges'])){
+                //throw new ShopifyApiException();
+            }
+            $order = $orders['orders']['edges'][0];
+            $order = $order['node'];
+            /*
             $order = $this->client->call(
                 'GET',
                 'admin',
                 "/orders/{$order_id}.json",
             );
+             * 
+             */
         } catch (ShopifyApiException $sae) {
             Log::debug('Unauthorized thingie');
             return redirect()->route('install-link', request()->all());
@@ -932,16 +866,16 @@ class AppController extends Controller {
         }
 
         $shipment = [];
-        $shipment['fulfillment_status'] = $order['fulfillment_status'];
+        $shipment['fulfillment_status'] = $order['fulfillments'][0]['status'];
         $shipment['line_items'] = [];
-        foreach ($order['line_items'] as $line_item) {
-            if ($line_item['requires_shipping']) {
-                $shipment['line_items'][] = $line_item;
+        foreach ($order['lineItems']['edges'] as $line_item){
+            if ($line_item['node']['requiresShipping']) {
+                $shipment['line_items'][] = $line_item['node'];
             }
         }
 
-        $shipment['id'] = $order['id'];
-        $shipment['admin_order_url'] = 'https://' . $shop->shop_origin . '/admin/orders/' . $order['id'];
+        $shipment['id'] = $order['legacyResourceId'];
+        $shipment['admin_order_url'] = 'https://' . $shop->shop_origin . '/admin/orders/' . $order['legacyResourceId'];
         $url_params = [
             'shop' => $shop->shop_origin,
         ];
@@ -961,8 +895,8 @@ class AppController extends Controller {
 
         $receiverPhone = request()->get('phone');
 
-        if (empty($receiverPhone) and isset($order['billing_address']['phone'])) {
-            $receiverPhone = $order['billing_address']['phone'];
+        if (empty($receiverPhone) and isset($order['billingAddress']['phone'])) {
+            $receiverPhone = $order['billingAddress']['phone'];
         }
 
         if (empty($receiverPhone)) {
@@ -1223,28 +1157,4 @@ class AppController extends Controller {
 
         return (int)round($pickupPointSettings['base_price'] * 100.0);
     }
-
-    private function buildGraphQLInput($array) {
-        $output = '';
-        $total = count($array);
-        $counter = 0;
-        foreach ($array as $key => $value) {
-            $counter++;
-            if (is_array($value)) {
-                $output .= $key . ': ' . $this->buildGraphQLInput($value);
-            } else {
-                $output .= $key . ': "' . $value . '"';
-            }
-            if ($counter != $total) {
-                $output .= ', ';
-            }
-        }
-        return '{' . $output . '}';
-    }
-
-    private function getGraphId($gid) {
-        $data = explode('/', $gid);
-        return end($data);
-    }
-
 }
