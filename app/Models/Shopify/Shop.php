@@ -22,6 +22,10 @@ class Shop extends Model
      */
     public function sendShipment($pk_client, $order, $senderInfo, $receiverInfo, $contents, $isReturn = false)
     {
+        //bugfix between app and graphql calls
+        if (isset($order['total_weight']) && !isset($order['totalWeight'])){
+            $order['totalWeight'] = $order['total_weight'];
+        }
         $sender = new Sender();
         if ($senderInfo['company'] != '') {
             $sender->setName1($senderInfo['company']);
@@ -59,7 +63,6 @@ class Shop extends Model
 
         $info = new Info();
         $info->setReference($order['id']);
-
         $parcel = new Parcel();
         $parcel->setReference($order['id']);
         $parcel->setWeight(number_format($order['totalWeight'] * 0.001, 3)); // kg
@@ -69,10 +72,10 @@ class Shop extends Model
         foreach ($contents as $item) {
             $contentLine = new Shipment\ContentLine();
             $contentLine->currency = 'EUR';
-            $contentLine->country_of_origin = 'FI';
+            $contentLine->country_of_origin = $item['variant']['inventoryItem']['countryCodeOfOrigin'] ?? 'FI';
             $contentLine->description = $item['name'];
             $contentLine->quantity = $item['quantity'];
-            $contentLine->netweight = $item['variant']['weight'];//convert by weightUnit
+            $contentLine->netweight = $this->toGrams($item['variant']['weight'], $item['variant']['weightUnit']);
             $contentLine->tariff_code = '';
             $contentLine->value = $item['variant']['price'];
             $parcel->addContentLine($contentLine);
@@ -126,19 +129,21 @@ class Shop extends Model
         for ($i = 0; $i < $parcel_total_count; $i++) {
             $parcel = new Parcel();
             $parcel->setReference($order['id']);
-            $parcel->setWeight(number_format(($order['total_weight'] * 0.001) / $parcel_total_count, 3)); // kg
-            $parcel->setVolume(number_format(($order['total_weight'] * 0.000001) / $parcel_total_count, 6)); // m3
+            $parcel->setWeight(number_format(($order['totalWeight'] * 0.001) / $parcel_total_count, 3)); // kg
+            $parcel->setVolume(number_format(($order['totalWeight'] * 0.000001) / $parcel_total_count, 6)); // m3
             $parcel->setContents('');
 
             foreach ($contents as $item) {
                 $contentLine = new Shipment\ContentLine();
                 $contentLine->currency = 'EUR';
-                $contentLine->country_of_origin = 'FI';
+                $contentLine->country_of_origin = $item['variant']['inventoryItem']['countryCodeOfOrigin'] ?? 'FI';
                 $contentLine->description = $item['name'];
                 $contentLine->quantity = $item['quantity'];
-                $contentLine->netweight = $item['grams'];
+                //graphql does not support grams, so convert to grams manually
+                //$contentLine->netweight = $item['grams'];
+                $contentLine->netweight = $this->toGrams($item['variant']['weight'], $item['variant']['weightUnit']);
                 $contentLine->tariff_code = '';
-                $contentLine->value = $item['price'];
+                $contentLine->value = $item['variant']['price'];
                 $parcel->addContentLine($contentLine);
             }
             $shipment->addParcel($parcel);
@@ -151,7 +156,7 @@ class Shop extends Model
             $additional_service->addSpecifier('count', $parcel_total_count);
             $shipment->addAdditionalService($additional_service);
         }
-
+        
         if ($pickupPointId != null and !$isReturn) {
             $additional_service = new AdditionalService();
             $additional_service->setServiceCode(2106);
@@ -430,5 +435,14 @@ class Shop extends Model
     public function getApiTokenAttribute($value)
     {
         return @json_decode($value);
+    }
+    
+    private function toGrams($weight, $unit){
+        if ($unit == "GRAMS"){
+            return $weight;
+        }
+        if ($unit == "KILOGRAMS"){
+            return $weight * 1000;
+        }
     }
 }
