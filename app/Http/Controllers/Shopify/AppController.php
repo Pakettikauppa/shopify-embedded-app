@@ -171,7 +171,6 @@ class AppController extends Controller {
         }
 
         try {
-            
             $orders = $this->client->getOrders($order_ids);
             /*
               $orders = $this->client->call(
