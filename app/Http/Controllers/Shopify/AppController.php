@@ -342,7 +342,7 @@ class AppController extends Controller {
                     $shop->create_activation_code === true
             ) {
                 try {
-                    $query_params = $this->buildGraphQLInput(['id' => $order['gid'], 'note' => sprintf('%s: %s', trans('app.settings.activation_code'), $this->pk_client->getResponse()->{'response.trackingcode'}['labelcode'])]);
+                    $query_params = $this->client->buildGraphQLInput(['id' => $order['gid'], 'note' => sprintf('%s: %s', trans('app.settings.activation_code'), $this->pk_client->getResponse()->{'response.trackingcode'}['labelcode'])]);
                     $query = <<<GQL
                             mutation UpdateOrder {
                                 orderUpdate(input: $query_params)
@@ -479,7 +479,7 @@ class AppController extends Controller {
                               }
                              *
                              */
-                            $query_params = $this->buildGraphQLInput($fulfillment);
+                            $query_params = $this->client->buildGraphQLInput($fulfillment);
                             $query = <<<GQL
                             mutation CreateFulfillment {
                                 fulfillmentCreate(
@@ -864,9 +864,9 @@ class AppController extends Controller {
                 'status' => 'error',
             ]);
         }
-
+        
         $shipment = [];
-        $shipment['fulfillment_status'] = $order['fulfillments'][0]['status'];
+        $shipment['fulfillment_status'] = !empty($order['fulfillments']) ? $order['fulfillments'][0]['status'] : '';
         $shipment['line_items'] = [];
         foreach ($order['lineItems']['edges'] as $line_item){
             if ($line_item['node']['requiresShipping']) {
