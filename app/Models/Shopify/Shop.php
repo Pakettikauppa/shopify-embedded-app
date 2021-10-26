@@ -76,7 +76,7 @@ class Shop extends Model
             $contentLine->description = $item['name'];
             $contentLine->quantity = $item['quantity'];
             $contentLine->netweight = $this->toGrams($item['variant']['weight'], $item['variant']['weightUnit']);
-            $contentLine->tariff_code = '';
+            $contentLine->tariff_code = $item['variant']['inventoryItem']['harmonizedSystemCode'] ?? '';
             $contentLine->value = $item['variant']['price'];
             $parcel->addContentLine($contentLine);
         }
