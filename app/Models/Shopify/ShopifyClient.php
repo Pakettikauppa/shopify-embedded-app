@@ -262,5 +262,114 @@ class ShopifyClient {
             return (int) ($index * 20);
         }
     }
+    
+    public function buildGraphQLInput($array) {
+        $output = '';
+        $total = count($array);
+        $counter = 0;
+        foreach ($array as $key => $value) {
+            $counter++;
+            if (is_array($value)) {
+                $output .= $key . ': ' . $this->buildGraphQLInput($value);
+            } else {
+                $output .= $key . ': "' . $value . '"';
+            }
+            if ($counter != $total) {
+                $output .= ', ';
+            }
+        }
+        return '{' . $output . '}';
+    }
+
+    public function getGraphId($gid) {
+        $data = explode('/', $gid);
+        return end($data);
+    }
+    
+    public function getOrders($order_ids){
+        return $this->callGraphQL($this->ordersQuery($order_ids));
+    }
+    
+    private function ordersQuery($order_ids){
+        $total_orders = count($order_ids);
+        $filter = implode(' OR id:', $order_ids);
+        $query = <<<GQL
+            {
+                orders(first: $total_orders, query: "$filter") {
+                  edges {
+                    node {
+                      id
+                      legacyResourceId
+                      email
+                      phone
+                      totalWeight
+                      lineItems(first: 10) {
+                        edges {
+                            node {
+                                id
+                                requiresShipping
+                                quantity
+                                name
+                                variant {
+                                    weight
+                                    weightUnit
+                                    price
+                                    inventoryItem {
+                                        countryCodeOfOrigin
+                                      	harmonizedSystemCode
+                                        inventoryLevels(first: 10) {
+                                          edges {
+                                            node {
+                                                available
+                                                location {
+                                                    id
+                                                    legacyResourceId
+                                                }
+                                            }
+                                          }
+                                        }
+                                    }
+                                    fulfillmentService {
+                                        type
+                                    }
+                                }
+                            }
+                        }
+                      }
+                      billingAddress {
+                        address1
+                        address2
+                        city
+                        company
+                        name
+                        phone
+                        countryCode
+                        zip
+                        phone
+                      }
+                      shippingAddress {
+                        address1
+                        address2
+                        city
+                        company
+                        name
+                        phone
+                        countryCode
+                        zip
+                        phone
+                      }
+                      fulfillments {
+                        status
+                      }
+                      shippingLine {
+                        code
+                      }
+                    }
+                  }
+                }
+              }
+            GQL;
+        return $query;    
+    }
 
 }
