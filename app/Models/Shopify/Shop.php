@@ -76,7 +76,7 @@ class Shop extends Model
             $contentLine->description = $item['name'];
             $contentLine->quantity = $item['quantity'];
             $contentLine->netweight = $this->toGrams($item['variant']['weight'], $item['variant']['weightUnit']);
-            $contentLine->tariff_code = $item['variant']['inventoryItem']['harmonizedSystemCode'] ?? '';
+            $contentLine->tariff_code = '';
             $contentLine->value = $item['variant']['price'];
             $parcel->addContentLine($contentLine);
         }
@@ -142,7 +142,7 @@ class Shop extends Model
                 //graphql does not support grams, so convert to grams manually
                 //$contentLine->netweight = $item['grams'];
                 $contentLine->netweight = $this->toGrams($item['variant']['weight'], $item['variant']['weightUnit']);
-                $contentLine->tariff_code = $item['variant']['inventoryItem']['harmonizedSystemCode'] ?? '';
+                $contentLine->tariff_code = '';
                 $contentLine->value = $item['variant']['price'];
                 $parcel->addContentLine($contentLine);
             }
