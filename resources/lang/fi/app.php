@@ -28,6 +28,19 @@ return [
             'nothing_to_ship' => 'Ei lähetettäviä tuotteita',
         ],
     ],
+    'custom_shipment' => [
+        'title' => 'Custom Shipment',
+        'service_title' => 'Shipping service',
+        'additional_service_title' => 'Additional service',
+        'address_title' => 'Shipping address',
+        'create_button' => 'Create Shipment',
+        'save_successful' => 'Shipment updated successfully',
+        'save_failed' => 'Shipment update failed',
+        'pickups_title' => 'Pickup points',
+        'not_selected' => 'Shipping method not selected',
+        'multiparcel_title' => 'Packets'
+
+    ],
     'settings' => [
         'only_default' => 'Huom! Vain "Oletuslähetystapa" toimii ylläolevassa toimituksissa. Shopifyssä olevan rajoitteen takia toimitushinnan nimi pitää olla uniikki eri toimitusvyöhykkeissä.',
         'default_shipping' => 'Oletuslähetystapa',

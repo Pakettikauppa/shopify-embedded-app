@@ -179,7 +179,16 @@ class Shop extends Model
             $additional_service->setServiceCode(9902);
             $shipment->addAdditionalService($additional_service);
         }
-
+        
+        //add additional services
+        if (isset($order['additional_services'])){
+            foreach ($order['additional_services'] as $service_code){
+                $additional_service = new AdditionalService();
+                $additional_service->setServiceCode($service_code);
+                $shipment->addAdditionalService($additional_service);
+            }
+        }
+        
         try {
             $resp = $pk_client->createTrackingCode($shipment);
 
