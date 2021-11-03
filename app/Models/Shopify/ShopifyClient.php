@@ -362,6 +362,7 @@ class ShopifyClient {
                         status
                       }
                       shippingLine {
+                        title
                         code
                       }
                     }

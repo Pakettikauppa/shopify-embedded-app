@@ -405,7 +405,7 @@ class SettingsController extends Controller {
                 'posti_config' => [
                     'api_key' => $shop->api_key,
                     'secret' => $shop->api_secret,
-                    'base_uri' => 'https://nextshipping.posti.fi',
+                    'base_uri' => $this->test_mode ? 'https://argon.api.posti.fi' : 'https://nextshipping.posti.fi',
                     'use_posti_auth' => true,
                     'posti_auth_url' => $this->test_mode ? 'https://oauth.barium.posti.com' : 'https://oauth2.posti.com',
                 ]
@@ -461,7 +461,7 @@ class SettingsController extends Controller {
                 'posti_config' => [
                     'api_key' => $api_key,
                     'secret' => $api_secret,
-                    'base_uri' => $this->test_mode ? 'https://argon.api.posti.fi/ecommerce/v3/' : 'https://nextshipping.posti.fi',
+                    'base_uri' => $this->test_mode ? 'https://argon.api.posti.fi' : 'https://nextshipping.posti.fi',
                     'use_posti_auth' => true,
                     'posti_auth_url' => $this->test_mode ? 'https://oauth.barium.posti.com' : 'https://oauth2.posti.com',
                 ]
