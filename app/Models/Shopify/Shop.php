@@ -84,10 +84,10 @@ class Shop extends Model
 
         $pickupPointId = null;
         $method_code = null;
-
-        if (isset($order['shipping_lines'][0]['title'])) {
+        
+        if (isset($order['shippingLine']['title'])) {
             $shipping_settings = unserialize($this->shipping_settings);
-            $service_name = $order['shipping_lines'][0]['title'];
+            $service_name = $order['shippingLine']['title'];
 
             foreach ($shipping_settings as $item) {
                 if ($item['shipping_rate_id'] == $service_name) {
@@ -98,7 +98,7 @@ class Shop extends Model
             if ($order['shippingLine'] != null) {
                 $pickupPoint = $this->shippingCode2Method($order['shippingLine']['code']);
                 $pickupPointId = $pickupPoint['pickup_point_id'];
-
+                
                 if (!empty($pickupPointId)) {
                     $method_code = $pickupPoint['method_code'];
                 } else {
@@ -232,8 +232,9 @@ class Shop extends Model
             $method_code = $pickupPoint[0];
             $pickupPointId = $pickupPoint[1];
         }
-
-        if (!is_numeric($method_code)) {
+        //in case multi codes use first
+        $method_code = explode(',', $method_code);
+        if (!is_numeric($method_code[0])) {
             switch ($pickupPoint[0]) {
                 case 'Posti':
                     $method_code = '2103';
@@ -252,7 +253,7 @@ class Shop extends Model
             }
         }
         return [
-            'method_code' => $method_code,
+            'method_code' => $method_code[0],
             'pickup_point_id' => $pickupPointId
         ];
     }
