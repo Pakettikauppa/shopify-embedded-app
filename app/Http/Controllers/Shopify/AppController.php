@@ -6,7 +6,6 @@ use App\Exceptions\ShopifyApiException;
 use App\Http\Controllers\Controller;
 use App\Models\Shopify\ShopifyClient;
 use Illuminate\Http\Request;
-use Cookie;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Log;
 use App\Models\Shopify\Shop;

@@ -31,7 +31,7 @@ class AuthController extends Controller
         $redirect_uri = route('shopify.auth.callback');
 
         // Build install/approval URL to redirect to
-        $install_url = "https://" . $shop_domain . "/admin/oauth/authorize?client_id=" . $api_key . "&scope=" . $scopes . "&redirect_uri=" . urlencode($redirect_uri) . "&redirect_back_uri=" . urlencode($redirect_back_url);
+        $install_url = "https://" . $shop_domain . "/admin/oauth/authorize?client_id=" . $api_key . "&scope=" . $scopes . "&redirect_uri=" . urlencode($redirect_uri);
 
         // Due to how shopify works redirection must be done on shopify end (as app is loaded inside iframe)
         
