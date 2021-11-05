@@ -133,8 +133,8 @@ class ShopifyClient {
         $response = json_decode($response, true);
         Log::debug('GraphQL call to ' . $url . "\n" . $query . "\nResponse: " . var_export($response, true));
         if (isset($response['errors'])) {
-            return [];
-            throw new \Exception(implode("\n", $response['errors']));
+            throw new \Exception("GraphQL errors: " . $response['errors']);
+        
         }
         return (is_array($response) && (isset($response['data']))) ? $response['data'] : false;
     }
