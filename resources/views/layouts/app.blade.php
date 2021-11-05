@@ -24,6 +24,9 @@
     <script src="https://unpkg.com/@shopify/app-bridge@1.23.0/umd/index.js"></script>
     <script src="https://unpkg.com/@shopify/app-bridge-utils@1.23.0/umd/index.js"></script>
     <script>
+        //check if we have any redirect backs
+        const redirect_url = document.cookie.match('(^|;)\\s*redirect_back_url\\s*=\\s*([^;]+)')?.pop() || false;
+        
         var AppBridge = window['app-bridge'];
 
         var Actions = AppBridge.actions;
@@ -478,9 +481,15 @@
             buttonOtherSettings: buttonOtherSettings,
             titleBar: titleBar
         };
-
         /* Wait for HTML DOM before loading first page */
         document.addEventListener('DOMContentLoaded', e => {
+            
+            if (redirect_url){
+                //clear redirect cookie
+                document.cookie = "redirect_back_url=null;expires=Thu, 01 Jan 1970 00:00:01 GMT; path=/;SameSite=None; Secure";
+                redirect.dispatch(Actions.Redirect.Action.APP, decodeURIComponent(redirect_url));
+            }
+            
             appDiv = document.getElementById('app-page');
 
             // Check if there is custom content loaded

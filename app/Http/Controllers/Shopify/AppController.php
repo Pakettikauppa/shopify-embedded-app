@@ -6,6 +6,7 @@ use App\Exceptions\ShopifyApiException;
 use App\Http\Controllers\Controller;
 use App\Models\Shopify\ShopifyClient;
 use Illuminate\Http\Request;
+use Cookie;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Log;
 use App\Models\Shopify\Shop;
@@ -181,8 +182,14 @@ class AppController extends Controller {
               ); */
         } catch (ShopifyApiException $sae) {
             Log::debug('Unauthorized thingie');
-
-            return redirect()->route('install-link', request()->all());
+            $params = request()->all();
+            $params['shopify_redirect_url'] = $request->getRequestUri();
+            return redirect()->route('install-link', $params);
+        } catch (\Exception $sae) {
+            Log::debug($sae->getMessage());
+            $params = request()->all();
+            $params['shopify_redirect_url'] = $request->getRequestUri();
+            return redirect()->route('install-link', $params);
         }
 
         $shipments = [];
