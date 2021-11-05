@@ -9,8 +9,8 @@
     <title>Shopify</title>
 
     <!-- JavaScripts -->
-    <script src="https://unpkg.com/@shopify/app-bridge@1.23.0/umd/index.js"></script>
-    <script src="https://unpkg.com/@shopify/app-bridge-utils@1.23.0/umd/index.js"></script>
+    <script src="https://unpkg.com/@shopify/app-bridge@2.0.5"></script>
+    <script src="https://unpkg.com/@shopify/app-bridge-utils@2.0.5"></script>
 
     <script>
         var AppBridge = window['app-bridge'];
@@ -27,7 +27,8 @@
             // If the current window is the 'child', change the parent's URL with Shopify App Bridge's Redirect action
             var app = createApp({
                 apiKey: '{{ $api_key }}',
-                shopOrigin: '{{ $shopOrigin }}'
+                shopOrigin: '{{ $shopOrigin }}',
+                host: '{{$shopOrigin}}'
             });
 
             Redirect.create(app).dispatch(Redirect.Action.REMOTE, permissionUrl);

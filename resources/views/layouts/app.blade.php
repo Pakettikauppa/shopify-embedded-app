@@ -21,8 +21,8 @@
     <!-- JavaScripts -->
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
-    <script src="https://unpkg.com/@shopify/app-bridge@1.23.0/umd/index.js"></script>
-    <script src="https://unpkg.com/@shopify/app-bridge-utils@1.23.0/umd/index.js"></script>
+    <script src="https://unpkg.com/@shopify/app-bridge@2.0.5"></script>
+    <script src="https://unpkg.com/@shopify/app-bridge-utils@2.0.5"></script>
     <script>
         var AppBridge = window['app-bridge'];
 
@@ -31,6 +31,7 @@
         var ShopifyApp = createApp({
             apiKey: '{{config('shopify.api_key')}}',
             shopOrigin: '{{$shop->shop_origin}}',
+            host: '{{$shop->shop_origin}}',
             debug: true,
             forceRedirect: true
         });
