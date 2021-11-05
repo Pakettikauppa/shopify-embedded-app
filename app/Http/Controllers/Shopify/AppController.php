@@ -328,20 +328,24 @@ class AppController extends Controller {
                     $is_return
             );
             $shipment['status'] = $_shipment['status'];
-
             $shipment['tracking_code'] = '';
+            
             if (isset($_shipment['tracking_code'])) {
-                if(strpos($shipment['tracking_code'], ','))
+                if (is_array($_shipment['tracking_code'])) 
                 {
-                    $tracking_codes = explode(', ', $shipment['tracking_code']);
+                    $tracking_codes = $_shipment['tracking_code'];
+                } 
+                else if (strpos($_shipment['tracking_code'], ','))
+                {
+                    $tracking_codes = explode(', ', $_shipment['tracking_code']);
                 }
                 else
                 {
-                    $tracking_codes[] = $shipment['tracking_code'];
+                    $tracking_codes = [$_shipment['tracking_code']];
                 }
                 $shipment['tracking_codes'] = $tracking_codes;
             }
-
+            
             if (
                     !empty($this->pk_client->getResponse()->{'response.trackingcode'}['labelcode']) and
                     $shop->create_activation_code === true
@@ -388,11 +392,11 @@ class AppController extends Controller {
 
         if ($fulfill_order) {
             foreach ($shipments as $orderKey => $order) {
-                if (empty($order['tracking_code'])) {
+                if (empty($order['tracking_codes'])) {
                     continue;
                 }
 
-                Log::debug("Fullfilling order: {$order['tracking_code']} - {$order['id']}");
+                Log::debug("Fullfilling order: " .implode(', ',$order['tracking_codes']) ." - {$order['id']}");
 
                 if ($order['fulfillment_status'] == 'fulfilled') {
                     continue;
