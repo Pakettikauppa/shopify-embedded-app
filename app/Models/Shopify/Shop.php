@@ -190,14 +190,14 @@ class Shop extends Model
                 {
                     if(isset($resp[$i]))
                     {
-                        $tracking_codes[] = $resp[$i];
+                        $tracking_codes[] = (string) $resp[$i];
                     }
                 }
                 $order['tracking_code'] = $tracking_codes;
             }
             else
             {
-                $order['tracking_code'] = $shipment->getTrackingCode();
+                $order['tracking_code'] = (string) $shipment->getTrackingCode();
             }
 
             $reference = (string)$shipment->getReference();
