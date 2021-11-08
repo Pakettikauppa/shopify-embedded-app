@@ -329,6 +329,7 @@ class AppController extends Controller {
             );
             $shipment['status'] = $_shipment['status'];
             $shipment['tracking_code'] = '';
+            $shipment['tracking_codes'] = [];
             
             if (isset($_shipment['tracking_code'])) {
                 if (is_array($_shipment['tracking_code'])) 
@@ -344,8 +345,9 @@ class AppController extends Controller {
                     $tracking_codes = [$_shipment['tracking_code']];
                 }
                 $shipment['tracking_codes'] = $tracking_codes;
+                $shipment['tracking_code'] = end($shipment['tracking_codes']);
             }
-            
+                    
             if (
                     !empty($this->pk_client->getResponse()->{'response.trackingcode'}['labelcode']) and
                     $shop->create_activation_code === true
@@ -387,16 +389,16 @@ class AppController extends Controller {
 
             $shipments[] = $shipment;
 
-            Log::debug("Processed order: {$shipment['tracking_code']} - {$order['id']}");
+            Log::debug("Processed order: " . implode(', ', $shipment['tracking_codes']) . " - {$order['id']}");
         }
 
         if ($fulfill_order) {
             foreach ($shipments as $orderKey => $order) {
-                if (empty($order['tracking_codes'])) {
+                if (empty($order['tracking_code'])) {
                     continue;
                 }
 
-                Log::debug("Fullfilling order: " .implode(', ',$order['tracking_codes']) ." - {$order['id']}");
+                Log::debug("Fullfilling order: " . implode(', ', $shipment['tracking_codes']) . " - {$order['id']}");
 
                 if ($order['fulfillment_status'] == 'fulfilled') {
                     continue;
@@ -409,6 +411,7 @@ class AppController extends Controller {
                 }
 
                 $services = [];
+                $filtered_services = [];
 
                 foreach ($order['line_items'] as $item) {
                     //$variantId = $item['variant_id'];
@@ -418,17 +421,13 @@ class AppController extends Controller {
                           if ($this->client->callsLeft() > 0 and $this->client->callLimit() == $this->client->callsLeft()) {
                           sleep(2);
                           }
-
                           $variants = $this->client->call('GET', 'admin', '/variants/' . $variantId . '.json');
-
                           $inventoryId = $variants['inventory_item_id'];
-
                           if ($this->client->callsLeft() > 0 and $this->client->callLimit() == $this->client->callsLeft()) {
                           sleep(2);
                           }
                           // TODO: not the most efficient way to do this
                           // got from graphql
-
                           $inventoryLevels = $this->client->call(
                           'GET',
                           'admin',
@@ -441,13 +440,14 @@ class AppController extends Controller {
                         $makeNull = true;
                         $inventoryLevels = $item['variant']['inventoryItem']['inventoryLevels']['edges'];
                         foreach ($inventoryLevels as $_inventory) {
-                            if ($_inventory['node']['available'] > 0 || $_inventory['node']['available'] == null) {
+                            if ($_inventory['node']['available'] > 0 && $_inventory['node']['available'] >= $item['quantity'] || $_inventory['node']['available'] === null) {
                                 $service = $item['variant']['fulfillmentService']['type'];
-                                $services[$service][$_inventory['node']['location']['id']] = ['id' => $item['id']];
+                                if (!isset($services[$service][$_inventory['node']['location']['id']] )){
+                                    $services[$service][$_inventory['node']['location']['id']] = [];
+                                }
+                                $services[$service][$_inventory['node']['location']['id']][] = ['id' => $item['id'], 'quantity' => (int)$item['quantity']];
                                 $makeNull = false;
-                            } else {
-                                $shipments[$orderKey]['status'] = 'not_in_inventory';
-                            }
+                            } 
                         }
 
                         if ($makeNull) {
@@ -465,70 +465,82 @@ class AppController extends Controller {
                         Log::debug('ShopiApiException: ' . var_export($exceptionData, true));
                     } catch (\Exception $e) {
                         Log::debug(var_export($item, true));
-                        Log::debug('Fullfillment Exception: ' . $e->getTraceAsString());
+                        Log::debug('Fullfillment Exception: ' . $e->getMessage() . ' on line ' . $e->getLine());
                     }
                 }
-
-
-                foreach ($services as $line_items) {
+                //filter services to check if found all available quantities in one warehouse
+                foreach ($services as $fullfilment => $line_items) {
                     foreach ($line_items as $locationId => $items) {
-                        $fulfillment = [
-                            'orderId' => $order['gid'],
-                            'trackingNumbers' => $order['tracking_code'],
-                            'locationId' => $locationId,
-                            'trackingCompany' => trans('app.settings.company_name_' . $this->type),
-                            'trackingUrls' => $this->tracking_url . $order['tracking_code'],
-                            'lineItems' => $items,
-                        ];
-
-                        try {
-                            /*
-                              if ($this->client->callsLeft() > 0 and $this->client->callLimit() == $this->client->callsLeft()) {
-                              sleep(2);
-                              }
-                             *
-                             */
-                            $query_params = $this->client->buildGraphQLInput($fulfillment);
-                            $query = <<<GQL
-                            mutation CreateFulfillment {
-                                fulfillmentCreate(
-                                  input: $query_params
-                                )
-                                {
-                                    userErrors {
-                                      field
-                                      message
-                                    }
-                                }
-                              }        
-                            GQL;
-                            $result = $this->client->call($query);
-                            /*
-                              $result = $this->client->call(
-                              'POST',
-                              'admin',
-                              '/orders/' . $order['id'] . '/fulfillments.json',
-                              [
-                              'fulfillment' => $fulfillment
-                              ]
-                              );
-                             *
-                             */
-                            Log::debug(var_export($result, true));
-                        } catch (ShopifyApiException $sae) {
-                            $exceptionData = array(
-                                var_export($sae->getMethod(), true),
-                                var_export($sae->getPath(), true),
-                                var_export($sae->getParams(), true),
-                                var_export($sae->getResponseHeaders(), true),
-                                var_export($sae->getResponse(), true)
-                            );
-
-                            Log::debug('ShopiApiException: ' . var_export($exceptionData, true));
-                        } catch (\Exception $e) {
-                            Log::debug('Fullfillment Exception: ' . $e->getTraceAsString());
+                        if (count($items) == count($order['line_items'])){
+                            $filtered_services[$fullfilment][$locationId] = $items;
+                            break;
                         }
                     }
+                }
+                
+                if (count($filtered_services)){
+                    foreach ($filtered_services as $line_items) {
+                        foreach ($line_items as $locationId => $items) {
+                            $fulfillment = [
+                                'orderId' => $order['gid'],
+                                'trackingNumbers' => implode(', ', $order['tracking_codes']),
+                                'locationId' => $locationId,
+                                'trackingCompany' => trans('app.settings.company_name_' . $this->type),
+                                'trackingUrls' => $this->tracking_url . end($order['tracking_codes']),
+                                'lineItems' => $items,
+                            ];
+
+                            try {
+                                /*
+                                  if ($this->client->callsLeft() > 0 and $this->client->callLimit() == $this->client->callsLeft()) {
+                                  sleep(2);
+                                  }
+                                 * 
+                                 */
+                                $query_params = $this->buildGraphQLInput($fulfillment);
+                                $query = <<<GQL
+                                mutation CreateFulfillment {
+                                    fulfillmentCreate(
+                                      input: $query_params
+                                    )
+                                    {
+                                        userErrors {
+                                          field
+                                          message
+                                        }
+                                    }
+                                  }        
+                                GQL;
+                                $result = $this->client->call($query);
+                                /*
+                                  $result = $this->client->call(
+                                  'POST',
+                                  'admin',
+                                  '/orders/' . $order['id'] . '/fulfillments.json',
+                                  [
+                                  'fulfillment' => $fulfillment
+                                  ]
+                                  );
+                                 * 
+                                 */
+                                Log::debug(var_export($result, true));
+                            } catch (ShopifyApiException $sae) {
+                                $exceptionData = array(
+                                    var_export($sae->getMethod(), true),
+                                    var_export($sae->getPath(), true),
+                                    var_export($sae->getParams(), true),
+                                    var_export($sae->getResponseHeaders(), true),
+                                    var_export($sae->getResponse(), true)
+                                );
+
+                                Log::debug('ShopiApiException: ' . var_export($exceptionData, true));
+                            } catch (\Exception $e) {
+                                Log::debug('Fullfillment Exception: ' . $e->getMessage() . ' on line ' . $e->getLine());
+                            }
+                        }
+                    }
+                } else {
+                    $shipments[$orderKey]['status'] = 'not_in_inventory';
                 }
                 Log::debug("Fullfilled order: {$order['id']}");
             }
@@ -1166,4 +1178,41 @@ class AppController extends Controller {
 
         return (int)round($pickupPointSettings['base_price'] * 100.0);
     }
+    
+    private function buildGraphQLInput($array) {
+        $output_as_array = false;
+        $output = '';
+        $total = count($array);
+        $counter = 0;
+        foreach ($array as $key => $value) {
+            $counter++;
+            if (is_array($value)) {
+                if (is_int($key) ){
+                    $output_as_array = true;
+                    $output .= $this->buildGraphQLInput($value);
+                } else {
+                    $output .= $key . ': ' . $this->buildGraphQLInput($value);
+                }
+            } else {
+                if (gettype($value) == "integer"){
+                    $output .= $key . ': ' . $value . '';
+                } else {
+                    $output .= $key . ': "' . $value . '"';
+                }
+            }
+            if ($counter != $total) {
+                $output .= ', ';
+            }
+        }
+        if ($output_as_array){
+            return '[' . $output . ']';
+        }
+        return '{' . $output . '}';
+    }
+
+    private function getGraphId($gid) {
+        $data = explode('/', $gid);
+        return end($data);
+    }
+
 }
