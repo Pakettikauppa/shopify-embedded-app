@@ -394,11 +394,11 @@ class AppController extends Controller {
 
         if ($fulfill_order) {
             foreach ($shipments as $orderKey => $order) {
-                if (empty($order['tracking_code'])) {
+                if (empty($order['tracking_codes'])) {
                     continue;
                 }
 
-                Log::debug("Fullfilling order: " . implode(', ', $shipment['tracking_codes']) . " - {$order['id']}");
+                Log::debug("Fullfilling order: " . implode(', ', $order['tracking_codes']) . " - {$order['id']}");
 
                 if ($order['fulfillment_status'] == 'fulfilled') {
                     continue;
