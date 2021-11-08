@@ -317,6 +317,7 @@ class ShopifyClient {
                                     inventoryItem {
                                         countryCodeOfOrigin
                                       	harmonizedSystemCode
+                                        tracked
                                         inventoryLevels(first: 10) {
                                           edges {
                                             node {

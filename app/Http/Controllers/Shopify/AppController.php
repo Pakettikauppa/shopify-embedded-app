@@ -412,7 +412,7 @@ class AppController extends Controller {
 
                 $services = [];
                 $filtered_services = [];
-
+                
                 foreach ($order['line_items'] as $item) {
                     //$variantId = $item['variant_id'];
 
@@ -438,9 +438,10 @@ class AppController extends Controller {
                           );
                          */
                         $makeNull = true;
+                        $tracked = $item['variant']['inventoryItem']['tracked'];
                         $inventoryLevels = $item['variant']['inventoryItem']['inventoryLevels']['edges'];
                         foreach ($inventoryLevels as $_inventory) {
-                            if ($_inventory['node']['available'] > 0 && $_inventory['node']['available'] >= $item['quantity'] || $_inventory['node']['available'] === null) {
+                            if ($_inventory['node']['available'] > 0 && $_inventory['node']['available'] >= $item['quantity'] || $_inventory['node']['available'] === null || !$tracked) {
                                 $service = $item['variant']['fulfillmentService']['type'];
                                 if (!isset($services[$service][$_inventory['node']['location']['id']] )){
                                     $services[$service][$_inventory['node']['location']['id']] = [];
