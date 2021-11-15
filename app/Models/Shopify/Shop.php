@@ -237,17 +237,17 @@ class Shop extends Model
         if (!is_numeric($method_code[0])) {
             switch ($pickupPoint[0]) {
                 case 'Posti':
-                    $method_code = '2103';
+                    $method_code[0] = '2103';
                     break;
                 case 'Matkahuolto':
-                    $method_code = '90080';
+                    $method_code[0] = '90080';
                     break;
                 case 'DB Schenker':
-                    $method_code = '80010';
+                    $method_code[0] = '80010';
                     break;
                 default:
                     // reset to defaults.
-                    $method_code = null;
+                    $method_code[0] = null;
                     $pickupPointId = null;
                     break;
             }
