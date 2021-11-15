@@ -582,13 +582,15 @@ class AppController extends Controller {
     public function customShipment(Request $request)
     {
         $shop = request()->get('shop');
-        if (!$shop->api_token || $shop->api_token->expires_in < time()){
-            return view('settings.api', [
-                'shop' => $shop,
-                'api_valid' => true,
-                'type' => $this->type,
-                'error_message' => trans('app.messages.invalid_credentials')
-            ]);
+
+        // Create client config and refresh token if necessary.
+        $this->pk_client = $this->getPakketikauppaClient($shop);
+
+        // Something went horribly wrong.
+        if (!$this->pk_client)
+        {
+            Log::debug("Custom shipment: client initialization error.");
+            throw new FatalErrorException();
         }
 
         $order_id = request()->get('id');
@@ -839,7 +841,6 @@ class AppController extends Controller {
         // api check
         $this->pk_client = $this->getPakketikauppaClient($shop);
         $result = $this->pk_client->listShippingMethods();
-        //var_dump($result);
         if (!is_array($result)) {
             return response()->json([
                 'message' => trans('app.messages.invalid_credentials'),
@@ -855,14 +856,6 @@ class AppController extends Controller {
             }
             $order = $orders['orders']['edges'][0];
             $order = $order['node'];
-            /*
-            $order = $this->client->call(
-                'GET',
-                'admin',
-                "/orders/{$order_id}.json",
-            );
-             * 
-             */
         } catch (ShopifyApiException $sae) {
             Log::debug('Unauthorized thingie');
             return redirect()->route('install-link', request()->all());
