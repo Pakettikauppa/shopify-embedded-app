@@ -14,9 +14,11 @@ class PickupPointsController extends Controller
 {
     private $pickupPointSettings;
     private $type;
+    private $test_mode;
     
     public function __construct(Request $request) {
         $this->type = config('shopify.type');
+        $this->test_mode = config('shopify.test_mode');
     }
 
     public function list(Request $request)
@@ -45,9 +47,9 @@ class PickupPointsController extends Controller
                 'posti_config' => [
                     'api_key' => $shop->api_key,
                     'secret' => $shop->api_secret,
-                    'base_uri' => 'https://nextshipping.posti.fi',
+                    'base_uri' => $this->test_mode ? 'https://argon.api.posti.fi' : 'https://nextshipping.posti.fi',
                     'use_posti_auth' => true,
-                    'posti_auth_url' => 'https://oauth2.posti.com',
+                    'posti_auth_url' => $this->test_mode ? 'https://oauth.barium.posti.com' : 'https://oauth2.posti.com',
                 ]
             ];
             $pk_use_config = "posti_config";
@@ -70,7 +72,7 @@ class PickupPointsController extends Controller
             Log::debug("Pikcup points: fatal error");
             throw new FatalErrorException();
         }
-
+        
         $pk_client = new Client($pk_client_params, $pk_use_config);
         if ($pk_use_config == "posti_config"){
             $token = $pk_client->getToken();
@@ -198,6 +200,7 @@ class PickupPointsController extends Controller
                     );
                 }
             } catch (\Exception $e) {
+                Log::debug($e->getMessage());
                 Log::debug($e->getTraceAsString());
                 Log::debug(var_export($_pickupPoint, true));
                 Log::debug(var_export($pickupPoints, true));
@@ -234,7 +237,9 @@ class PickupPointsController extends Controller
 
     private function priceForPickupPoint($provider, $totalValue)
     {
-        $pickupPointSettings = $this->pickupPointSettings[$provider];
+        //take first provider if multi provider string
+        $provider = explode(',',$provider);
+        $pickupPointSettings = $this->pickupPointSettings[$provider[0]];
 
         if ($pickupPointSettings['trigger_price'] > 0 and $pickupPointSettings['trigger_price'] * 100 <= $totalValue) {
             return (int)round($pickupPointSettings['triggered_price'] * 100.0);

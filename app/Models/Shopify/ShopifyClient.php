@@ -133,8 +133,10 @@ class ShopifyClient {
         $response = json_decode($response, true);
         Log::debug('GraphQL call to ' . $url . "\n" . $query . "\nResponse: " . var_export($response, true));
         if (isset($response['errors'])) {
-            return [];
-            throw new \Exception(implode("\n", $response['errors']));
+            $cost = $response['errors'][0]['extensions']['cost'];
+            Log::debug("Cost " . $cost);
+            throw new \Exception("GraphQL errors: " . $response['errors'][0]['message']);
+        
         }
         return (is_array($response) && (isset($response['data']))) ? $response['data'] : false;
     }
@@ -261,6 +263,130 @@ class ShopifyClient {
         } else {
             return (int) ($index * 20);
         }
+    }
+    
+    public function buildGraphQLInput($array) {
+        $output = '';
+        $total = count($array);
+        $counter = 0;
+        foreach ($array as $key => $value) {
+            $counter++;
+            if (is_array($value)) {
+                $output .= $key . ': ' . $this->buildGraphQLInput($value);
+            } else {
+                $output .= $key . ': "' . $value . '"';
+            }
+            if ($counter != $total) {
+                $output .= ', ';
+            }
+        }
+        return '{' . $output . '}';
+    }
+
+    public function getGraphId($gid) {
+        $data = explode('/', $gid);
+        return end($data);
+    }
+    
+    public function getOrders($order_ids){
+        //create response structure
+        $orders = [
+            'orders' => [
+                 'edges' => []
+            ]
+        ];
+        //split order calls to graphql
+        foreach ($order_ids as $id){
+            $order = $this->callGraphQL($this->ordersQuery([$id]));
+            if (isset($order['orders']['edges'][0])){
+                $orders['orders']['edges'][] = $order['orders']['edges'][0];
+            }
+        }
+        return $orders;
+    }
+    
+    private function ordersQuery($order_ids){
+        $total_orders = count($order_ids);
+        $filter = implode(' OR id:', $order_ids);
+        $query = <<<GQL
+            {
+                orders(first: $total_orders, query: "$filter") {
+                  edges {
+                    node {
+                      id
+                      legacyResourceId
+                      email
+                      phone
+                      totalWeight
+                      lineItems(first: 10) {
+                        edges {
+                            node {
+                                id
+                                requiresShipping
+                                quantity
+                                name
+                                variant {
+                                    weight
+                                    weightUnit
+                                    price
+                                    inventoryItem {
+                                        countryCodeOfOrigin
+                                      	harmonizedSystemCode
+                                        tracked
+                                        inventoryLevels(first: 10) {
+                                          edges {
+                                            node {
+                                                available
+                                                location {
+                                                    id
+                                                    legacyResourceId
+                                                }
+                                            }
+                                          }
+                                        }
+                                    }
+                                    fulfillmentService {
+                                        type
+                                    }
+                                }
+                            }
+                        }
+                      }
+                      billingAddress {
+                        address1
+                        address2
+                        city
+                        company
+                        name
+                        phone
+                        countryCode
+                        zip
+                        phone
+                      }
+                      shippingAddress {
+                        address1
+                        address2
+                        city
+                        company
+                        name
+                        phone
+                        countryCode
+                        zip
+                        phone
+                      }
+                      fulfillments {
+                        status
+                      }
+                      shippingLine {
+                        title
+                        code
+                      }
+                    }
+                  }
+                }
+              }
+            GQL;
+        return $query;    
     }
 
 }

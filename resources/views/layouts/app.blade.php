@@ -21,9 +21,12 @@
     <!-- JavaScripts -->
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
-    <script src="https://unpkg.com/@shopify/app-bridge@1.23.0/umd/index.js"></script>
-    <script src="https://unpkg.com/@shopify/app-bridge-utils@1.23.0/umd/index.js"></script>
+    <script src="https://unpkg.com/@shopify/app-bridge@2.0.5"></script>
+    <script src="https://unpkg.com/@shopify/app-bridge-utils@2.0.5"></script>
     <script>
+        //check if we have any redirect backs
+        const redirect_url = document.cookie.match('(^|;)\\s*redirect_back_url\\s*=\\s*([^;]+)')?.pop() || false;
+        
         var AppBridge = window['app-bridge'];
 
         var Actions = AppBridge.actions;
@@ -31,6 +34,7 @@
         var ShopifyApp = createApp({
             apiKey: '{{config('shopify.api_key')}}',
             shopOrigin: '{{$shop->shop_origin}}',
+            host: '{{$shop->shop_origin}}',
             debug: true,
             forceRedirect: true
         });
@@ -478,9 +482,15 @@
             buttonOtherSettings: buttonOtherSettings,
             titleBar: titleBar
         };
-
         /* Wait for HTML DOM before loading first page */
         document.addEventListener('DOMContentLoaded', e => {
+            
+            if (redirect_url){
+                //clear redirect cookie
+                document.cookie = "redirect_back_url=null;expires=Thu, 01 Jan 1970 00:00:01 GMT; path=/;SameSite=None; Secure";
+                redirect.dispatch(Actions.Redirect.Action.APP, decodeURIComponent(redirect_url));
+            }
+            
             appDiv = document.getElementById('app-page');
 
             // Check if there is custom content loaded
