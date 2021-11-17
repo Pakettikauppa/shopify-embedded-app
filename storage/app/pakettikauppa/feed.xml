@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="UTF-8"?><rss version="2.0"
+	xmlns:content="http://purl.org/rss/1.0/modules/content/"
+	xmlns:wfw="http://wellformedweb.org/CommentAPI/"
+	xmlns:dc="http://purl.org/dc/elements/1.1/"
+	xmlns:atom="http://www.w3.org/2005/Atom"
+	xmlns:sy="http://purl.org/rss/1.0/modules/syndication/"
+	xmlns:slash="http://purl.org/rss/1.0/modules/slash/"
+	>
+
+<channel>
+	<title>Updates</title>
+	<atom:link href="https://updates.pakettikauppa.fi/feed/" rel="self" type="application/rss+xml" />
+	<link>https://updates.pakettikauppa.fi</link>
+	<description>Pakettikauppa</description>
+	<lastBuildDate>Wed, 09 Oct 2019 09:44:22 +0000</lastBuildDate>
+	<language>fi</language>
+	<sy:updatePeriod>hourly</sy:updatePeriod>
+	<sy:updateFrequency>1</sy:updateFrequency>
+	<generator>https://wordpress.org/?v=4.9.8</generator>
+	<item>
+		<title>Shopify ja toimitusvyöhykket</title>
+		<link>https://updates.pakettikauppa.fi/shopify/shopify-ja-toimitusvyohykket/</link>
+		<comments>https://updates.pakettikauppa.fi/shopify/shopify-ja-toimitusvyohykket/#respond</comments>
+		<pubDate>Wed, 09 Oct 2019 09:44:22 +0000</pubDate>
+		<dc:creator><![CDATA[admin]]></dc:creator>
+				<category><![CDATA[Shopify]]></category>
+
+		<guid isPermaLink="false">https://updates.pakettikauppa.fi/?p=46</guid>
+		<description><![CDATA[Shopify ei toimita tilauksen tietojen yhteydessä tietoa mihin toimitusvyöhykkeeseen lähetys kuuluu &#8211; ainoastaan toimitustavan nimen. Tästä johtuen emme pysty linkittämään oikeaa toimitustapaa lähetykselle mikäli toimitustapoja on saman nimisiä eri toimitusvyöhykkeissä. Työstämme ongelmaan ratkaisua.]]></description>
+				<content:encoded><![CDATA[<p>Shopify ei toimita tilauksen tietojen yhteydessä tietoa mihin toimitusvyöhykkeeseen lähetys kuuluu &#8211; ainoastaan toimitustavan nimen. Tästä johtuen emme pysty linkittämään oikeaa toimitustapaa lähetykselle mikäli toimitustapoja on saman nimisiä eri toimitusvyöhykkeissä.</p>
+<p>Työstämme ongelmaan ratkaisua.</p>
+]]></content:encoded>
+			<wfw:commentRss>https://updates.pakettikauppa.fi/shopify/shopify-ja-toimitusvyohykket/feed/</wfw:commentRss>
+		<slash:comments>0</slash:comments>
+		</item>
+		<item>
+		<title>Shopify Appin admin puoli toimii taas Safarin kanssa</title>
+		<link>https://updates.pakettikauppa.fi/shopify/shopify-appin-admin-puoli-toimii-taas-safarin-kanssa/</link>
+		<comments>https://updates.pakettikauppa.fi/shopify/shopify-appin-admin-puoli-toimii-taas-safarin-kanssa/#respond</comments>
+		<pubDate>Thu, 20 Dec 2018 09:16:13 +0000</pubDate>
+		<dc:creator><![CDATA[admin]]></dc:creator>
+				<category><![CDATA[Shopify]]></category>
+
+		<guid isPermaLink="false">http://updates.pakettikauppa.fi/?p=41</guid>
+		<description><![CDATA[Uuden MacOS:n ja iOS versioiden myötä tullut parempi suoja seurannan estämiseksi Safariin esti Pakettikauppa appin toiminnan. Työstimme ongelmaa ja nyt appi toimii taas Safarillakin.]]></description>
+				<content:encoded><![CDATA[<p>Uuden MacOS:n ja iOS versioiden myötä tullut parempi suoja seurannan estämiseksi Safariin esti Pakettikauppa appin toiminnan. Työstimme ongelmaa ja nyt appi toimii taas Safarillakin.</p>
+]]></content:encoded>
+			<wfw:commentRss>https://updates.pakettikauppa.fi/shopify/shopify-appin-admin-puoli-toimii-taas-safarin-kanssa/feed/</wfw:commentRss>
+		<slash:comments>0</slash:comments>
+		</item>
+		<item>
+		<title>Shopifyssä bugi joka hankaloittaa Pakettikauppa Appin käyttöä</title>
+		<link>https://updates.pakettikauppa.fi/shopify/shopifyssa-bugi-joka-hankaloittaa-pakettikauppa-appin-kayttoa/</link>
+		<comments>https://updates.pakettikauppa.fi/shopify/shopifyssa-bugi-joka-hankaloittaa-pakettikauppa-appin-kayttoa/#respond</comments>
+		<pubDate>Mon, 12 Nov 2018 08:58:41 +0000</pubDate>
+		<dc:creator><![CDATA[admin]]></dc:creator>
+				<category><![CDATA[Shopify]]></category>
+
+		<guid isPermaLink="false">http://updates.pakettikauppa.fi/?p=31</guid>
+		<description><![CDATA[Shopifyssä on tällä hetkellä bugi joka muuttaa Pakettikauppa appille tulevia pyyntöjä aiheuttaen välillä vikatilanteita. Teimme pienen &#8221;korjauksen&#8221; meidän appiin, jotta tuo bugi ei näkyisi niin usein. Jatkamme tilanteen seuraamista ja vian selvittämistä. Päivitys 12.11.2018 klo 11:53. Shopify on onnistunut replikoimaan vian ja siirtänyt ongelman heidän tekniselle tiimille tutkittavaksi. Päivitys 07.12.2018: Shopify edelleen korjaa virhettä. Johtuen &#8230; <p class="link-more"><a href="https://updates.pakettikauppa.fi/shopify/shopifyssa-bugi-joka-hankaloittaa-pakettikauppa-appin-kayttoa/" class="more-link">Jatka lukemista<span class="screen-reader-text"> "Shopifyssä bugi joka hankaloittaa Pakettikauppa Appin käyttöä"</span></a></p>]]></description>
+				<content:encoded><![CDATA[<p>Shopifyssä on tällä hetkellä bugi joka muuttaa Pakettikauppa appille tulevia pyyntöjä aiheuttaen välillä vikatilanteita. Teimme pienen &#8221;korjauksen&#8221; meidän appiin, jotta tuo bugi ei näkyisi niin usein. Jatkamme tilanteen seuraamista ja vian selvittämistä.</p>
+<p>Päivitys 12.11.2018 klo 11:53. Shopify on onnistunut replikoimaan vian ja siirtänyt ongelman heidän tekniselle tiimille tutkittavaksi.</p>
+<p>Päivitys 07.12.2018: Shopify edelleen korjaa virhettä. Johtuen virheenkorjauksestamme, vika ei todennäköisesti ilmene Appin käyttäjille.</p>
+<p>Päivitys 20.12.2018: Shopify on korjannut vian ja kiittänyt Pakettikauppaa vian paikallistamisesta.</p>
+]]></content:encoded>
+			<wfw:commentRss>https://updates.pakettikauppa.fi/shopify/shopifyssa-bugi-joka-hankaloittaa-pakettikauppa-appin-kayttoa/feed/</wfw:commentRss>
+		<slash:comments>0</slash:comments>
+		</item>
+		<item>
+		<title>Posti Parcel Connect -palvelulla lähetät edullisesti useisiin EU maihin</title>
+		<link>https://updates.pakettikauppa.fi/yleinen/posti-parcel-connect-palvelulla-lahetat-edullisesti-useisiin-eu-maihin/</link>
+		<comments>https://updates.pakettikauppa.fi/yleinen/posti-parcel-connect-palvelulla-lahetat-edullisesti-useisiin-eu-maihin/#respond</comments>
+		<pubDate>Tue, 02 Oct 2018 11:35:35 +0000</pubDate>
+		<dc:creator><![CDATA[admin]]></dc:creator>
+				<category><![CDATA[Shopify]]></category>
+		<category><![CDATA[Yleinen]]></category>
+
+		<guid isPermaLink="false">http://updates.pakettikauppa.fi/?p=28</guid>
+		<description><![CDATA[Julkaisimme tuen Postin Parcel Connect -lähetyksille. Parcel Connect on kansainväliseen verkkokauppaan suunniteltu pakettituote ja mahdollistaa suomalaisen verkkokaupan kansainvälistymisen. Parcel Connect -tuote tuotetaan yhteistyössä DHL:n ja Bring:n kanssa. Lähetykset Parcel Connect -palvelulla ovat alkaen 7,90 €.]]></description>
+				<content:encoded><![CDATA[<p>Julkaisimme tuen Postin Parcel Connect -lähetyksille. Parcel Connect on kansainväliseen verkkokauppaan suunniteltu pakettituote ja mahdollistaa suomalaisen verkkokaupan kansainvälistymisen. Parcel Connect -tuote tuotetaan yhteistyössä DHL:n ja Bring:n kanssa. Lähetykset Parcel Connect -palvelulla ovat alkaen 7,90 €.</p>
+]]></content:encoded>
+			<wfw:commentRss>https://updates.pakettikauppa.fi/yleinen/posti-parcel-connect-palvelulla-lahetat-edullisesti-useisiin-eu-maihin/feed/</wfw:commentRss>
+		<slash:comments>0</slash:comments>
+		</item>
+		<item>
+		<title>Seurantakoodien kanssa ongelmia [Päivitetty]</title>
+		<link>https://updates.pakettikauppa.fi/shopify/seurantakoodien-kanssa-ongelmia/</link>
+		<comments>https://updates.pakettikauppa.fi/shopify/seurantakoodien-kanssa-ongelmia/#respond</comments>
+		<pubDate>Fri, 07 Sep 2018 05:44:18 +0000</pubDate>
+		<dc:creator><![CDATA[admin]]></dc:creator>
+				<category><![CDATA[Shopify]]></category>
+
+		<guid isPermaLink="false">http://updates.pakettikauppa.fi/?p=24</guid>
+		<description><![CDATA[Seurantakoodit eivät välity tällä hetkellä Shopifyssä asiakkaan seurantaan. Vikaa selvitetään. [7.9.2018: klo 08:55] Vika on löydetty ja korjattu.]]></description>
+				<content:encoded><![CDATA[<p>Seurantakoodit eivät välity tällä hetkellä Shopifyssä asiakkaan seurantaan. Vikaa selvitetään.</p>
+<p>[7.9.2018: klo 08:55] Vika on löydetty ja korjattu.</p>
+]]></content:encoded>
+			<wfw:commentRss>https://updates.pakettikauppa.fi/shopify/seurantakoodien-kanssa-ongelmia/feed/</wfw:commentRss>
+		<slash:comments>0</slash:comments>
+		</item>
+		<item>
+		<title>Kansainvälitykset lähetykset mahdollisia</title>
+		<link>https://updates.pakettikauppa.fi/yleinen/kansainvalitykset-lahetykset-mahdollisia/</link>
+		<comments>https://updates.pakettikauppa.fi/yleinen/kansainvalitykset-lahetykset-mahdollisia/#respond</comments>
+		<pubDate>Fri, 31 Aug 2018 09:44:12 +0000</pubDate>
+		<dc:creator><![CDATA[admin]]></dc:creator>
+				<category><![CDATA[Yleinen]]></category>
+
+		<guid isPermaLink="false">http://updates.pakettikauppa.fi/?p=21</guid>
+		<description><![CDATA[Nyt saat kansainväliset lähetykset yli 190 maahan Postin EMS:n ja Priority lähetysten myötä!]]></description>
+				<content:encoded><![CDATA[<p>Nyt saat kansainväliset lähetykset yli 190 maahan Postin EMS:n ja Priority lähetysten myötä!</p>
+]]></content:encoded>
+			<wfw:commentRss>https://updates.pakettikauppa.fi/yleinen/kansainvalitykset-lahetykset-mahdollisia/feed/</wfw:commentRss>
+		<slash:comments>0</slash:comments>
+		</item>
+		<item>
+		<title>Uusi käyttöliittymä Shopify Appissa</title>
+		<link>https://updates.pakettikauppa.fi/shopify/uusi-kayttoliittyma-shopify-appissa/</link>
+		<comments>https://updates.pakettikauppa.fi/shopify/uusi-kayttoliittyma-shopify-appissa/#respond</comments>
+		<pubDate>Wed, 29 Aug 2018 05:40:55 +0000</pubDate>
+		<dc:creator><![CDATA[admin]]></dc:creator>
+				<category><![CDATA[Shopify]]></category>
+
+		<guid isPermaLink="false">http://updates.pakettikauppa.fi/?p=19</guid>
+		<description><![CDATA[Päivitimme Shopify Appiin uuden käyttöliittymän. Uusi käyttöliittymä pitäisi olla nopeampi ja selkeämpi vanhaan verrattuna. Ainoa uusi toiminta on &#8221;Ajankohtaista&#8221; sivu, josta näkee Pakettikaupan ja Shopify Appin uusimmat muutokset. Päivityksen yhteydessä on myös korjattu bugi useamman yhtäaikaisen tilauksen pakettikorttien tulostamiseen liittyen.]]></description>
+				<content:encoded><![CDATA[<p>Päivitimme Shopify Appiin uuden käyttöliittymän. Uusi käyttöliittymä pitäisi olla nopeampi ja selkeämpi vanhaan verrattuna. Ainoa uusi toiminta on &#8221;Ajankohtaista&#8221; sivu, josta näkee Pakettikaupan ja Shopify Appin uusimmat muutokset.</p>
+<p>Päivityksen yhteydessä on myös korjattu bugi useamman yhtäaikaisen tilauksen pakettikorttien tulostamiseen liittyen.</p>
+]]></content:encoded>
+			<wfw:commentRss>https://updates.pakettikauppa.fi/shopify/uusi-kayttoliittyma-shopify-appissa/feed/</wfw:commentRss>
+		<slash:comments>0</slash:comments>
+		</item>
+		<item>
+		<title>Monivarastotuki Shopify Appiin</title>
+		<link>https://updates.pakettikauppa.fi/shopify/monivarasto-tuki-shopify-appiin/</link>
+		<comments>https://updates.pakettikauppa.fi/shopify/monivarasto-tuki-shopify-appiin/#respond</comments>
+		<pubDate>Thu, 23 Aug 2018 12:22:16 +0000</pubDate>
+		<dc:creator><![CDATA[admin]]></dc:creator>
+				<category><![CDATA[Shopify]]></category>
+
+		<guid isPermaLink="false">http://updates.pakettikauppa.fi/?p=12</guid>
+		<description><![CDATA[Shopify App tukee nyt alustavasti monivarastoa fulfillmentin yhteydessä. Päivitämme tukea vielä paremmaksi tulevaisuudessa.]]></description>
+				<content:encoded><![CDATA[<p>Shopify App tukee nyt alustavasti monivarastoa fulfillmentin yhteydessä. Päivitämme tukea vielä paremmaksi tulevaisuudessa.</p>
+]]></content:encoded>
+			<wfw:commentRss>https://updates.pakettikauppa.fi/shopify/monivarasto-tuki-shopify-appiin/feed/</wfw:commentRss>
+		<slash:comments>0</slash:comments>
+		</item>
+		<item>
+		<title>SmartPOST Viro</title>
+		<link>https://updates.pakettikauppa.fi/yleinen/smartpost-viro/</link>
+		<comments>https://updates.pakettikauppa.fi/yleinen/smartpost-viro/#respond</comments>
+		<pubDate>Thu, 23 Aug 2018 12:21:13 +0000</pubDate>
+		<dc:creator><![CDATA[admin]]></dc:creator>
+				<category><![CDATA[Yleinen]]></category>
+
+		<guid isPermaLink="false">http://updates.pakettikauppa.fi/?p=9</guid>
+		<description><![CDATA[SmartPOST Viro -lähetykset ovat nyt mahdollisia. Päivitimme noutopistehakumme ja hallintaliittymän tukemaan SmartPOST Viro -lähetyksiä. Uusi toimitustapa ei ole tehnyt muutoksia API:in.]]></description>
+				<content:encoded><![CDATA[<p>SmartPOST Viro -lähetykset ovat nyt mahdollisia.</p>
+<p>Päivitimme noutopistehakumme ja hallintaliittymän tukemaan SmartPOST Viro -lähetyksiä.</p>
+<p>Uusi toimitustapa ei ole tehnyt muutoksia API:in.</p>
+]]></content:encoded>
+			<wfw:commentRss>https://updates.pakettikauppa.fi/yleinen/smartpost-viro/feed/</wfw:commentRss>
+		<slash:comments>0</slash:comments>
+		</item>
+		<item>
+		<title>Automaattinen lähetysten poistaja</title>
+		<link>https://updates.pakettikauppa.fi/yleinen/automaattinen-lahetysten-poistaja/</link>
+		<comments>https://updates.pakettikauppa.fi/yleinen/automaattinen-lahetysten-poistaja/#respond</comments>
+		<pubDate>Thu, 23 Aug 2018 12:15:50 +0000</pubDate>
+		<dc:creator><![CDATA[admin]]></dc:creator>
+				<category><![CDATA[Yleinen]]></category>
+
+		<guid isPermaLink="false">http://updates.pakettikauppa.fi/?p=5</guid>
+		<description><![CDATA[Otimme käyttöön automaattisen lähettämättömien lähetyksien peruuttajan: mikäli lähetystä ei ole tapahtunut yli 2 kk aikana luonnista, niin se perutaan automaattisesti ja mahdolliset veloitukset palautetaan käytettäväksi seuraavien lähetyksien yhteydessä.]]></description>
+				<content:encoded><![CDATA[<p>Otimme käyttöön automaattisen lähettämättömien lähetyksien peruuttajan: mikäli lähetystä ei ole tapahtunut yli 2 kk aikana luonnista, niin se perutaan automaattisesti ja mahdolliset veloitukset palautetaan käytettäväksi seuraavien lähetyksien yhteydessä.</p>
+]]></content:encoded>
+			<wfw:commentRss>https://updates.pakettikauppa.fi/yleinen/automaattinen-lahetysten-poistaja/feed/</wfw:commentRss>
+		<slash:comments>0</slash:comments>
+		</item>
+	</channel>
+</rss>
+
