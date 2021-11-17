@@ -347,16 +347,23 @@ class AppController extends Controller {
                 $shipment['tracking_codes'] = $tracking_codes;
                 $shipment['tracking_code'] = end($shipment['tracking_codes']);
             }
-                    
+            
             if (
-                    !empty($this->pk_client->getResponse()->{'response.trackingcode'}['labelcode']) and
-                    $shop->create_activation_code === true
+                    !empty($this->pk_client->getResponse()->{'response.trackingcode'}['labelcode']) && $shop->create_activation_code === true
             ) {
                 try {
                     $query_params = $this->client->buildGraphQLInput(['id' => $order['gid'], 'note' => sprintf('%s: %s', trans('app.settings.activation_code'), $this->pk_client->getResponse()->{'response.trackingcode'}['labelcode'])]);
                     $query = <<<GQL
                             mutation UpdateOrder {
-                                orderUpdate(input: $query_params)
+                                orderUpdate(input: $query_params){
+                                    userErrors {
+                                      field
+                                      message
+                                    }
+                                    order {
+                                      id
+                                    }
+                                }
                             }        
                             GQL;
                     $this->client->call($query);
