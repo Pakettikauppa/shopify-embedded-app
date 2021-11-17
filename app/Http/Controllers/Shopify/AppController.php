@@ -194,6 +194,7 @@ class AppController extends Controller {
         $shipments = [];
 
         foreach ($orders['orders']['edges'] as $orderNode) {
+            $tracking_codes = [];
             $order = $orderNode['node'];
             //assign to id in case somewhere not changed
             $order['gid'] = $order['id'];
