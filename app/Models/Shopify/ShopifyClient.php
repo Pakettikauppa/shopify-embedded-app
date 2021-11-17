@@ -133,7 +133,9 @@ class ShopifyClient {
         $response = json_decode($response, true);
         Log::debug('GraphQL call to ' . $url . "\n" . $query . "\nResponse: " . var_export($response, true));
         if (isset($response['errors'])) {
-            throw new \Exception("GraphQL errors: " . $response['errors']);
+            $cost = $response['errors'][0]['extensions']['cost'];
+            Log::debug("Cost " . $cost);
+            throw new \Exception("GraphQL errors: " . $response['errors'][0]['message']);
         
         }
         return (is_array($response) && (isset($response['data']))) ? $response['data'] : false;
@@ -287,7 +289,20 @@ class ShopifyClient {
     }
     
     public function getOrders($order_ids){
-        return $this->callGraphQL($this->ordersQuery($order_ids));
+        //create response structure
+        $orders = [
+            'orders' => [
+                 'edges' => []
+            ]
+        ];
+        //split order calls to graphql
+        foreach ($order_ids as $id){
+            $order = $this->callGraphQL($this->ordersQuery([$id]));
+            if (isset($order['orders']['edges'][0])){
+                $orders['orders']['edges'][] = $order['orders']['edges'][0];
+            }
+        }
+        return $orders;
     }
     
     private function ordersQuery($order_ids){
