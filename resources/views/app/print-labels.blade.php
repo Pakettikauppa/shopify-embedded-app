@@ -62,8 +62,10 @@
                     <form id="print-labels-form" method="post" action="{{route('shopify.get_labels')}}?{{$print_all_params}}" target="_blank">
                         <input type="hidden" name="_token" id="csrf-token" value="{{ Session::token() }}" />
                         @foreach($orders as $order)
-                            @if(isset($order['tracking_code']) && $order['tracking_code'])
-                            <input type="hidden" name="tracking_codes[]" value="{{$order['tracking_code']}}">
+                            @if(isset($order['tracking_codes']) && !empty($order['tracking_codes']))
+                                @foreach($order['tracking_codes'] as $tracking_code)
+                                    <input type="hidden" name="tracking_codes[]" value="{{$tracking_code}}">
+                                @endforeach
                             @endif
                         @endforeach
                         <button name="submit">{{trans('app.print_labels.fetch_all')}}</button>

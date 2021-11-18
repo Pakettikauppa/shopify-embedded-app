@@ -1064,23 +1064,28 @@ class AppController extends Controller {
             Log::debug('Tracking codes not found');
             throw new NotFoundHttpException();
         }
+        try {
+            $shop = request()->get('shop');
+            $this->pk_client = $this->getPakketikauppaClient($shop);
 
-        $shop = request()->get('shop');
-        $this->pk_client = $this->getPakketikauppaClient($shop);
+            $tracking_codes = request()->get('tracking_codes');
+            if(count($tracking_codes) == 1 && strpos($tracking_codes[0], ','))
+            {
+                $tracking_codes = explode(', ', $tracking_codes[0]);
+            }
+            Log::debug('Fetching labels for ' . json_encode($tracking_codes));
+            $xml = $this->pk_client->fetchShippingLabels($tracking_codes);
 
-        $tracking_codes = request()->get('tracking_codes');
-        if(count($tracking_codes) == 1 && strpos($tracking_codes[0], ','))
-        {
-            $tracking_codes = explode(', ', $tracking_codes[0]);
+            $pdf = base64_decode($xml->{'response.file'});
+
+            return Response::make($pdf, 200, [
+                        'Content-Type' => 'application/pdf',
+                        'Content-Disposition' => 'inline; filename="multiple-shipping-labels.pdf"'
+            ]);
+        } catch (\Exception $e){
+            Log::debug($e->getMessage());
+            throw new NotFoundHttpException();
         }
-        $xml = $this->pk_client->fetchShippingLabels($tracking_codes);
-
-        $pdf = base64_decode($xml->{'response.file'});
-
-        return Response::make($pdf, 200, [
-                    'Content-Type' => 'application/pdf',
-                    'Content-Disposition' => 'inline; filename="multiple-shipping-labels.pdf"'
-        ]);
     }
 
     public function getLabel(Request $request, $order_id, $tracking_code = null) {
@@ -1108,22 +1113,28 @@ class AppController extends Controller {
             Log::debug("Could not find shipment");
             throw new NotFoundHttpException();
         }
+        try {
+            $pk_shipment = new Shipment();
+            if($tracking_code){
+                $pk_shipment->setTrackingCode($tracking_code);
+            } else {
+                $pk_shipment->setTrackingCode($shipment->tracking_code);
+            }
+            Log::debug('Fetching label for ' . $pk_shipment->getTrackingCode());
+            $pk_shipment->setReference($shipment->reference);
 
-        $pk_shipment = new Shipment();
-        if($tracking_code)
-            $pk_shipment->setTrackingCode($tracking_code);
-        else
-            $pk_shipment->setTrackingCode($shipment->tracking_code);
-        $pk_shipment->setReference($shipment->reference);
+            $this->pk_client->fetchShippingLabel($pk_shipment);
 
-        $this->pk_client->fetchShippingLabel($pk_shipment);
+            $pdf_content = base64_decode($pk_shipment->getPdf());
 
-        $pdf_content = base64_decode($pk_shipment->getPdf());
-
-        return Response::make($pdf_content, 200, [
-                    'Content-Type' => 'application/pdf',
-                    'Content-Disposition' => 'inline; filename="' . $shipment->tracking_code . '.pdf"'
-        ]);
+            return Response::make($pdf_content, 200, [
+                        'Content-Type' => 'application/pdf',
+                        'Content-Disposition' => 'inline; filename="' . $shipment->tracking_code . '.pdf"'
+            ]);
+        } catch (\Exception $e){
+            Log::debug($e->getMessage());
+            throw new NotFoundHttpException();
+        }
     }
 
     public function trackShipment(Request $request) {
