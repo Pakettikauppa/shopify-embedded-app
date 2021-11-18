@@ -237,7 +237,7 @@ class Shop extends Model
 
 	// API server problem: returns wrong service code in pickup points
 	// FIX for api server problem start here
-	if ($method_code == 2103 && $receiverCountry != 'FI') {
+	if ($method_code == 2103 && $receiverCountry != 'FI' && $receiverCountry != null) {
           $method_code = 2331;
         }
 	
