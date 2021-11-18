@@ -96,7 +96,7 @@ class Shop extends Model
             }
 
             if ($order['shippingLine'] != null) {
-                $pickupPoint = $this->shippingCode2Method($order['shippingLine']['code']);
+                $pickupPoint = $this->shippingCode2Method($order['shippingLine']['code'], $receiverInfo['country']);
                 $pickupPointId = $pickupPoint['pickup_point_id'];
                 
                 if (!empty($pickupPointId)) {
@@ -222,7 +222,7 @@ class Shop extends Model
         return $order;
     }
 
-    public function shippingCode2Method($shippingCode)
+    public function shippingCode2Method($shippingCode, $receiverCountry = null)
     {
         $pickupPoint = explode(":", $shippingCode);
         $pickupPointId = null;
@@ -234,6 +234,18 @@ class Shop extends Model
         }
         //in case multi codes use first
         $method_code = explode(',', $method_code);
+
+	// API server problem: returns wrong service code in pickup points
+	// FIX for api server problem start here
+	if ($method_code == 2103 && $receiverCountry != 'FI') {
+          $method_code = 2331;
+        }
+	
+	if ($method_code == 2331 && $receiverCountry == 'FI') {
+          $method_code = 2103;
+        }
+	// FIX for api server problem ends here
+
         if (!is_numeric($method_code[0])) {
             switch ($pickupPoint[0]) {
                 case 'Posti':
