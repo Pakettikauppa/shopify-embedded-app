@@ -224,7 +224,9 @@
                             if(response.data.data.length > 0)
                             {
                                 response.data.data.forEach((service) => {
-                                    $('#additional-services-items').append(`<div class="columns six inline-labels" style ="margin-left:0;"><input type ="checkbox" name = "additional_services[]" id = "service-${service.service_code}" value="${service.service_code}"/><label for = "service-${service.service_code}">${service.name}</label></div>`);
+                                    if (service.specifiers === null){
+                                        $('#additional-services-items').append(`<div class="columns six inline-labels" style ="margin-left:0;"><input type ="checkbox" name = "additional_services[]" id = "service-${service.service_code}" value="${service.service_code}"/><label for = "service-${service.service_code}">${service.name}</label></div>`);
+                                    }
                                 });
                                 $('#additional-services').show();
                             }

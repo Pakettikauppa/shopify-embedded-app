@@ -608,7 +608,7 @@ class AppController extends Controller {
             return redirect()->route('install-link', request()->all());
         }
 
-        $shipping_methods = $pk_client->listShippingMethods();
+        $shipping_methods = $this->pk_client->listShippingMethods();
         $services = array_keys(json_decode($shop->settings, true));
         $services[] = $shop->default_service_code;
         foreach (unserialize($shop->shipping_settings) as $setting) {
@@ -672,44 +672,7 @@ class AppController extends Controller {
             ]);
         }
 
-        if ($this->type == "posti" || $this->type == "itella") {
-            $pk_client_params = [
-                'posti_config' => [
-                    'api_key' => $shop->api_key,
-                    'secret' => $shop->api_secret,
-                    'base_uri' => $this->test_mode ? 'https://argon.api.posti.fi' : 'https://nextshipping.posti.fi',
-                    'use_posti_auth' => true,
-                    'posti_auth_url' => $this->test_mode ? 'https://oauth.barium.posti.com' : 'https://oauth2.posti.com',
-                ]
-            ];
-            $pk_use_config = "posti_config";
-        } else {
-            if ($shop->test_mode) {
-                $pk_client_params = [
-                    'test_mode' => true,
-                ];
-            } else {
-                if (!empty($shop->api_key) && !empty($shop->api_secret)) {
-                    $pk_client_params = [
-                        'api_key' => $shop->api_key,
-                        'secret' => $shop->api_secret,
-                    ];
-                }
-            }
-        }
-
-        if ($pk_client_params == null) {
-            Log::debug("Pikcup points: fatal error");
-            throw new FatalErrorException();
-        }
-
-        $pk_client = new Client($pk_client_params, $pk_use_config);
-        if ($pk_use_config == "posti_config") {
-            $token = $pk_client->getToken();
-            if (isset($token->access_token)) {
-                $pk_client->setAccessToken($token->access_token);
-            }
-        }
+        $pk_client = $this->getPakketikauppaClient($shop);
 
         // test if pickup points are available in settings
         if (!(isset($shop->pickuppoints_count) && $shop->pickuppoints_count > 0)) {
