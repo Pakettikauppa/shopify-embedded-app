@@ -318,7 +318,7 @@ class ShopifyClient {
                       email
                       phone
                       totalWeight
-                      lineItems(first: 10) {
+                      lineItems(first: 30) {
                         edges {
                             node {
                                 id
