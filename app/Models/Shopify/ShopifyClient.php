@@ -315,6 +315,7 @@ class ShopifyClient {
                     node {
                       id
                       legacyResourceId
+                      name
                       email
                       phone
                       totalWeight
@@ -325,6 +326,7 @@ class ShopifyClient {
                                 requiresShipping
                                 quantity
                                 name
+                                sku
                                 variant {
                                     weight
                                     weightUnit

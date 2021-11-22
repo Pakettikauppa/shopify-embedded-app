@@ -63,6 +63,13 @@ class Shop extends Model
 
         $info = new Info();
         $info->setReference($order['id']);
+        if ($this->add_additional_label_info && $this->additional_label_info){
+            $additional_info = array(
+                'order_number' => $order['name'],
+                'products' => $contents,
+            );
+            $info->setAdditionalInfoText($this->prepareAdditionalInfoText($additional_info));
+        }
         $parcel = new Parcel();
         $parcel->setReference($order['id']);
         $parcel->setWeight(number_format($order['totalWeight'] * 0.001, 3)); // kg
@@ -356,6 +363,8 @@ class Shop extends Model
         $this->default_service_code = $settings['default_service_code'] ? $settings['default_service_code'] : 0;
         $this->always_create_return_label = $settings['always_create_return_label'];
         $this->create_activation_code = $settings['create_activation_code'];
+        $this->add_additional_label_info = $settings['add_additional_label_info'];
+        $this->additional_label_info = $settings['additional_label_info'];
 
         return $this->save();
     }
@@ -457,5 +466,53 @@ class Shop extends Model
         if ($unit == "KILOGRAMS"){
             return $weight * 1000;
         }
+    }
+    
+    private function prepareAdditionalInfoText( $values = array() ) {
+        if ( ! is_array($values) ) {
+            return '';
+        }
+
+        $keys = array(
+            'order_number' => '{ORDER_NUMBER}',
+            'products' => array(),
+            'products_names' => '{PRODUCTS_NAMES}',
+            'products_sku' => '{PRODUCTS_SKU}',
+        );
+        foreach ($keys as $key_id => $key) {
+            $values[$key_id] = (isset($values[$key_id])) ? $values[$key_id] : $key;
+        }
+
+        $additional_info = '';
+
+        if ( ! empty($this->additional_label_info) ) {
+            $additional_info = $this->additional_label_info;
+            //remove new line, because it is not supported yet
+            $additional_info = str_replace(["\n", "\r"], ' ', $additional_info);
+
+            $additional_info = str_replace('{ORDER_NUMBER}', $values['order_number'], $additional_info);
+
+            $products_names_text = '';
+            $products_sku_text = '';
+            if ( is_array($values['products']) && !empty($values['products']) ) {
+                foreach ($values['products'] as $item) {
+                    if ( ! empty($products_names_text) ) {
+                        $products_names_text .= ', ';
+                    }
+                    if ( ! empty($products_sku_text) ) {
+                        $products_sku_text .= ', ';
+                    }
+                    $products_names_text .= $item['name'];
+                    $products_sku_text .= (! empty($item['sku'])) ? $item['sku'] : '-';
+                }
+            } else {
+                $products_names_text = $values['products_names'];
+                $products_sku_text = $values['products_sku'];
+            }
+            $additional_info = str_replace('{PRODUCTS_NAMES}', $products_names_text, $additional_info);
+            $additional_info = str_replace('{PRODUCTS_SKU}', $products_sku_text, $additional_info);
+        }
+        
+        return $additional_info;
     }
 }
