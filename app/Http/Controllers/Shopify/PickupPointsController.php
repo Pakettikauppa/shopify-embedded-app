@@ -10,19 +10,18 @@ use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 use Psy\Exception\FatalErrorException;
 use Log;
 
-class PickupPointsController extends Controller
-{
+class PickupPointsController extends Controller {
+
     private $pickupPointSettings;
     private $type;
     private $test_mode;
-    
+
     public function __construct(Request $request) {
         $this->type = config('shopify.type');
         $this->test_mode = config('shopify.test_mode');
     }
 
-    public function list(Request $request)
-    {
+    public function list(Request $request) {
         // SETUP EVERYTHING
         // setup and validate Shop
         $shop = Shop::where('shop_origin', $request->header('x-shopify-shop-domain'))->first();
@@ -72,11 +71,11 @@ class PickupPointsController extends Controller
             Log::debug("Pikcup points: fatal error");
             throw new FatalErrorException();
         }
-        
+
         $pk_client = new Client($pk_client_params, $pk_use_config);
-        if ($pk_use_config == "posti_config"){
+        if ($pk_use_config == "posti_config") {
             $token = $pk_client->getToken();
-            if (isset($token->access_token)){
+            if (isset($token->access_token)) {
                 $pk_client->setAccessToken($token->access_token);
             }
         }
@@ -109,9 +108,9 @@ class PickupPointsController extends Controller
                 $totalWeightInGrams += $_item->grams * $_item->quantity;
             }
 
-            Log::debug('TotalWeight: '. $totalWeightInGrams);
+            Log::debug('TotalWeight: ' . $totalWeightInGrams);
             //if weight is more than 35kg, do not return
-            if ($totalWeightInGrams > 35000){
+            if ($totalWeightInGrams > 35000) {
                 $json = json_encode(['rates' => $rates]);
                 Log::debug($json);
                 echo $json;
@@ -134,35 +133,41 @@ class PickupPointsController extends Controller
 
             // search nearest pickup locations
             $pickupPoints = $pk_client->searchPickupPoints(
-                $destination->postal_code,
-                $destination->address1,
-                $destination->country,
-                $pickupPointProviders,
-                $shop->pickuppoints_count
+                    $destination->postal_code,
+                    $destination->address1,
+                    $destination->country,
+                    $pickupPointProviders,
+                    $shop->pickuppoints_count
             );
 
             if (empty($pickupPoints) && ($destination->country == 'LT' || $destination->country == 'AX' || $destination->country == 'FI')) {
                 // search some pickup points if no pickup locations was found
                 $pickupPoints = $pk_client->searchPickupPoints(
-                    '00100',
-                    null,
-                    'FI',
-                    $pickupPointProviders,
-                    $shop->pickuppoints_count
+                        '00100',
+                        null,
+                        'FI',
+                        $pickupPointProviders,
+                        $shop->pickuppoints_count
                 );
             }
+            
+            //check if array received, sometimes got none array and exception is thrown
+            if (!is_array($pickupPoints)) {
+                Log::debug('Pickup points list is not array: ' . var_export($pickupPoints, true));
+                $json = json_encode(array('rates' => $rates));
+                echo $json;
+                return;
+            }
+            
             // generate custom carrier service response
             try {
                 foreach ($pickupPoints as $_pickupPoint) {
                     $_pickupPointName = ucwords(mb_strtolower($_pickupPoint->name));
 
                     $_pickupPoint->provider_service = 0;
-                    if(isset($_pickupPoint->service->service_code) && $_pickupPoint->service->service_code)
-                    {
+                    if (isset($_pickupPoint->service->service_code) && $_pickupPoint->service->service_code) {
                         $_pickupPoint->provider_service = $_pickupPoint->service->service_code;
-                    }
-                    else if(isset($_pickupPoint->service_code) && $_pickupPoint->service_code)
-                    {
+                    } else if (isset($_pickupPoint->service_code) && $_pickupPoint->service_code) {
                         $_pickupPoint->provider_service = $_pickupPoint->service_code;
                     }
 
@@ -170,9 +175,9 @@ class PickupPointsController extends Controller
                     if ($_pickupPoint->provider_service == '80010') {
                         $_descriptionArray = [];
                         preg_match(
-                            "/V(?<week>[0-9-]*)[ ]*L?(?<sat>[0-9-]*)[ ]*S?(?<sun>[0-9-]?.*)/",
-                            $_pickupPoint->description,
-                            $_descriptionArray
+                                "/V(?<week>[0-9-]*)[ ]*L?(?<sat>[0-9-]*)[ ]*S?(?<sun>[0-9-]?.*)/",
+                                $_pickupPoint->description,
+                                $_descriptionArray
                         );
 
                         if (count($_descriptionArray) > 0) {
@@ -202,7 +207,6 @@ class PickupPointsController extends Controller
             } catch (\Exception $e) {
                 Log::debug($e->getMessage());
                 Log::debug($e->getTraceAsString());
-                Log::debug(var_export($_pickupPoint, true));
                 Log::debug(var_export($pickupPoints, true));
                 Log::debug(var_export($request->all(), true));
             }
@@ -220,8 +224,7 @@ class PickupPointsController extends Controller
         echo $json;
     }
 
-    private function convertDBSTime($openingHours)
-    {
+    private function convertDBSTime($openingHours) {
         $openingHours = '000000000' . $openingHours;
 
         try {
@@ -235,16 +238,16 @@ class PickupPointsController extends Controller
         }
     }
 
-    private function priceForPickupPoint($provider, $totalValue)
-    {
+    private function priceForPickupPoint($provider, $totalValue) {
         //take first provider if multi provider string
-        $provider = explode(',',$provider);
+        $provider = explode(',', $provider);
         $pickupPointSettings = $this->pickupPointSettings[$provider[0]];
 
         if ($pickupPointSettings['trigger_price'] > 0 and $pickupPointSettings['trigger_price'] * 100 <= $totalValue) {
-            return (int)round($pickupPointSettings['triggered_price'] * 100.0);
+            return (int) round($pickupPointSettings['triggered_price'] * 100.0);
         }
 
-        return (int)round($pickupPointSettings['base_price'] * 100.0);
+        return (int) round($pickupPointSettings['base_price'] * 100.0);
     }
+
 }
