@@ -153,56 +153,58 @@ class PickupPointsController extends Controller
             }
             // generate custom carrier service response
             try {
-                foreach ($pickupPoints as $_pickupPoint) {
-                    $_pickupPointName = ucwords(mb_strtolower($_pickupPoint->name));
+                //check if array received, sometimes got none array and exception is thrown
+                if (is_array($pickupPoints)){
+                    foreach ($pickupPoints as $_pickupPoint) {
+                        $_pickupPointName = ucwords(mb_strtolower($_pickupPoint->name));
 
-                    $_pickupPoint->provider_service = 0;
-                    if(isset($_pickupPoint->service->service_code) && $_pickupPoint->service->service_code)
-                    {
-                        $_pickupPoint->provider_service = $_pickupPoint->service->service_code;
-                    }
-                    else if(isset($_pickupPoint->service_code) && $_pickupPoint->service_code)
-                    {
-                        $_pickupPoint->provider_service = $_pickupPoint->service_code;
-                    }
-
-
-                    if ($_pickupPoint->provider_service == '80010') {
-                        $_descriptionArray = [];
-                        preg_match(
-                            "/V(?<week>[0-9-]*)[ ]*L?(?<sat>[0-9-]*)[ ]*S?(?<sun>[0-9-]?.*)/",
-                            $_pickupPoint->description,
-                            $_descriptionArray
-                        );
-
-                        if (count($_descriptionArray) > 0) {
-                            $_weekHours = 'ma-pe ' . $this->convertDBSTime($_descriptionArray['week']);
-                            $_satHours = '';
-                            $_sunHours = '';
-
-                            if (isset($_descriptionArray['sat'])) {
-                                $_satHours = ', la ' . $this->convertDBSTime($_descriptionArray['sat']);
-                            }
-                            if (isset($_descriptionArray['sun'])) {
-                                $_sunHours = ', su ' . $this->convertDBSTime($_descriptionArray['sun']);
-                            }
-
-                            $_pickupPoint->description = "{$_weekHours}{$_satHours}{$_sunHours}";
+                        $_pickupPoint->provider_service = 0;
+                        if(isset($_pickupPoint->service->service_code) && $_pickupPoint->service->service_code)
+                        {
+                            $_pickupPoint->provider_service = $_pickupPoint->service->service_code;
                         }
-                    }
+                        else if(isset($_pickupPoint->service_code) && $_pickupPoint->service_code)
+                        {
+                            $_pickupPoint->provider_service = $_pickupPoint->service_code;
+                        }
 
-                    $rates[] = array(
-                        'service_name' => "{$_pickupPointName}, " . "{$_pickupPoint->street_address}, {$_pickupPoint->postcode}, {$_pickupPoint->city}",
-                        'description' => $_pickupPoint->provider . ' (' . ((is_object($_pickupPoint->service) && isset($_pickupPoint->service->name) && $_pickupPoint->service->name != null) ? $_pickupPoint->service->name : '') . ') ' . ($_pickupPoint->description == null ? '' : " ({$_pickupPoint->description})"),
-                        'service_code' => "{$_pickupPoint->provider_service}:{$_pickupPoint->pickup_point_id}",
-                        'currency' => 'EUR',
-                        'total_price' => $this->priceForPickupPoint($_pickupPoint->provider_service, $totalValue)
-                    );
+
+                        if ($_pickupPoint->provider_service == '80010') {
+                            $_descriptionArray = [];
+                            preg_match(
+                                "/V(?<week>[0-9-]*)[ ]*L?(?<sat>[0-9-]*)[ ]*S?(?<sun>[0-9-]?.*)/",
+                                $_pickupPoint->description,
+                                $_descriptionArray
+                            );
+
+                            if (count($_descriptionArray) > 0) {
+                                $_weekHours = 'ma-pe ' . $this->convertDBSTime($_descriptionArray['week']);
+                                $_satHours = '';
+                                $_sunHours = '';
+
+                                if (isset($_descriptionArray['sat'])) {
+                                    $_satHours = ', la ' . $this->convertDBSTime($_descriptionArray['sat']);
+                                }
+                                if (isset($_descriptionArray['sun'])) {
+                                    $_sunHours = ', su ' . $this->convertDBSTime($_descriptionArray['sun']);
+                                }
+
+                                $_pickupPoint->description = "{$_weekHours}{$_satHours}{$_sunHours}";
+                            }
+                        }
+
+                        $rates[] = array(
+                            'service_name' => "{$_pickupPointName}, " . "{$_pickupPoint->street_address}, {$_pickupPoint->postcode}, {$_pickupPoint->city}",
+                            'description' => $_pickupPoint->provider . ' (' . ((is_object($_pickupPoint->service) && isset($_pickupPoint->service->name) && $_pickupPoint->service->name != null) ? $_pickupPoint->service->name : '') . ') ' . ($_pickupPoint->description == null ? '' : " ({$_pickupPoint->description})"),
+                            'service_code' => "{$_pickupPoint->provider_service}:{$_pickupPoint->pickup_point_id}",
+                            'currency' => 'EUR',
+                            'total_price' => $this->priceForPickupPoint($_pickupPoint->provider_service, $totalValue)
+                        );
+                    }
                 }
             } catch (\Exception $e) {
                 Log::debug($e->getMessage());
                 Log::debug($e->getTraceAsString());
-                Log::debug(var_export($_pickupPoint, true));
                 Log::debug(var_export($pickupPoints, true));
                 Log::debug(var_export($request->all(), true));
             }
