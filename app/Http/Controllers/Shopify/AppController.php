@@ -492,6 +492,7 @@ class AppController extends Controller {
                                 'orderId' => $order['gid'],
                                 'trackingNumbers' => implode(', ', $order['tracking_codes']),
                                 'locationId' => $locationId,
+                                'notifyCustomer' => true,
                                 'trackingCompany' => trans('app.settings.company_name_' . $this->type),
                                 'trackingUrls' => $this->tracking_url . end($order['tracking_codes']),
                                 'lineItems' => $items,
@@ -1207,6 +1208,8 @@ class AppController extends Controller {
             } else {
                 if (gettype($value) == "integer"){
                     $output .= $key . ': ' . $value . '';
+                } else if (gettype($value) == "boolean"){
+                    $output .= $key . ': ' . ($value?'true':'false') . '';
                 } else {
                     $output .= $key . ': "' . $value . '"';
                 }
