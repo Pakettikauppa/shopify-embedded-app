@@ -18,6 +18,22 @@
 	<sy:updateFrequency>1</sy:updateFrequency>
 	<generator>https://wordpress.org/?v=4.9.8</generator>
 	<item>
+		<title>Päivitämme ja kehitämme sovellusta jatkuvasti sinulle paremmaksi. Lue alta uusimmat parannukset.</title>
+		<pubDate>Tue, 23 Nov 2021 09:44:22 +0000</pubDate>
+		<category><![CDATA[Shopify]]></category>
+		<content:encoded><![CDATA[
+<p>EU:n ulkopuoliset lähetykset mahdollisia. Merkittävä parannus lähettää paketteja maailmalle, sillä nyt voi lähettää pakettisi EU:n ulkopuolelle Shopifyn kautta. Muistathan lisätä HS-koodin ulkomaille myytäville tavaroillesi tuotetiedoissa ja valita oikean kuljetustavan, jos pakettien vastaanottaja on EU:n ulkopuolella. Vain maailma on rajanasi!</p>
+ 
+<p>Varastoinventaarion parannus: Mikäli sinulla on useampi varasto, pystyt tulostamaan pakettikortit mikäli kaikki tilauksen tavarat ovat samassa varastossa. Muussa tapauksessa lähetyksen luonti ei onnistu. Tällaisessa tapauksessa luo näistä erilliset tilaukset./p>
+ 
+<p>Bugikorjaus: Jos olet tehnyt Shopifyn kautta asiakkaalle tilausluonnoksen ja asiakas tilaa tuotteen, tilaus merkitään jaelluksi pakettikortin tulostuksen jälkeen.</p>
+ 
+<p>Muitakin pienempiä bugikorjauksia.</p>
+]]></content:encoded>
+	</item>
+
+	<item>
+
 		<title>Shopify ja toimitusvyöhykket</title>
 		<link>https://updates.pakettikauppa.fi/shopify/shopify-ja-toimitusvyohykket/</link>
 		<comments>https://updates.pakettikauppa.fi/shopify/shopify-ja-toimitusvyohykket/#respond</comments>
