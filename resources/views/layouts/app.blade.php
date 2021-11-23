@@ -502,6 +502,15 @@
             // No custom content - load news page
             buttonNews.dispatch(Actions.Button.Action.CLICK);
         });
+        
+        
+        function toggle_div(self, id) {
+            if (!self.checked) {
+                document.getElementById(id).style.display = "none";
+            } else {
+                document.getElementById(id).style.display = "block";
+            }
+        }
     </script>
     @yield('after-scripts-end')
 </head>

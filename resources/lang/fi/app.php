@@ -28,6 +28,19 @@ return [
             'nothing_to_ship' => 'Ei lähetettäviä tuotteita',
         ],
     ],
+    'custom_shipment' => [
+        'title' => 'Custom Shipment',
+        'service_title' => 'Shipping service',
+        'additional_service_title' => 'Additional service',
+        'address_title' => 'Shipping address',
+        'create_button' => 'Create Shipment',
+        'save_successful' => 'Shipment updated successfully',
+        'save_failed' => 'Shipment update failed',
+        'pickups_title' => 'Pickup points',
+        'not_selected' => 'Shipping method not selected',
+        'multiparcel_title' => 'Packets'
+
+    ],
     'settings' => [
         'only_default' => 'Huom! Vain "Oletuslähetystapa" toimii ylläolevassa toimituksissa. Shopifyssä olevan rajoitteen takia toimitushinnan nimi pitää olla uniikki eri toimitusvyöhykkeissä.',
         'default_shipping' => 'Oletuslähetystapa',
@@ -35,6 +48,12 @@ return [
         'no_shipping' => 'Älä luo lähetystä',
         'activation_code' => 'Asiointikoodi',
         'create_activation_code' => 'Luo asiointikoodi (Helposti-koodi, aktivointikoodi) kaikille lähetyksille. Koodi lisätään tilauksen Notesiin, jolloinka se saattaa tulla näkyviin myös asiakkaalle meneviin tietoihin!',
+        'add_additional_label_info' => 'Lisää sisältöä pakettikortin lisätietoihin',
+        'additional_label_info' => 'Pakettikortin sisältö lisätietoa varten',
+        'default_additional_label_info' => "Tilausnumero {ORDER_NUMBER}\nTuotteet: {PRODUCTS_NAMES}\nSKU: {PRODUCTS_SKU}",
+        'order_number' => 'Tilausnumero',
+        'products_names' => 'Lähetyksessä olevat tuotteet',
+        'products_sku' => 'Lähetyksessä olevat SKU',
         'testmode_on' => 'Kytke testitila päälle',
         'testmode_off' => 'Kytke tuotantotila päälle',
         'latest-news' => 'Ajankohtaista',

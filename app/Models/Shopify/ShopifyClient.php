@@ -133,7 +133,7 @@ class ShopifyClient {
         $response = json_decode($response, true);
         Log::debug('GraphQL call to ' . $url . "\n" . $query . "\nResponse: " . var_export($response, true));
         if (isset($response['errors'])) {
-            $cost = $response['errors'][0]['extensions']['cost'];
+            $cost = $response['errors'][0]['extensions']['cost'] ?? 0;
             Log::debug("Cost " . $cost);
             throw new \Exception("GraphQL errors: " . $response['errors'][0]['message']);
         
@@ -315,16 +315,18 @@ class ShopifyClient {
                     node {
                       id
                       legacyResourceId
+                      name
                       email
                       phone
                       totalWeight
-                      lineItems(first: 10) {
+                      lineItems(first: 30) {
                         edges {
                             node {
                                 id
                                 requiresShipping
                                 quantity
                                 name
+                                sku
                                 variant {
                                     weight
                                     weightUnit
