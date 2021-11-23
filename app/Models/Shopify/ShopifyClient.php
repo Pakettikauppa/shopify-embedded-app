@@ -117,6 +117,15 @@ class ShopifyClient {
         Log::debug('REST ' . $method . ' call to ' . $url . ' Times called in request: ' . $this->api_calls);
 
         if (isset($response['errors']) or ($this->last_response_headers['http_status_code'] >= 400)) {
+            Log::debug(json_encode(
+                [
+                    'method' => $method,
+                    'path' => $path,
+                    'params' => $params,
+                    '$this->last_response_headers' => $this->last_response_headers,
+                    'response' => $response,
+                ], JSON_PRETTY_PRINT
+            ));
             throw new ShopifyApiException($method, $path, $params, $this->last_response_headers, $response);
         }
         return (is_array($response) and (count($response) > 0)) ? array_shift($response) : $response;

@@ -617,12 +617,6 @@ class AppController extends Controller {
                 $services[] = $setting['product_code'];
         }
 
-        // Remove inactive services
-        foreach ($shipping_methods as $key => $shipping_method) {
-            if (!in_array($shipping_method->shipping_method_code, $services)) {
-                unset($shipping_methods[$key]);
-            }
-        }
         if (!is_array($shipping_methods)) {
             $shipping_methods = array();
         }
@@ -819,25 +813,37 @@ class AppController extends Controller {
 
         if (request()->get('pickup')) {
             $pickup = json_decode(trim(request()->get('pickup'), '"'), true);
-            $shipping_lines[] = [
-                'code' => $pickup['service_code'],
-                'price' => $pickup['total_price'] / 100.0,
-                'discounted_price' => $pickup['total_price'] / 100.0,
-                'title' => $pickup['service_name']
-            ];
-            $order['shipping_lines'] = $shipping_lines;
-        } else {
+            $code = $pickup['service_code'];
+            $service_name = $pickup['service_name'];
+        }
+        elseif (request()->get('shipping_method'))
+        {
+            $code = request()->get('shipping_method');
+        }
+        else
+        {
             return response()->json([
-                        'message' => trans('app.custom_shipment.not_selected'),
-                        'status' => 'error',
+                'message' => trans('app.custom_shipment.not_selected'),
+                'status' => 'error',
             ]);
         }
-        
+
+        // Does not really matter, besides code, which API will use. Shipping_lines is immutable in Shopify.
+        $shipping_lines[] = [
+            'code' => $code,
+            'price' => 0,
+            'discounted_price' => 0,
+            'title' => $service_name,
+        ];
+        $order['shipping_lines'] = $shipping_lines;
+
         $additional_services = request()->get('additional_services');
         if (is_array($additional_services) && count($additional_services)){
             $order['additional_services'] = $additional_services;
         }
-        
+
+        $order['gid'] = $order['id'];
+        $order['id'] = $order['legacyResourceId'];
         $shipment = [];
         $shipment['fulfillment_status'] = !empty($order['fulfillments']) ? $order['fulfillments'][0]['status'] : '';
         $shipment['line_items'] = [];
@@ -848,6 +854,7 @@ class AppController extends Controller {
         }
 
         $shipment['id'] = $order['legacyResourceId'];
+        $shipment['gid'] = $order['gid'];
         $shipment['admin_order_url'] = 'https://' . $shop->shop_origin . '/admin/orders/' . $order['legacyResourceId'];
         $url_params = [
             'shop' => $shop->shop_origin,
@@ -915,32 +922,6 @@ class AppController extends Controller {
                 $contents,
         );
         $shipment['status'] = $_shipment['status'];
-
-        if (
-                !empty($this->pk_client->getResponse()->{'response.trackingcode'}['labelcode']) and
-                $shop->create_activation_code === true
-        ) {
-            try {
-                if ($this->client->callsLeft() > 0 and $this->client->callLimit() == $this->client->callsLeft()) {
-                    sleep(2);
-                }
-
-                $this->client->call(
-                        'PUT',
-                        'admin',
-                        '/orders/' . $order['id'] . '.json',
-                        [
-                            'order' => [
-                                'id' => $order['id'],
-                                'note' => sprintf('%s: %s', trans('app.settings.activation_code'), $this->pk_client->getResponse()->{'response.trackingcode'}['labelcode'])
-                            ]
-                        ]
-                );
-            } catch (\Exception $e) {
-                Log::debug($e->getMessage());
-                Log::debug($e->getTraceAsString());
-            }
-        }
 
         if (isset($_shipment['error_message'])) {
             $shipment['error_message'] = $_shipment['error_message'];

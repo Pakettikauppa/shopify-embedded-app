@@ -101,7 +101,7 @@
                     <div class="column twelve">
                         <div class="columns twelve">
                             <label for="country">Country/region</label>
-                            <select name="country">
+                            <select id="country" name="country">
                                 @foreach(getCountryList() as $code => $country)
                                     <option value="{{$code}}"  @if($shipping_address['country_code'] == $code) selected @endif>
                                         {{$country}}
@@ -150,112 +150,120 @@
         }
         $(document).on('ready', () => {
             $('#pickup-select-block').hide();
-            $('#shipping-method').on('change', e => {
-                $('#pickup-select-block').hide();
-                $('#additional-services').hide();
-                $('#additional-services-items').html('');
-                $('#pickup-select-block option').remove();
-                if(!$('#shipping-method').val())
-                {
-                    return;
-                }
-                startLoading();
-                $('#multi-parcel-block').hide();
-                $(e.target).find(':selected').data('services').forEach((service) => {
-                    if(service['service_code'] == '3102')
-                    {
-                        $('#multi-parcel-block').show();
-                    }
-                });
-                ax(
-                    {
-                        method: 'POST',
-                        url: '{{route('shopify.ajax-load-pickups')}}',
-                        data:
-                            $.param($('#setting-form').serializeArray()),
-                    }
-                ).then(
-                    response => {
-                        if (response.status === 200 && response.data.status !== 'error') {
-                            showToast({message: response.data.message, isError: false});
-                            if(response.data.pickups.length > 0)
-                            {
-                                response.data.pickups.forEach((pickup) => {
-                                    $('#pickup-select').append(`<option value='"${JSON.stringify(pickup)}"'>${pickup.service_name}</option>`);
-                                });
-                                $('#pickup-select-block').show();
-                            }
-                        } else if (response.status === 200 && response.data.status === 'error') {
-                            showToast({
-                                message: response.data.message,
-                                isError: true
-                            });
-                            console.error('RESPONSE ERROR:', response.data.message);
-                        } else {
-                            showToast({
-                                message: 'Something went wrong',
-                                isError: true
-                            });
-                        }
-                        stopLoading();
-                    }
-                ).catch(
-                    error => {
-                        showToast({
-                            message: 'Something went wrong',
-                            isError: true
-                        });
-                        console.error('API ERROR:', error);
-                        stopLoading();
-                    }
-                );
-                //load additional services
-                ax(
-                    {
-                        method: 'POST',
-                        url: '{{route('shopify.ajax-load-additional-services')}}',
-                        data:
-                            $.param($('#setting-form').serializeArray()),
-                    }
-                ).then(
-                    response => {
-                        if (response.status === 200 && response.data.status !== 'error') {
-                            showToast({message: response.data.message, isError: false});
-                            if(response.data.data.length > 0)
-                            {
-                                response.data.data.forEach((service) => {
-                                    if (service.specifiers === null){
-                                        $('#additional-services-items').append(`<div class="columns six inline-labels" style ="margin-left:0;"><input type ="checkbox" name = "additional_services[]" id = "service-${service.service_code}" value="${service.service_code}"/><label for = "service-${service.service_code}">${service.name}</label></div>`);
-                                    }
-                                });
-                                $('#additional-services').show();
-                            }
-                        } else if (response.status === 200 && response.data.status === 'error') {
-                            showToast({
-                                message: response.data.message,
-                                isError: true
-                            });
-                            console.error('RESPONSE ERROR:', response.data.message);
-                        } else {
-                            showToast({
-                                message: 'Something went wrong',
-                                isError: true
-                            });
-                        }
-                        stopLoading();
-                    }
-                ).catch(
-                    error => {
-                        showToast({
-                            message: 'Something went wrong',
-                            isError: true
-                        });
-                        console.error('API ERROR:', error);
-                        stopLoading();
-                    }
-                );
+            $('#shipping-method, #country').on('change', e => {
+                handlePickupsAndAdditionalServices();
+            });
+            $('[name="address1"], [name="zip"]').on('focusout', () => {
+                handlePickupsAndAdditionalServices();
             });
         });
+
+        function handlePickupsAndAdditionalServices()
+        {
+            $('#pickup-select-block').hide();
+            $('#additional-services').hide();
+            $('#additional-services-items').html('');
+            $('#pickup-select-block option').remove();
+            if(!$('#shipping-method').val())
+            {
+                return;
+            }
+            startLoading();
+            $('#multi-parcel-block').hide();
+            $('#shipping-method').find(':selected').data('services').forEach((service) => {
+                if(service['service_code'] == '3102')
+                {
+                    $('#multi-parcel-block').show();
+                }
+            });
+            ax(
+                {
+                    method: 'POST',
+                    url: '{{route('shopify.ajax-load-pickups')}}',
+                    data:
+                        $.param($('#setting-form').serializeArray()),
+                }
+            ).then(
+                response => {
+                    if (response.status === 200 && response.data.status !== 'error') {
+                        showToast({message: response.data.message, isError: false});
+                        if(response.data.pickups.length > 0)
+                        {
+                            response.data.pickups.forEach((pickup) => {
+                                $('#pickup-select').append(`<option value='"${JSON.stringify(pickup)}"'>${pickup.service_name}</option>`);
+                            });
+                            $('#pickup-select-block').show();
+                        }
+                    } else if (response.status === 200 && response.data.status === 'error') {
+                        showToast({
+                            message: response.data.message,
+                            isError: true
+                        });
+                        console.error('RESPONSE ERROR:', response.data.message);
+                    } else {
+                        showToast({
+                            message: 'Something went wrong',
+                            isError: true
+                        });
+                    }
+                    stopLoading();
+                }
+            ).catch(
+                error => {
+                    showToast({
+                        message: 'Something went wrong',
+                        isError: true
+                    });
+                    console.error('API ERROR:', error);
+                    stopLoading();
+                }
+            );
+            //load additional services
+            ax(
+                {
+                    method: 'POST',
+                    url: '{{route('shopify.ajax-load-additional-services')}}',
+                    data:
+                        $.param($('#setting-form').serializeArray()),
+                }
+            ).then(
+                response => {
+                    if (response.status === 200 && response.data.status !== 'error') {
+                        showToast({message: response.data.message, isError: false});
+                        if(response.data.data.length > 0)
+                        {
+                            response.data.data.forEach((service) => {
+                                if (service.specifiers === null){
+                                    $('#additional-services-items').append(`<div class="columns six inline-labels" style ="margin-left:0;"><input type ="checkbox" name = "additional_services[]" id = "service-${service.service_code}" value="${service.service_code}"/><label for = "service-${service.service_code}">${service.name}</label></div>`);
+                                }
+                            });
+                            $('#additional-services').show();
+                        }
+                    } else if (response.status === 200 && response.data.status === 'error') {
+                        showToast({
+                            message: response.data.message,
+                            isError: true
+                        });
+                        console.error('RESPONSE ERROR:', response.data.message);
+                    } else {
+                        showToast({
+                            message: 'Something went wrong',
+                            isError: true
+                        });
+                    }
+                    stopLoading();
+                }
+            ).catch(
+                error => {
+                    showToast({
+                        message: 'Something went wrong',
+                        isError: true
+                    });
+                    console.error('API ERROR:', error);
+                    stopLoading();
+                }
+            );
+        }
 
     </script>
 @endsection
