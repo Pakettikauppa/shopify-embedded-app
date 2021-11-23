@@ -31,6 +31,7 @@ return [
     'custom_shipment' => [
         'title' => 'Custom Shipment',
         'service_title' => 'Shipping service',
+        'additional_service_title' => 'Additional service',
         'address_title' => 'Shipping address',
         'create_button' => 'Create Shipment',
         'save_successful' => 'Shipment updated successfully',
