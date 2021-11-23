@@ -34,6 +34,10 @@
                         </div>
                     </div>
                 </div>
+                <div class="row" style="margin-bottom: 2em; display: none;" id = "additional-services">
+                    <h3>{{trans('app.custom_shipment.additional_service_title')}}</h3>
+                    <div id ="additional-services-items"></div>
+                </div>
                 <div class="row" style="margin-bottom: 2em">
                     <div id="multi-parcel-block" class="columns six hidden">
                         <div class="row">
@@ -148,6 +152,8 @@
             $('#pickup-select-block').hide();
             $('#shipping-method').on('change', e => {
                 $('#pickup-select-block').hide();
+                $('#additional-services').hide();
+                $('#additional-services-items').html('');
                 $('#pickup-select-block option').remove();
                 if(!$('#shipping-method').val())
                 {
@@ -178,6 +184,51 @@
                                     $('#pickup-select').append(`<option value='"${JSON.stringify(pickup)}"'>${pickup.service_name}</option>`);
                                 });
                                 $('#pickup-select-block').show();
+                            }
+                        } else if (response.status === 200 && response.data.status === 'error') {
+                            showToast({
+                                message: response.data.message,
+                                isError: true
+                            });
+                            console.error('RESPONSE ERROR:', response.data.message);
+                        } else {
+                            showToast({
+                                message: 'Something went wrong',
+                                isError: true
+                            });
+                        }
+                        stopLoading();
+                    }
+                ).catch(
+                    error => {
+                        showToast({
+                            message: 'Something went wrong',
+                            isError: true
+                        });
+                        console.error('API ERROR:', error);
+                        stopLoading();
+                    }
+                );
+                //load additional services
+                ax(
+                    {
+                        method: 'POST',
+                        url: '{{route('shopify.ajax-load-additional-services')}}',
+                        data:
+                            $.param($('#setting-form').serializeArray()),
+                    }
+                ).then(
+                    response => {
+                        if (response.status === 200 && response.data.status !== 'error') {
+                            showToast({message: response.data.message, isError: false});
+                            if(response.data.data.length > 0)
+                            {
+                                response.data.data.forEach((service) => {
+                                    if (service.specifiers === null){
+                                        $('#additional-services-items').append(`<div class="columns six inline-labels" style ="margin-left:0;"><input type ="checkbox" name = "additional_services[]" id = "service-${service.service_code}" value="${service.service_code}"/><label for = "service-${service.service_code}">${service.name}</label></div>`);
+                                    }
+                                });
+                                $('#additional-services').show();
                             }
                         } else if (response.status === 200 && response.data.status === 'error') {
                             showToast({

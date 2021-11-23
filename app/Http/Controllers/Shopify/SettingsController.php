@@ -30,6 +30,7 @@ class SettingsController extends Controller {
     private $carrierName;
     private $test_mode;
     private $pkUseToken = false;
+    private $additional_info_keys;
     protected Request $request;
 
     public function __construct(Request $request) {
@@ -37,6 +38,11 @@ class SettingsController extends Controller {
         $this->type = config('shopify.type');
         $this->test_mode = config('shopify.test_mode');
         $this->carrierName = config('shopify.carrier_name');
+        $this->additional_info_keys = [
+            '{ORDER_NUMBER}' => trans('app.settings.order_number'),
+            '{PRODUCTS_NAMES}' => trans('app.settings.products_names'),
+            '{PRODUCTS_SKU}' => trans('app.settings.products_sku'),
+        ];
     }
 
     /**
@@ -386,7 +392,8 @@ class SettingsController extends Controller {
             'api_valid' => $api_valid,
             'shipping_rates' => $result_rates,
             'pickuppoint_providers' => explode(";", $shop->pickuppoint_providers),
-            'type' => $this->type
+            'type' => $this->type,
+            'additional_info_keys' => $this->additional_info_keys
         ]);
     }
 
@@ -597,6 +604,8 @@ class SettingsController extends Controller {
             'default_service_code' => request()->get('default_shipping_method'),
             'always_create_return_label' => (bool) request()->get('print_return_labels'),
             'create_activation_code' => (bool) request()->get('create_activation_code'),
+            'add_additional_label_info' => (bool) request()->get('add_additional_label_info'),
+            'additional_label_info' => request()->get('additional_label_info'),
         );
 
         $isSaved = $shop->saveShippingSettings($shop_shipping_settings);
