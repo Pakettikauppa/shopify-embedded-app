@@ -387,5 +387,29 @@ class ShopifyClient {
             GQL;
         return $query;    
     }
+    
+     public function getShopContacts(){
+        $data = $this->callGraphQL($this->shopContactsQuery());
+        return $data;
+    }
+    
+    private function shopContactsQuery(){
+        $query = <<<GQL
+            {
+                shop {
+                  name
+                  contactEmail
+                  billingAddress {
+                    address1
+                    city
+                    zip
+                    phone
+                    countryCode
+                  }
+                }
+              }
+            GQL;
+        return $query;    
+    }
 
 }
