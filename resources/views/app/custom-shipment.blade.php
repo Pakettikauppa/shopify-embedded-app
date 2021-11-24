@@ -131,6 +131,7 @@
                         </div>
                     </div>
                 </div>
+                <input type="hidden" id="service_name" name="service_name" value="">
                 <input type="hidden" name="order_id" value="{{ $order_id }}">
             </div>
         </article>
@@ -160,6 +161,7 @@
 
         function handlePickupsAndAdditionalServices()
         {
+            $('#service_name').val($('#shipping-method :selected').text().trim());
             $('#pickup-select-block').hide();
             $('#additional-services').hide();
             $('#additional-services-items').html('');

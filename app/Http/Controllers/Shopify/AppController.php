@@ -365,23 +365,6 @@ class AppController extends Controller {
                             }        
                             GQL;
                     $this->client->call($query);
-                    /*
-                      if ($this->client->callsLeft() > 0 and $this->client->callLimit() == $this->client->callsLeft()) {
-                      sleep(2);
-                      }
-
-                      $this->client->call(
-                      'PUT',
-                      'admin',
-                      '/orders/' . $order['id'] . '.json',
-                      [
-                      'order' => [
-                      'id' => $order['id'],
-                      'note' => sprintf('%s: %s', trans('app.settings.activation_code'), $this->pk_client->getResponse()->{'response.trackingcode'}['labelcode'])
-                      ]
-                      ]
-                      );
-                     */
                 } catch (\Exception $e) {
                     Log::debug($e->getMessage());
                     Log::debug($e->getTraceAsString());
@@ -811,14 +794,18 @@ class AppController extends Controller {
             return redirect()->route('install-link', request()->all());
         }
 
+        $service_name = 'unnamed service';
         if (request()->get('pickup')) {
             $pickup = json_decode(trim(request()->get('pickup'), '"'), true);
             $code = $pickup['service_code'];
-            $service_name = $pickup['service_name'];
+            if(isset($pickup['service_name']))
+                $service_name = $pickup['service_name'];
         }
         elseif (request()->get('shipping_method'))
         {
-            $code = request()->get('shipping_method');
+            $code = request()->get('shipping_method') . ':';
+            if(request()->get('service_name'))
+                $service_name = request()->get('service_name');
         }
         else
         {
@@ -829,13 +816,13 @@ class AppController extends Controller {
         }
 
         // Does not really matter, besides code, which API will use. Shipping_lines is immutable in Shopify.
-        $shipping_lines[] = [
+        $shipping_lines = [
             'code' => $code,
             'price' => 0,
             'discounted_price' => 0,
             'title' => $service_name,
         ];
-        $order['shipping_lines'] = $shipping_lines;
+        $order['shippingLine'] = $shipping_lines;
 
         $additional_services = request()->get('additional_services');
         if (is_array($additional_services) && count($additional_services)){
