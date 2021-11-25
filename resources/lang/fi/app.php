@@ -25,6 +25,7 @@ return [
             'need_shipping_address' => 'Epäonnistui koska toimitusosoite puuttui',
             'no_shipping_service' => 'Ei toimitustapaa valittuna',
             'not_in_inventory' => 'Tuotetta ei varastossa',
+            'product_deleted' => 'Tuotetta ei löydy, täytä manuaalisesti',
             'nothing_to_ship' => 'Ei lähetettäviä tuotteita',
         ],
     ],

@@ -33,6 +33,8 @@
                                     <span class="tag red">{{trans('app.print_labels.statuses.no_shipping_service')}}</span>
                                 @elseif($order['status'] == 'not_in_inventory')
                                     <span class="tag red">{{trans('app.print_labels.statuses.not_in_inventory')}}</span>
+                                @elseif($order['status'] == 'product_deleted')
+                                    <span class="tag red">{{trans('app.print_labels.statuses.product_deleted')}}</span>    
                                 @elseif($order['status'] == 'custom_error')
                                     @php
                                         $custom_error = true
