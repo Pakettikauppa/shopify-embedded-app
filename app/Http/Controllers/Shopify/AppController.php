@@ -156,7 +156,8 @@ class AppController extends Controller {
 
             return view('app.alert', [
                 'shop' => $shop,
-                'type' => 'error',
+                'message_type' => 'error',
+                'type' => $this->type,
                 'title' => trans('app.messages.invalid_credentials'),
                 'message' => trans('app.messages.no_api_set_error', ['settings_url' => route('shopify.settings')]),
             ]);
@@ -1093,7 +1094,8 @@ class AppController extends Controller {
         if (!isset($shipment)) {
             return view('app.alert', [
                 'shop' => $shop,
-                'type' => 'error',
+                'message_type' => 'error',
+                'type' => $this->type,
                 'title' => trans('app.messages.no_tracking_info'),
                 'message' => '',
             ]);
@@ -1106,7 +1108,8 @@ class AppController extends Controller {
         if (!is_array($statuses) || count($statuses) == 0) {
             return view('app.alert', [
                 'shop' => $shop,
-                'type' => 'error',
+                'message_type' => 'error',
+                'type' => $this->type,
                 'title' => trans('app.messages.no_tracking_info'),
                 'message' => '',
             ]);
@@ -1121,6 +1124,7 @@ class AppController extends Controller {
             'current_shipment' => $shipment,
             'order_url' => $admin_order_url,
             'orders_url' => $admin_orders_url,
+            'type' => $this->type,
         ]);
     }
 

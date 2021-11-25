@@ -4,7 +4,7 @@
 
 <section id="custom-page">
     <div class="row" style="padding-top: 1em; width: 100%;">
-        <div class="alert {{$type}}">
+        <div class="alert {{$message_type??'error'}}">
             <dl>
                 <dt>{{$title}}</dt>
                 <dd>{!!$message!!}</dd>

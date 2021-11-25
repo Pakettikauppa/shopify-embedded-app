@@ -238,7 +238,7 @@
         /* SUPPORT BUTTON END */
 
         /* TEST MODE BUTTON */
-        @if ($type == "pakettikauppa")
+        @if (isset($type) && $type == "pakettikauppa")
         let UIStrings = {
             test_mode_enable_text: '{{trans('app.settings.testmode_on')}}',
             test_mode_disable_text: '{{trans('app.settings.testmode_off')}}'
@@ -377,7 +377,7 @@
         const buttonApiSettings = Actions.Button.create(
             ShopifyApp,
             {
-                label: "{{trans('app.settings.api-settings-'.$type)}}"
+                label: "{{trans('app.settings.api-settings-'.($type??'pakettikauppa'))}}"
             }
         );
 
