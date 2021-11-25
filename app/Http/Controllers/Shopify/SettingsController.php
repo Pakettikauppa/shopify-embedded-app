@@ -184,7 +184,7 @@ class SettingsController extends Controller {
                     if ($_service['name'] == $carrierServiceName) {
 
                         // Update callbackurl if it has changed
-                        if (($_service['callback_url'] != route('shopify.pickuppoints.list')) || !isset($_service['callback_url'])) {
+                        if ((isset($_service['callback_url']) && $_service['callback_url'] != route('shopify.pickuppoints.list')) || !isset($_service['callback_url'])) {
                             $client->call(
                                     'PUT',
                                     'admin',
