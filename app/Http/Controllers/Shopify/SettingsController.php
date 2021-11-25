@@ -257,10 +257,49 @@ class SettingsController extends Controller {
      * Sender settings view endpoint
      */
     public function sender() {
+        $fields_map = [
+            'business_name' => 'shop.name',
+            'address' => 'shop.billingAddress.address1',
+            'postcode' => 'shop.billingAddress.zip',
+            'city' => 'shop.billingAddress.city',
+            'country' => 'shop.billingAddress.countryCode',
+            'email' => 'shop.contactEmail',
+            'phone' => 'shop.billingAddress.phone'
+        ];
+        $shop = request()->get('shop');
+        
+        try {
+            $default_data = null;
+            foreach ($fields_map as $key => $map){
+                if (empty($shop->{$key})){
+                    if (!$default_data){
+                        //get default values from shopify shop contacts
+                        $client = $this->getShopifyClient();
+                        $default_data = $client->getShopContacts();
+                    }
+                    $shop->{$key} = $this->mapDefaultData($default_data, $map);
+                }
+            }
+        } catch (\Exception $e){
+            Log::debug($e->getMessage());
+        }
         return view('settings.sender', [
-            'shop' => request()->get('shop'),
+            'shop' => $shop,
             'type' => $this->type
         ]);
+    }
+    
+    private function mapDefaultData($default, $map){
+        $path = explode('.', $map);
+        foreach ($path as $part){
+            if (isset($default[$part])){
+                $default = $default[$part];
+            }
+        }
+        if (!is_array($default)){
+            return $default;
+        }
+        return null;
     }
 
     /**
