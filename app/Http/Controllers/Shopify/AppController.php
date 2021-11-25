@@ -156,7 +156,8 @@ class AppController extends Controller {
 
             return view('app.alert', [
                 'shop' => $shop,
-                'type' => 'error',
+                'message_type' => 'error',
+                'type' => $this->type,
                 'title' => trans('app.messages.invalid_credentials'),
                 'message' => trans('app.messages.no_api_set_error', ['settings_url' => route('shopify.settings')]),
             ]);
@@ -417,6 +418,7 @@ class AppController extends Controller {
 
                 $services = [];
                 $filtered_services = [];
+                $has_missing_products = false;
                 
                 foreach ($order['line_items'] as $item) {
                     //$variantId = $item['variant_id'];
@@ -443,6 +445,11 @@ class AppController extends Controller {
                           );
                          */
                         $makeNull = true;
+                        //producte deleted and variant null, skip
+                        if ($item['variant'] === null){
+                            $has_missing_products = true;
+                            continue;
+                        } 
                         $inventoryLevels = $item['variant']['inventoryItem']['inventoryLevels']['edges'];
                         foreach ($inventoryLevels as $_inventory) {
                             //do not look at inventory quantity
@@ -544,6 +551,8 @@ class AppController extends Controller {
                             }
                         }
                     }
+                } else if ($has_missing_products){
+                    $shipments[$orderKey]['status'] = 'product_deleted';
                 } else {
                     $shipments[$orderKey]['status'] = 'not_in_inventory';
                 }
@@ -1093,7 +1102,8 @@ class AppController extends Controller {
         if (!isset($shipment)) {
             return view('app.alert', [
                 'shop' => $shop,
-                'type' => 'error',
+                'message_type' => 'error',
+                'type' => $this->type,
                 'title' => trans('app.messages.no_tracking_info'),
                 'message' => '',
             ]);
@@ -1106,7 +1116,8 @@ class AppController extends Controller {
         if (!is_array($statuses) || count($statuses) == 0) {
             return view('app.alert', [
                 'shop' => $shop,
-                'type' => 'error',
+                'message_type' => 'error',
+                'type' => $this->type,
                 'title' => trans('app.messages.no_tracking_info'),
                 'message' => '',
             ]);
@@ -1121,6 +1132,7 @@ class AppController extends Controller {
             'current_shipment' => $shipment,
             'order_url' => $admin_order_url,
             'orders_url' => $admin_orders_url,
+            'type' => $this->type,
         ]);
     }
 

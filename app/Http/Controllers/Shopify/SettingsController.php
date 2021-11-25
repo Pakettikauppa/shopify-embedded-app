@@ -681,6 +681,9 @@ class SettingsController extends Controller {
      * @return array
      */
     public function prepPickupPointsData($pickuppoints) {
+        if (!is_array($pickuppoints)){
+            return [];
+        }
         foreach ($pickuppoints as $_pickupPoint) {
             if ($_pickupPoint['base_price'] == '') {
                 $_pickupPoint['base_price'] = 0;
