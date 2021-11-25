@@ -25,6 +25,7 @@ return [
             'need_shipping_address' => 'Failed due to absence of shipping address',
             'no_shipping_service' => 'Shipping service for the rate is not set',
             'not_in_inventory' => 'Product is not in inventory',
+            'product_deleted' => 'Product not found, fulfill manually',
             'nothing_to_ship' => 'No products to ship',
         ],
     ],

@@ -418,6 +418,7 @@ class AppController extends Controller {
 
                 $services = [];
                 $filtered_services = [];
+                $has_missing_products = false;
                 
                 foreach ($order['line_items'] as $item) {
                     //$variantId = $item['variant_id'];
@@ -444,6 +445,11 @@ class AppController extends Controller {
                           );
                          */
                         $makeNull = true;
+                        //producte deleted and variant null, skip
+                        if ($item['variant'] === null){
+                            $has_missing_products = true;
+                            continue;
+                        } 
                         $inventoryLevels = $item['variant']['inventoryItem']['inventoryLevels']['edges'];
                         foreach ($inventoryLevels as $_inventory) {
                             //do not look at inventory quantity
@@ -545,6 +551,8 @@ class AppController extends Controller {
                             }
                         }
                     }
+                } else if ($has_missing_products){
+                    $shipments[$orderKey]['status'] = 'product_deleted';
                 } else {
                     $shipments[$orderKey]['status'] = 'not_in_inventory';
                 }
