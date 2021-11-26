@@ -39,7 +39,14 @@ return [
         'save_failed' => 'Shipment update failed',
         'pickups_title' => 'Pickup points',
         'not_selected' => 'Shipping method not selected',
-        'multiparcel_title' => 'Packets'
+        'multiparcel_title' => 'Packets',
+        'products_title' => 'Tuotteet',
+        'product_name'  => 'Nimi',
+        'product_ship'  => 'Lähetä',
+        'product_remains'  => 'Jäännökset',
+        'product_shipped'  => 'Lähetetty',
+        'product_total'  => 'Kokonaismäärä',
+        'no_products' => 'Ei lähetettäviä tuotteita'
 
     ],
     'settings' => [

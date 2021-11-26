@@ -20,8 +20,9 @@ class Shop extends Model
     /**
      * @var $pk_client \Pakettikauppa\Client
      */
-    public function sendShipment($pk_client, $order, $senderInfo, $receiverInfo, $contents, $isReturn = false)
+    public function sendShipment($pk_client, $order, $senderInfo, $receiverInfo, $contents, $isReturn = false, $customShipment = false)
     {
+        $shipment_products = [];
         //bugfix between app and graphql calls
         if (isset($order['total_weight']) && !isset($order['totalWeight'])){
             $order['totalWeight'] = $order['total_weight'];
@@ -86,6 +87,8 @@ class Shop extends Model
             $contentLine->tariff_code = $item['variant']['inventoryItem']['harmonizedSystemCode'] ?? '';
             $contentLine->value = $item['variant']['price'] ?? 0; // TODO why this failed if data had the price?
             $parcel->addContentLine($contentLine);
+            //add products to shopify shipment
+            $shipment_products[] = ['id' => $item['product']['legacyResourceId'] ?? $item['id'], 'shipped' => $item['quantity']];
         }
 
 
@@ -225,6 +228,9 @@ class Shop extends Model
             $shopify_shipment->reference = $reference;
             $shopify_shipment->test_mode = $this->test_mode;
             $shopify_shipment->return = $isReturn;
+            if ($customShipment){
+                $shopify_shipment->products = $shipment_products;
+            }
             $shopify_shipment->save();
         } catch (\Exception $ex) {
             Log::debug('Failed creating tracking code: ' . $ex->getMessage());
