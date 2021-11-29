@@ -43,7 +43,7 @@ return [
         'products_title' => 'Tuotteet',
         'product_name'  => 'Nimi',
         'product_ship'  => 'Lähetä',
-        'product_remains'  => 'Jäännökset',
+        'product_remains'  => 'Toimittamattomat',
         'product_shipped'  => 'Lähetetty',
         'product_total'  => 'Kokonaismäärä',
         'no_products' => 'Ei lähetettäviä tuotteita'
