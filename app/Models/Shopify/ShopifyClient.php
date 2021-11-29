@@ -359,6 +359,9 @@ class ShopifyClient {
                                         type
                                     }
                                 }
+                                product {
+                                    legacyResourceId
+                                }
                             }
                         }
                       }

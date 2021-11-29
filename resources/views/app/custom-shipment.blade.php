@@ -47,6 +47,38 @@
                     </div>
                 </div>
                 <div class="row" style="margin-bottom: 2em">
+                    <h3>{{trans('app.custom_shipment.products_title')}}</h3>
+                    <div class="column twelve">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>{{trans('app.custom_shipment.product_name')}}</th>
+                                    <th width = "50px">{{trans('app.custom_shipment.product_ship')}}</th>
+                                    <th width = "50px">{{trans('app.custom_shipment.product_remains')}}</th>
+                                    <th width = "50px">{{trans('app.custom_shipment.product_shipped')}}</th>
+                                    <th width = "50px">{{trans('app.custom_shipment.product_total')}}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach ($line_items as $id=>$line_item)
+                                <tr>
+                                    <td>{{$line_item['name']}}</td>
+                                    <td>
+                                        <input type="number" id = "product-{{$id}}" name="products[{{$id}}]" value="{{$line_item['remains']}}" max = "{{$line_item['remains']}}" min = "0">
+                                    </td>
+                                    <td>{{$line_item['remains']}}</td>
+                                    <td>{{$line_item['shipped']}}</td>
+                                    <td>{{$line_item['total']}}</td>
+                                </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                        <div class="row">
+                            
+                        </div>
+                    </div>
+                </div>
+                <div class="row" style="margin-bottom: 2em">
                     <h3>{{trans('app.custom_shipment.address_title')}}</h3>
                     <div class="column twelve">
                         <div class="row">

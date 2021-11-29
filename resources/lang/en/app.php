@@ -39,7 +39,14 @@ return [
         'save_failed' => 'Shipment update failed',
         'pickups_title' => 'Pickup points',
         'not_selected' => 'Shipping method not selected',
-        'multiparcel_title' => 'Packets'
+        'multiparcel_title' => 'Packets',
+        'products_title' => 'Products',
+        'product_name'  => 'Name',
+        'product_ship'  => 'Ship',
+        'product_remains'  => 'Remains',
+        'product_shipped'  => 'Shipped',
+        'product_total'  => 'Total',
+        'no_products' => 'No products to ship'
 
     ],
     'settings' => [
