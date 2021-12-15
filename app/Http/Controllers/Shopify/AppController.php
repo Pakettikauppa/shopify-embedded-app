@@ -812,7 +812,7 @@ class AppController extends Controller {
         }
         elseif (request()->get('shipping_method'))
         {
-            $code = request()->get('shipping_method') . ':';
+            $code = request()->get('shipping_method');
             if(request()->get('service_name'))
                 $service_name = request()->get('service_name');
         }
