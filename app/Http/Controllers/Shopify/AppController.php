@@ -601,6 +601,15 @@ class AppController extends Controller {
             return redirect()->route('install-link', request()->all());
         }
 
+        // Get unfulfiled items.
+        $unfulfiled_items = [];
+        foreach($order['line_items'] as $item)
+        {
+            if(!$item['fulfillment_status'] || $item['fulfillable_quantity'] > 0)
+            {
+                $unfulfiled_items[] = $item;       
+            }
+        }
         $shipping_methods = $this->pk_client->listShippingMethods();
         $services = array_keys(json_decode($shop->settings, true));
         $services[] = $shop->default_service_code;
@@ -632,7 +641,8 @@ class AppController extends Controller {
             'order_id' => $order_id,
             'type' => $this->type,
             'shipping_address' => $shipping_address,
-            'email' => $order['email']
+            'email' => $order['email'],
+            'unfulfiled_items' => $unfulfiled_items
         ]);
     }
 

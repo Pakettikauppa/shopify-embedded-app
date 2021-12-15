@@ -47,6 +47,32 @@
                     </div>
                 </div>
                 <div class="row" style="margin-bottom: 2em">
+                    <h3>{{trans('app.custom_shipment.unfulfiled_products')}}</h3>
+                    <div class="column twelve">
+                        <div class="columns six">
+                            <h5>Product Name</h5>
+                        </div>
+                        <div class="columns six">
+                            <h5>Quantity to fulfil</h5>
+                        </div>
+                        @foreach($unfulfiled_items as $item)
+                            <div class="column twelve">
+                                <div class="columns six">
+                                    <h6>{{ $item['name'] }}</h6>
+                                </div>
+                                <div class="columns two">
+                                    <div class="columns eight">
+                                        <input id="quantity" type="text" name="quantity" value="{{ $item['fulfillable_quantity'] }}"> 
+                                    </div>
+                                    <div class="columns four">
+                                        <h5>/ {{ $item['fulfillable_quantity'] }}</h5>
+                                    </div>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+                <div class="row" style="margin-bottom: 2em">
                     <h3>{{trans('app.custom_shipment.address_title')}}</h3>
                     <div class="column twelve">
                         <div class="row">
