@@ -853,10 +853,40 @@ class AppController extends Controller {
         $shipment = [];
         $shipment['fulfillment_status'] = !empty($order['fulfillments']) ? $order['fulfillments'][0]['status'] : '';
         $shipment['line_items'] = [];
-        foreach ($order['lineItems']['edges'] as $line_item) {
-            if ($line_item['node']['requiresShipping']) {
-                $shipment['line_items'][] = $line_item['node'];
+        
+        $fulfil = (bool) request()->get('fulfil');
+
+        if($fulfil)
+        {
+            // Get unfulfiled items.
+            $unfulfiled_items = [];
+            $quantities_unfulfiled = request()->get('quantity');
+            foreach ($order['lineItems']['edges'] as $line_item) {
+                $node = $line_item['node'];
+                $item = explode("/", $node['id']);
+                $itemID = end($item);
+                if ($node['requiresShipping'] && isset($quantities_unfulfiled[$itemID])) {
+
+                    $qty_to_fulfil = $quantities_unfulfiled[$itemID];
+                    // Set the unfulfiled quantity selected. Check if it is not zero or exceeds maximum, in case client decides to play around..
+                    $order_quantity = $node['quantity'];
+                    if($qty_to_fulfil > $order_quantity)
+                        $qty_to_fulfil = $order_quantity;
+                    if($qty_to_fulfil < 1)
+                        continue;
+
+                    $node['quantity'] = $qty_to_fulfil; 
+                    $shipment['line_items'][] = $node;
+                }
             }
+        }
+        else
+        {
+            foreach ($order['lineItems']['edges'] as $line_item) {
+                if ($line_item['node']['requiresShipping']) {
+                    $shipment['line_items'][] = $line_item['node'];
+                }
+            }    
         }
 
         $shipment['id'] = $order['legacyResourceId'];
@@ -951,6 +981,114 @@ class AppController extends Controller {
         } else if (isset($_shipment['tracking_code'])) {
             $shipment['tracking_code'] = $_shipment['tracking_code'];
             $tracking_codes[] = $_shipment['tracking_code'];
+        }
+
+        if ($fulfil) {
+            Log::debug("Fullfilling order: " . implode(', ', $tracking_codes) . " - {$order['id']}");
+
+            $services = [];
+            $filtered_services = [];
+            $has_missing_products = false;
+            
+            foreach ($shipment['line_items'] as $item) {
+                try {
+                    $makeNull = true;
+                    if ($item['variant'] === null){
+                        $has_missing_products = true;
+                        continue;
+                    } 
+                    $inventoryLevels = $item['variant']['inventoryItem']['inventoryLevels']['edges'];
+                    foreach ($inventoryLevels as $_inventory) {
+                        //do not look at inventory quantity
+                        $service = $item['variant']['fulfillmentService']['type'];
+                        if (!isset($services[$service][$_inventory['node']['location']['id']] )){
+                            $services[$service][$_inventory['node']['location']['id']] = [];
+                        }
+                        $services[$service][$_inventory['node']['location']['id']][] = ['id' => $item['id'], 'quantity' => (int)$item['quantity']];
+                        $makeNull = false;
+                    }
+
+                    if ($makeNull) {
+                        Log::debug("NULL item: {$item['id']} - " . var_export($inventoryLevels, true));
+                    }
+                } catch (ShopifyApiException $sae) {
+                    $exceptionData = array(
+                        var_export($sae->getMethod(), true),
+                        var_export($sae->getPath(), true),
+                        var_export($sae->getParams(), true),
+                        var_export($sae->getResponseHeaders(), true),
+                        var_export($sae->getResponse(), true)
+                    );
+
+                    Log::debug('ShopiApiException: ' . var_export($exceptionData, true));
+                } catch (\Exception $e) {
+                    Log::debug(var_export($item, true));
+                    Log::debug('Fullfillment Exception: ' . $e->getMessage() . ' on line ' . $e->getLine());
+                }
+            }
+
+
+            //filter services to check if found all available quantities in one warehouse
+            foreach ($services as $fullfilment => $line_items) {
+                foreach ($line_items as $locationId => $items) {
+                    if (count($items) == count($shipment['line_items'])){
+                        $filtered_services[$fullfilment][$locationId] = $items;
+                        break;
+                    }
+                }
+            }
+            
+            if (!empty($filtered_services)){
+                foreach ($filtered_services as $line_items) {
+                    foreach ($line_items as $locationId => $items) {
+                        $fulfillment = [
+                            'orderId' => $order['gid'],
+                            'trackingNumbers' => implode(', ', $tracking_codes),
+                            'locationId' => $locationId,
+                            'notifyCustomer' => true,
+                            'trackingCompany' => trans('app.settings.company_name_' . $this->type),
+                            'trackingUrls' => $this->tracking_url . end($tracking_codes),
+                            'lineItems' => $items,
+                        ];
+
+                        try {
+                            $query_params = $this->buildGraphQLInput($fulfillment);
+                            $query = <<<GQL
+                            mutation CreateFulfillment {
+                                fulfillmentCreate(
+                                  input: $query_params
+                                )
+                                {
+                                    userErrors {
+                                      field
+                                      message
+                                    }
+                                }
+                              }        
+                            GQL;
+                            $result = $this->client->call($query);
+                            Log::debug(var_export($result, true));
+                        } catch (ShopifyApiException $sae) {
+                            $exceptionData = array(
+                                var_export($sae->getMethod(), true),
+                                var_export($sae->getPath(), true),
+                                var_export($sae->getParams(), true),
+                                var_export($sae->getResponseHeaders(), true),
+                                var_export($sae->getResponse(), true)
+                            );
+
+                            Log::debug('ShopiApiException: ' . var_export($exceptionData, true));
+                        } catch (\Exception $e) {
+                            Log::debug('Fullfillment Exception: ' . $e->getMessage() . ' on line ' . $e->getLine());
+                        }
+                    }
+                }
+            } else if ($has_missing_products){
+                $shipments[$orderKey]['status'] = 'product_deleted';
+            } else {
+                $shipments[$orderKey]['status'] = 'not_in_inventory';
+            }
+            Log::debug("Fullfilled order: {$order['id']}");
         }
 
         return response()->json([
