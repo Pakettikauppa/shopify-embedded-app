@@ -14,6 +14,12 @@ return [
         'return_label' => 'Print return label',
         'description' => 'List of created shipments',
         'order_id' => 'Order ID',
+        'date' => 'Date',
+        'time' => 'Time',
+        'service' => 'Service',
+        'fulfilled_products' => 'Fulfilled Products',
+
+
         'tracking_code' => 'Tracking code',
         'status' => 'Status',
         'get_the_label' => 'Get the shipping label',

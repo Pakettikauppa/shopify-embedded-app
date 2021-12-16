@@ -646,6 +646,56 @@ class AppController extends Controller {
         ]);
     }
 
+    public function listShipments(Request $request)
+    {
+        $shop = request()->get('shop');
+
+        // Create client config and refresh token if necessary.
+        $this->pk_client = $this->getPakketikauppaClient($shop);
+
+        // Something went horribly wrong.
+        if (!$this->pk_client)
+        {
+            Log::debug("Custom shipment: client initialization error.");
+            throw new FatalErrorException();
+        }
+
+        $order_id = request()->get('id');
+        $this->client = $this->getShopifyClient();
+        try {
+            $order = $this->client->call(
+                    'GET',
+                    'admin',
+                    "/orders/{$order_id}.json",
+            );
+        } catch (ShopifyApiException $sae) {
+            Log::debug('Unauthorized.');
+            return redirect()->route('install-link', request()->all());
+        }
+
+        $fulfillments = [];
+        foreach($order['fulfillments'] as $fulfillment)
+        {
+            if(isset($fulfillment['tracking_number']))
+            {
+                $fulfillments[$fulfillment['tracking_number']] = $fulfillment;
+            }
+        }
+
+        $shipments = ShopifyShipment::where('shop_id', $shop->id)
+        ->where('order_id', $request->id)
+        ->get();
+        $hmac = $request->get('hmac');
+        return view('app.list-shipments', [
+            'hmac' => $hmac,
+            'shop' => $shop,
+            'type' => $this->type,
+            'shipments' => $shipments,
+            'tracking_url' => $this->tracking_url,
+            'fulfillments' => $fulfillments
+        ]);
+    }
+
     public function getShippingAddressFromOrder($order) {
         return [
             'first_name' => $order['shipping_address']['first_name'],
