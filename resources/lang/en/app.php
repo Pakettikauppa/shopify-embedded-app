@@ -7,6 +7,9 @@ return [
     'error' => [
         'error_page' => 'There was an error',
     ],
+    'list_shipments' => [
+        'title' => 'Shipment List',
+    ],
     'print_labels' => [
         'print_label' => 'Print labels',
         'fetch_all' => 'Print all labels',

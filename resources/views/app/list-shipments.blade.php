@@ -73,5 +73,10 @@
     </section>
     <script type='text/javascript'>
         saveBtnDisabled(true);
+        function customPageInit() {
+            titleBar.set({
+                title: '{{trans('app.list_shipments.title')}}'
+            });
+        }
     </script>
 @endsection
