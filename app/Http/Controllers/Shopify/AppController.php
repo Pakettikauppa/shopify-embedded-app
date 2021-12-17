@@ -702,6 +702,80 @@ class AppController extends Controller {
             'hmac_print_url' => $hmac_print_url
         ]);
     }
+    
+    private function prepareCustomShipmentProducts($products, $order_id, $ship_products = false){
+        $prepared = [];
+        $shipment_products = [];
+        if (empty($products) || empty($order_id)){
+            return $prepared;
+        }
+        $shop = request()->get('shop');
+        $shipped = [];
+        $_products = ShopifyShipment::where('shop_id', $shop->id)->where('order_id', $order_id)->whereNotNull('products')->get('products');
+        foreach ($_products as $_product){
+            $shipped = array_merge($shipped, $_product->products);
+        }
+        
+        if (isset($products['edges'])){
+            $products = $products['edges'];
+        }
+        foreach ($products as $product){
+            //if got graphql object
+            if( isset($product['node'])){
+                if ($product['node']['requiresShipping'] !== true){
+                    continue;
+                }
+                $product_id = $product['node']['product']['legacyResourceId'];
+                $item = [
+                    'name' => $product['node']['name'],
+                    'total' => $product['node']['quantity'],
+                    'shipped' => $this->countShippedProducts($product_id, $shipped)
+                ];
+                $item['remains'] = $item['total'] - $item['shipped'];
+                $prepared[$product_id] = $item;
+                if ($ship_products !== false){
+                    if (isset($ship_products[$product_id])){
+                        if ((int)$ship_products[$product_id] > $item['remains']){
+                            $product['node']['quantity'] = $item['remains'];
+                        } else {
+                            $product['node']['quantity'] = (int)$ship_products[$product_id];
+                        }
+                        if ($product['node']['quantity'] > 0){
+                            $shipment_products[] = $product['node'];
+                        }
+                    }
+                }
+            } else {
+                if ($product['requires_shipping'] !== true){
+                    continue;
+                }
+                $item = [
+                    'name' => $product['name'],
+                    'total' => $product['quantity'],
+                    'shipped' => $this->countShippedProducts($product['product_id'], $shipped)
+                ];
+                $item['remains'] = $item['total'] - $item['shipped'];
+                $prepared[$product['product_id']] = $item;
+            }
+        }
+        if ($ship_products !== false){
+            return $shipment_products;
+        }
+        return $prepared;
+    }
+    
+    private function countShippedProducts($id, $data){
+        $shipped = 0;
+        if (empty($data)){
+            return $shipped;
+        }
+        foreach ($data as $item){
+            if ($item['id'] == $id){
+                $shipped += $item['shipped'];
+            }
+        }
+        return $shipped;
+    }
 
     public function getShippingAddressFromOrder($order) {
         return [
@@ -904,6 +978,8 @@ class AppController extends Controller {
         if (is_array($additional_services) && count($additional_services)){
             $order['additional_services'] = $additional_services;
         }
+        
+        
 
         $order['gid'] = $order['id'];
         $order['id'] = $order['legacyResourceId'];
@@ -1013,6 +1089,8 @@ class AppController extends Controller {
                 $senderInfo,
                 $receiverInfo,
                 $contents,
+                false,
+                true
         );
         $shipment['status'] = $_shipment['status'];
 
