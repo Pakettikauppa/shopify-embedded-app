@@ -22,7 +22,7 @@
                                     <td>{{ $shipment['created_at']->format("Y-m-d") }}</td>
                                     <td>{{ $shipment['created_at']->format("H:i") }}</td>
                                     <td>
-                                        @if(strpos(',', $shipment['tracking_code']) !== false)
+                                        @if(strpos($shipment['tracking_code'], ',') !== false)
                                             @php
                                                 $tracking_codes = explode(',', $shipment['tracking_code'])
                                             @endphp
@@ -50,7 +50,14 @@
                                             @endif
                                         @endforeach
                                         @if(!$anyFulflliment)
-                                            ------
+                                            {{-- Check for package fullfilment (several tracking numbers) --}}
+                                            @if(isset($fulfillments[$shipment['tracking_code']]))
+                                            @foreach($fulfillments[$shipment['tracking_code']]['line_items'] as $item)
+                                                {{ $item['quantity'] }} x {{ $item['title'] }}<br>
+                                                @endforeach
+                                            @else
+                                                ------
+                                            @endif
                                         @endif
                                     </td>
                                     <td>
