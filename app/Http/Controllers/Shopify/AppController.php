@@ -686,13 +686,20 @@ class AppController extends Controller {
         ->where('order_id', $request->id)
         ->get();
         $hmac = $request->get('hmac');
+        $url_params = [
+            'shop' => $shop->shop_origin,
+        ];
+        $url_params['hmac'] = createShopifyHMAC($url_params);
+
+        $hmac_print_url = http_build_query($url_params);
         return view('app.list-shipments', [
             'hmac' => $hmac,
             'shop' => $shop,
             'type' => $this->type,
             'shipments' => $shipments,
             'tracking_url' => $this->tracking_url,
-            'fulfillments' => $fulfillments
+            'fulfillments' => $fulfillments,
+            'hmac_print_url' => $hmac_print_url
         ]);
     }
 

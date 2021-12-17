@@ -32,7 +32,7 @@
                                             @endphp
                                         @endif
                                         @foreach($tracking_codes as $tracking_code)
-                                            <a href="{{$tracking_url.$tracking_code}}" target="pakettikauppa-seuranta">{{$tracking_code}}</a><br>
+                                            {{$tracking_code}}<br>
                                         @endforeach
                                     </td>
                                     <td>
@@ -54,7 +54,7 @@
                                         @endif
                                     </td>
                                     <td>
-                                        <a class="print-label" href="{{route('shopify.label', ['order_id' => $shipment['id'], 'tracking_code' => $tracking_codes[0]])}}?{{$shipment['hmac_print_url']}}" target="_blank">{{trans('app.print_labels.get_label_link')}}</a>
+                                        <a class="print-label" href="{{route('shopify.label', ['order_id' => $shipment['id'], 'tracking_code' => $tracking_codes[0]])}}?{{$hmac_print_url}}" target="_blank">{{trans('app.print_labels.get_label_link')}}</a>
                                     </td>
                                 </tr>
                             @endforeach
