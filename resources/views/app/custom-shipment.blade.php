@@ -47,6 +47,33 @@
                     </div>
                 </div>
                 <div class="row" style="margin-bottom: 2em">
+                    <h3>{{trans('app.custom_shipment.unfulfiled_products')}} (enter quantities you want to fulfil with this shipment)</h3>
+                    <div class="column twelve">
+                        <div class="columns six">
+                            <h5>Product Name</h5>
+                        </div>
+                        <div class="columns six">
+                            <h5>Quantity to fulfil</h5>
+                        </div>
+                        @foreach($unfulfiled_items as $item)
+                            <div class="column twelve">
+                                <div class="columns six">
+                                    <h6>{{ $item['name'] }}</h6>
+                                </div>
+                                <div class="columns two">
+                                    <div class="columns eight">
+                                        <input id="quantity_{{ $item['id'] }}" type="number" step="1" min="0" max="{{ $item['fulfillable_quantity'] }}" name="quantity[{{ $item['id'] }}]" value="{{ $item['fulfillable_quantity'] }}"> 
+                                    </div>
+                                    <div class="columns four">
+                                        <h5 style="margin-top: 7px;">/ {{ $item['fulfillable_quantity'] }}</h5>
+                                    </div>
+                                </div>
+                            </div>
+                        @endforeach
+                        <input type="checkbox" name="fulfil">Fulfil shipment
+                    </div>
+                </div>
+                <div class="row" style="margin-bottom: 2em">
                     <h3>{{trans('app.custom_shipment.address_title')}}</h3>
                     <div class="column twelve">
                         <div class="row">

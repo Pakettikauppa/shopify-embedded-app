@@ -20,8 +20,9 @@ class Shop extends Model
     /**
      * @var $pk_client \Pakettikauppa\Client
      */
-    public function sendShipment($pk_client, $order, $senderInfo, $receiverInfo, $contents, $isReturn = false)
+    public function sendShipment($pk_client, $order, $senderInfo, $receiverInfo, $contents, $isReturn = false, $customShipment = false)
     {
+        $shipment_products = [];
         //bugfix between app and graphql calls
         if (isset($order['total_weight']) && !isset($order['totalWeight'])){
             $order['totalWeight'] = $order['total_weight'];
@@ -86,6 +87,8 @@ class Shop extends Model
             $contentLine->tariff_code = $item['variant']['inventoryItem']['harmonizedSystemCode'] ?? '';
             $contentLine->value = $item['variant']['price'] ?? 0; // TODO why this failed if data had the price?
             $parcel->addContentLine($contentLine);
+            //add products to shopify shipment
+            $shipment_products[] = ['id' => $item['product']['legacyResourceId'] ?? $item['id'], 'shipped' => $item['quantity']];
         }
 
 
@@ -95,7 +98,6 @@ class Shop extends Model
         if (isset($order['shippingLine']['title'])) {
             $shipping_settings = unserialize($this->shipping_settings);
             $service_name = $order['shippingLine']['title'];
-
             foreach ($shipping_settings as $item) {
                 if ($item['shipping_rate_id'] == $service_name) {
                     $method_code = $item['product_code'];
@@ -112,8 +114,11 @@ class Shop extends Model
                     $pickupPointId = null;
                 }
             }
+            if(!$method_code && isset($order['shippingLine']['code']))
+            {
+                $method_code = $order['shippingLine']['code'];
+            }
         }
-
         // Don't generate shipping label if so desired
         if ($method_code == 'NO_SHIPPING') {
             return [
@@ -225,6 +230,9 @@ class Shop extends Model
             $shopify_shipment->reference = $reference;
             $shopify_shipment->test_mode = $this->test_mode;
             $shopify_shipment->return = $isReturn;
+            if ($customShipment){
+                $shopify_shipment->products = $shipment_products;
+            }
             $shopify_shipment->save();
         } catch (\Exception $ex) {
             Log::debug('Failed creating tracking code: ' . $ex->getMessage());
@@ -251,17 +259,17 @@ class Shop extends Model
         //in case multi codes use first
         $method_code = explode(',', $method_code);
 
-	// API server problem: returns wrong service code in pickup points
-	// FIX for api server problem start here
-	if ($method_code[0] == 2103 && $receiverCountry != 'FI' && $receiverCountry != null) {
-          $method_code[0] = 2331;
+        // API server problem: returns wrong service code in pickup points
+        // FIX for api server problem start here
+        if ($method_code[0] == 2103 && $receiverCountry != 'FI' && $receiverCountry != null) {
+            $method_code[0] = 2331;
         }
-	
-	if ($method_code[0] == 2331 && $receiverCountry == 'FI') {
-          $method_code[0] = 2103;
+        
+        if ($method_code[0] == 2331 && $receiverCountry == 'FI') {
+            $method_code[0] = 2103;
         }
-	// FIX for api server problem ends here
 
+        // FIX for api server problem ends here
         if (!is_numeric($method_code[0])) {
             switch ($pickupPoint[0]) {
                 case 'Posti':

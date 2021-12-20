@@ -7,6 +7,9 @@ return [
     'error' => [
         'error_page' => 'There was an error',
     ],
+    'list_shipments' => [
+        'title' => 'Shipment List',
+    ],
     'print_labels' => [
         'print_label' => 'Print labels',
         'fetch_all' => 'Print all labels',
@@ -14,6 +17,12 @@ return [
         'return_label' => 'Print return label',
         'description' => 'List of created shipments',
         'order_id' => 'Order ID',
+        'date' => 'Date',
+        'time' => 'Time',
+        'service' => 'Service',
+        'fulfilled_products' => 'Fulfilled Products',
+
+
         'tracking_code' => 'Tracking code',
         'status' => 'Status',
         'get_the_label' => 'Get the shipping label',
@@ -32,6 +41,7 @@ return [
     'custom_shipment' => [
         'title' => 'Custom Shipment',
         'service_title' => 'Shipping service',
+        'unfulfiled_products' => 'Unfulfiled Products',
         'additional_service_title' => 'Additional service',
         'address_title' => 'Shipping address',
         'create_button' => 'Create Shipment',
@@ -39,7 +49,14 @@ return [
         'save_failed' => 'Shipment update failed',
         'pickups_title' => 'Pickup points',
         'not_selected' => 'Shipping method not selected',
-        'multiparcel_title' => 'Packets'
+        'multiparcel_title' => 'Packets',
+        'products_title' => 'Products',
+        'product_name'  => 'Name',
+        'product_ship'  => 'Ship',
+        'product_remains'  => 'Remains',
+        'product_shipped'  => 'Shipped',
+        'product_total'  => 'Total',
+        'no_products' => 'No products to ship'
 
     ],
     'settings' => [
