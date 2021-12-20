@@ -47,35 +47,30 @@
                     </div>
                 </div>
                 <div class="row" style="margin-bottom: 2em">
-                    <h3>{{trans('app.custom_shipment.products_title')}}</h3>
+                    <h3>{{trans('app.custom_shipment.unfulfiled_products')}} (enter quantities you want to fulfil with this shipment)</h3>
                     <div class="column twelve">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>{{trans('app.custom_shipment.product_name')}}</th>
-                                    <th width = "50px">{{trans('app.custom_shipment.product_ship')}}</th>
-                                    <th width = "50px">{{trans('app.custom_shipment.product_remains')}}</th>
-                                    <th width = "50px">{{trans('app.custom_shipment.product_shipped')}}</th>
-                                    <th width = "50px">{{trans('app.custom_shipment.product_total')}}</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach ($line_items as $id=>$line_item)
-                                <tr>
-                                    <td>{{$line_item['name']}}</td>
-                                    <td>
-                                        <input type="number" id = "product-{{$id}}" name="products[{{$id}}]" value="{{$line_item['remains']}}" max = "{{$line_item['remains']}}" min = "0">
-                                    </td>
-                                    <td>{{$line_item['remains']}}</td>
-                                    <td>{{$line_item['shipped']}}</td>
-                                    <td>{{$line_item['total']}}</td>
-                                </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                        <div class="row">
-                            
+                        <div class="columns six">
+                            <h5>Product Name</h5>
                         </div>
+                        <div class="columns six">
+                            <h5>Quantity to fulfil</h5>
+                        </div>
+                        @foreach($unfulfiled_items as $item)
+                            <div class="column twelve">
+                                <div class="columns six">
+                                    <h6>{{ $item['name'] }}</h6>
+                                </div>
+                                <div class="columns two">
+                                    <div class="columns eight">
+                                        <input id="quantity_{{ $item['id'] }}" type="number" step="1" min="0" max="{{ $item['fulfillable_quantity'] }}" name="quantity[{{ $item['id'] }}]" value="{{ $item['fulfillable_quantity'] }}"> 
+                                    </div>
+                                    <div class="columns four">
+                                        <h5 style="margin-top: 7px;">/ {{ $item['fulfillable_quantity'] }}</h5>
+                                    </div>
+                                </div>
+                            </div>
+                        @endforeach
+                        <input type="checkbox" name="fulfil">Fulfil shipment
                     </div>
                 </div>
                 <div class="row" style="margin-bottom: 2em">

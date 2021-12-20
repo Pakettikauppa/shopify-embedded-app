@@ -98,7 +98,6 @@ class Shop extends Model
         if (isset($order['shippingLine']['title'])) {
             $shipping_settings = unserialize($this->shipping_settings);
             $service_name = $order['shippingLine']['title'];
-
             foreach ($shipping_settings as $item) {
                 if ($item['shipping_rate_id'] == $service_name) {
                     $method_code = $item['product_code'];
@@ -115,8 +114,11 @@ class Shop extends Model
                     $pickupPointId = null;
                 }
             }
+            if(!$method_code && isset($order['shippingLine']['code']))
+            {
+                $method_code = $order['shippingLine']['code'];
+            }
         }
-
         // Don't generate shipping label if so desired
         if ($method_code == 'NO_SHIPPING') {
             return [
@@ -257,17 +259,17 @@ class Shop extends Model
         //in case multi codes use first
         $method_code = explode(',', $method_code);
 
-	// API server problem: returns wrong service code in pickup points
-	// FIX for api server problem start here
-	if ($method_code[0] == 2103 && $receiverCountry != 'FI' && $receiverCountry != null) {
-          $method_code[0] = 2331;
+        // API server problem: returns wrong service code in pickup points
+        // FIX for api server problem start here
+        if ($method_code[0] == 2103 && $receiverCountry != 'FI' && $receiverCountry != null) {
+            $method_code[0] = 2331;
         }
-	
-	if ($method_code[0] == 2331 && $receiverCountry == 'FI') {
-          $method_code[0] = 2103;
+        
+        if ($method_code[0] == 2331 && $receiverCountry == 'FI') {
+            $method_code[0] = 2103;
         }
-	// FIX for api server problem ends here
 
+        // FIX for api server problem ends here
         if (!is_numeric($method_code[0])) {
             switch ($pickupPoint[0]) {
                 case 'Posti':
