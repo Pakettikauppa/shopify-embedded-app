@@ -12,6 +12,7 @@
                             <th>{{trans('app.print_labels.date')}}</th>
                             <th>{{trans('app.print_labels.time')}}</th>
                             <th>{{trans('app.print_labels.tracking_code')}}</th>
+                            <th>{{trans('app.print_labels.service')}}</th>
                             <th>{{trans('app.print_labels.fulfilled_products')}}</th>
                             <th>{{trans('app.print_labels.get_the_label')}}</th>
                         </tr>
@@ -35,6 +36,11 @@
                                             {{$tracking_code}}<br>
                                         @endforeach
                                     </td>
+                                    @if(isset($shipment['product_code']) && $shipment['product_code'])
+                                        <td>{{ $shipment['product_code'] }}</td>
+                                    @else
+                                        <td>---</td>
+                                    @endif
                                     <td>
                                         @php
                                             $anyFulflliment = false;
