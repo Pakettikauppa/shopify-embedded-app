@@ -36,8 +36,8 @@
                                             {{$tracking_code}}<br>
                                         @endforeach
                                     </td>
-                                    @if(isset($shipment['product_code']) && $shipment['product_code'])
-                                        <td>{{ $shipment['product_code'] }}</td>
+                                    @if(isset($shipment_methods[$shipment['product_code']]))
+                                        <td>{{ $shipment_methods[$shipment['product_code']] }}</td>
                                     @else
                                         <td>---</td>
                                     @endif

@@ -707,7 +707,8 @@ class AppController extends Controller {
             'shipments' => $shipments,
             'tracking_url' => $this->tracking_url,
             'fulfillments' => $fulfillments,
-            'hmac_print_url' => $hmac_print_url
+            'hmac_print_url' => $hmac_print_url,
+            'shipment_methods' => $shipment_methods_names
         ]);
     }
     
