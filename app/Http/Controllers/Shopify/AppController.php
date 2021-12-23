@@ -683,8 +683,9 @@ class AppController extends Controller {
         }
 
         $shipments = ShopifyShipment::where('shop_id', $shop->id)
-        ->where('order_id', $request->id)
-        ->get();
+            ->where('order_id', $request->id)
+            ->orderBy('created_at', 'desc')
+            ->get();
         $hmac = $request->get('hmac');
         $url_params = [
             'shop' => $shop->shop_origin,
@@ -692,6 +693,13 @@ class AppController extends Controller {
         $url_params['hmac'] = createShopifyHMAC($url_params);
 
         $hmac_print_url = http_build_query($url_params);
+        $shipping_methods = $this->pk_client->listShippingMethods();
+        $shipment_methods_names = [];
+        foreach($shipping_methods as $shipment_method)
+        {
+            $shipment_methods_names[$shipment_method->shipping_method_code] = $shipment_method->name;   
+        }
+
         return view('app.list-shipments', [
             'hmac' => $hmac,
             'shop' => $shop,
@@ -699,7 +707,8 @@ class AppController extends Controller {
             'shipments' => $shipments,
             'tracking_url' => $this->tracking_url,
             'fulfillments' => $fulfillments,
-            'hmac_print_url' => $hmac_print_url
+            'hmac_print_url' => $hmac_print_url,
+            'shipment_methods' => $shipment_methods_names
         ]);
     }
     
