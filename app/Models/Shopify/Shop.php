@@ -230,6 +230,7 @@ class Shop extends Model
             $shopify_shipment->reference = $reference;
             $shopify_shipment->test_mode = $this->test_mode;
             $shopify_shipment->return = $isReturn;
+            $shopify_shipment->product_code = $method_code;
             if ($customShipment){
                 $shopify_shipment->products = $shipment_products;
             }
