@@ -22,11 +22,23 @@
 		<pubDate>Tue, 4 Jan 2022 14:22:19 +0000</pubDate>
 		<category><![CDATA[Shopify]]></category>
 		<content:encoded><![CDATA[
-<p>Voit muokata lähetyksen tietoja ja lisätä niille lisäpalveluitaNyt voit muokata lähetyksen tietoja, kun luot tilaukselle lähetystä. Voit muuttaa paketin toimitusosoitetta, noutopistettä tai jopa paketin lähetystapaa, esimerkiksi kotiinkuljetuksesta noutopistepaketiksi tai voit korjata asiakkaasi osoitetta/yhteystietoja, jos ne olivatkin tilausta tehdessä virheelliset. Tilaustenhallinnasta voit muokata yksittäisen lähetyksen tietoja kohdasta More actions -> Create custom shipment.</p>
-
-<p>Jotkin lähetykset vaativat lisäpalveluita, kuten särkyvä, suuri, henkilökohtaisesti luovutettava paketti jne. Voit lisätä halutut lisäpalvelut lähetykselle Custom shipment -sivulta.</p>
-
-<p>Nyt voit tehdä lähetyksen vain osalle tilauksen tuotteista. Voit siis valita mille tuotteille lähetys luodaan ja mille tuotteille ei. Tämän voi tehdä myös Custom shipment -sivulta valitsen ne tuotteet, joille lähetyksen haluat luoda. List shipping labels -sivu listaa kaikki osoitekortit, jotka tälle tilaukselle on luotu.</p>
+<p>
+Nyt voit luoda tilaukselle haluamasi lähetyksen ja antaa sille haluamasi tiedot. Voit erikseen määrittää tilaukselle:
+</p>
+<ul>
+<li>Lähetystavan (esim. kotiinkuljetus, postipaketti -mikä eroaa asetuksissa määritellyistä toimitustavoista)</li>
+<li>Lisätä lähetykseen lisäpalveluita, kuten suuri, särkyvä, henkilökohtaisesti luovutettava jne.</li>
+<li>Voit lisätä ja muokata vastaanottajan tietoja (toimitusosoite, yhteystiedot), jos ne olivatkin tilaushetkellä väärin.</li>
+<li>Voit jakaa tilauksen useampaan pakettiin.</li>
+<li>Voit luoda lähetyksen vain osalle tilauksen tuotteista.</li>
+<li>Voit valita noutopisteen tai muokata asiakkaan valitsemaa noutopistettä.</li>
+</ul>
+<p>
+Pystyt määrittämään yllä mainitut lähetystiedot yksittäisen tilauksen tiedoista: Valitse tilaus -> More actions -valikko -> Create custom shipment.
+</p>
+<p>
+Jos jaat tilauksen useampaan lähetykseen, näet mille tuotteille lähetys on jo luotu kohdasta ”List shipping labels”.
+</p>
 ]]></content:encoded>
 	</item>
 
