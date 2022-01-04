@@ -18,6 +18,35 @@
 	<sy:updateFrequency>1</sy:updateFrequency>
 	<generator>https://wordpress.org/?v=4.9.8</generator>
 	<item>
+		<title>Voit luoda lähetyksiä ja antaa lähetyksille haluamasi tiedot vapaasti</title>
+		<pubDate>Tue, 4 Jan 2022 14:22:19 +0000</pubDate>
+		<category><![CDATA[Shopify]]></category>
+		<content:encoded><![CDATA[
+<p>Voit muokata lähetyksen tietoja ja lisätä niille lisäpalveluitaNyt voit muokata lähetyksen tietoja, kun luot tilaukselle lähetystä. Voit muuttaa paketin toimitusosoitetta, noutopistettä tai jopa paketin lähetystapaa, esimerkiksi kotiinkuljetuksesta noutopistepaketiksi tai voit korjata asiakkaasi osoitetta/yhteystietoja, jos ne olivatkin tilausta tehdessä virheelliset. Tilaustenhallinnasta voit muokata yksittäisen lähetyksen tietoja kohdasta More actions -> Create custom shipment.</p>
+
+<p>Jotkin lähetykset vaativat lisäpalveluita, kuten särkyvä, suuri, henkilökohtaisesti luovutettava paketti jne. Voit lisätä halutut lisäpalvelut lähetykselle Custom shipment -sivulta.</p>
+
+<p>Nyt voit tehdä lähetyksen vain osalle tilauksen tuotteista. Voit siis valita mille tuotteille lähetys luodaan ja mille tuotteille ei. Tämän voi tehdä myös Custom shipment -sivulta valitsen ne tuotteet, joille lähetyksen haluat luoda. List shipping labels -sivu listaa kaikki osoitekortit, jotka tälle tilaukselle on luotu.</p>
+]]></content:encoded>
+	</item>
+
+	<item>
+		<title>Päivitämme ja kehitämme sovellusta jatkuvasti sinulle paremmaksi. Lue alta uusimmat parannukset.</title>
+		<pubDate>Tue, 23 Nov 2021 09:44:22 +0000</pubDate>
+		<category><![CDATA[Shopify]]></category>
+		<content:encoded><![CDATA[
+<p>EU:n ulkopuoliset lähetykset mahdollisia. Merkittävä parannus lähettää paketteja maailmalle, sillä nyt voi lähettää pakettisi EU:n ulkopuolelle Shopifyn kautta. Muistathan lisätä HS-koodin ulkomaille myytäville tavaroillesi tuotetiedoissa ja valita oikean kuljetustavan, jos pakettien vastaanottaja on EU:n ulkopuolella. Vain maailma on rajanasi!</p>
+ 
+<p>Varastoinventaarion parannus: Mikäli sinulla on useampi varasto, pystyt tulostamaan pakettikortit mikäli kaikki tilauksen tavarat ovat samassa varastossa. Muussa tapauksessa lähetyksen luonti ei onnistu. Tällaisessa tapauksessa luo näistä erilliset tilaukset./p>
+ 
+<p>Bugikorjaus: Jos olet tehnyt Shopifyn kautta asiakkaalle tilausluonnoksen ja asiakas tilaa tuotteen, tilaus merkitään jaelluksi pakettikortin tulostuksen jälkeen.</p>
+ 
+<p>Muitakin pienempiä bugikorjauksia.</p>
+]]></content:encoded>
+	</item>
+
+	<item>
+
 		<title>Shopify ja toimitusvyöhykket</title>
 		<link>https://updates.pakettikauppa.fi/shopify/shopify-ja-toimitusvyohykket/</link>
 		<comments>https://updates.pakettikauppa.fi/shopify/shopify-ja-toimitusvyohykket/#respond</comments>
