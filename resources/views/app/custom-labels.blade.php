@@ -29,6 +29,8 @@
                                         <span class="tag red">{{trans('app.print_labels.statuses.no_shipping_service')}}</span>
                                     @elseif($shipment['status'] == 'not_in_inventory')
                                         <span class="tag red">{{trans('app.print_labels.statuses.not_in_inventory')}}</span>
+                                    @elseif($shipment['status'] == 'product_deleted')
+                                        <span class="tag red">{{trans('app.print_labels.statuses.product_deleted')}}</span>    
                                     @elseif($shipment['status'] == 'custom_error')
                                         <span class="tag red">{{$shipment['error_message']}}</span>
                                     @endif

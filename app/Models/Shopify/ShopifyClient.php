@@ -117,6 +117,15 @@ class ShopifyClient {
         Log::debug('REST ' . $method . ' call to ' . $url . ' Times called in request: ' . $this->api_calls);
 
         if (isset($response['errors']) or ($this->last_response_headers['http_status_code'] >= 400)) {
+            Log::debug(json_encode(
+                [
+                    'method' => $method,
+                    'path' => $path,
+                    'params' => $params,
+                    '$this->last_response_headers' => $this->last_response_headers,
+                    'response' => $response,
+                ], JSON_PRETTY_PRINT
+            ));
             throw new ShopifyApiException($method, $path, $params, $this->last_response_headers, $response);
         }
         return (is_array($response) and (count($response) > 0)) ? array_shift($response) : $response;
@@ -299,15 +308,40 @@ class ShopifyClient {
         foreach ($order_ids as $id){
             $order = $this->callGraphQL($this->ordersQuery([$id]));
             if (isset($order['orders']['edges'][0])){
-                $orders['orders']['edges'][] = $order['orders']['edges'][0];
+                $order_data = $order['orders']['edges'][0];
+                
+                //do if we have more line items in next page
+                $tmp_data = $order_data;
+                while ($this->hasLineItemsNextPage($tmp_data)){
+                    $line_items_cursor = $this->getLineItemsCursor($tmp_data);
+                    $tmp_order = $this->callGraphQL($this->ordersQuery([$id], $line_items_cursor));
+                    $tmp_data = $tmp_order['orders']['edges'][0] ?? [];
+                    if (!empty($tmp_data)){
+                        $order_data['node']['lineItems']['edges'] = array_merge($order_data['node']['lineItems']['edges'] , $tmp_data['node']['lineItems']['edges']);
+                    }
+                }
+                
+                $orders['orders']['edges'][] = $order_data;
             }
         }
         return $orders;
     }
     
-    private function ordersQuery($order_ids){
+    private function hasLineItemsNextPage($order){
+        return $order['node']['lineItems']['pageInfo']['hasNextPage'] ?? false;
+    }
+    
+    private function getLineItemsCursor($order){
+        $total_edges = count($order['node']['lineItems']['edges'] ?? []);
+        return $order['node']['lineItems']['edges'][$total_edges - 1]['cursor'] ?? '';
+    }
+    
+    private function ordersQuery($order_ids, $line_items_cursor = ''){
         $total_orders = count($order_ids);
         $filter = implode(' OR id:', $order_ids);
+        if ($line_items_cursor){
+            $line_items_cursor = ', after: "'.$line_items_cursor.'"';
+        }
         $query = <<<GQL
             {
                 orders(first: $total_orders, query: "$filter") {
@@ -319,8 +353,9 @@ class ShopifyClient {
                       email
                       phone
                       totalWeight
-                      lineItems(first: 30) {
+                      lineItems(first: 30 $line_items_cursor) {
                         edges {
+                            cursor
                             node {
                                 id
                                 requiresShipping
@@ -350,7 +385,13 @@ class ShopifyClient {
                                         type
                                     }
                                 }
+                                product {
+                                    legacyResourceId
+                                }
                             }
+                        }
+                        pageInfo {
+                            hasNextPage
                         }
                       }
                       billingAddress {
@@ -383,6 +424,30 @@ class ShopifyClient {
                         code
                       }
                     }
+                  }
+                }
+              }
+            GQL;
+        return $query;    
+    }
+    
+    public function getShopContacts(){
+        $data = $this->callGraphQL($this->shopContactsQuery());
+        return $data;
+    }
+    
+    private function shopContactsQuery(){
+        $query = <<<GQL
+            {
+                shop {
+                  name
+                  contactEmail
+                  billingAddress {
+                    address1
+                    city
+                    zip
+                    phone
+                    countryCode
                   }
                 }
               }

@@ -156,7 +156,8 @@ class AppController extends Controller {
 
             return view('app.alert', [
                 'shop' => $shop,
-                'type' => 'error',
+                'message_type' => 'error',
+                'type' => $this->type,
                 'title' => trans('app.messages.invalid_credentials'),
                 'message' => trans('app.messages.no_api_set_error', ['settings_url' => route('shopify.settings')]),
             ]);
@@ -365,23 +366,6 @@ class AppController extends Controller {
                             }        
                             GQL;
                     $this->client->call($query);
-                    /*
-                      if ($this->client->callsLeft() > 0 and $this->client->callLimit() == $this->client->callsLeft()) {
-                      sleep(2);
-                      }
-
-                      $this->client->call(
-                      'PUT',
-                      'admin',
-                      '/orders/' . $order['id'] . '.json',
-                      [
-                      'order' => [
-                      'id' => $order['id'],
-                      'note' => sprintf('%s: %s', trans('app.settings.activation_code'), $this->pk_client->getResponse()->{'response.trackingcode'}['labelcode'])
-                      ]
-                      ]
-                      );
-                     */
                 } catch (\Exception $e) {
                     Log::debug($e->getMessage());
                     Log::debug($e->getTraceAsString());
@@ -417,6 +401,7 @@ class AppController extends Controller {
 
                 $services = [];
                 $filtered_services = [];
+                $has_missing_products = false;
                 
                 foreach ($order['line_items'] as $item) {
                     //$variantId = $item['variant_id'];
@@ -443,6 +428,11 @@ class AppController extends Controller {
                           );
                          */
                         $makeNull = true;
+                        //producte deleted and variant null, skip
+                        if ($item['variant'] === null){
+                            $has_missing_products = true;
+                            continue;
+                        } 
                         $inventoryLevels = $item['variant']['inventoryItem']['inventoryLevels']['edges'];
                         foreach ($inventoryLevels as $_inventory) {
                             //do not look at inventory quantity
@@ -544,6 +534,8 @@ class AppController extends Controller {
                             }
                         }
                     }
+                } else if ($has_missing_products){
+                    $shipments[$orderKey]['status'] = 'product_deleted';
                 } else {
                     $shipments[$orderKey]['status'] = 'not_in_inventory';
                 }
@@ -609,6 +601,15 @@ class AppController extends Controller {
             return redirect()->route('install-link', request()->all());
         }
 
+        // Get unfulfiled items.
+        $unfulfiled_items = [];
+        foreach($order['line_items'] as $item)
+        {
+            if(!$item['fulfillment_status'] || $item['fulfillable_quantity'] > 0)
+            {
+                $unfulfiled_items[] = $item;       
+            }
+        }
         $shipping_methods = $this->pk_client->listShippingMethods();
         $services = array_keys(json_decode($shop->settings, true));
         $services[] = $shop->default_service_code;
@@ -617,12 +618,6 @@ class AppController extends Controller {
                 $services[] = $setting['product_code'];
         }
 
-        // Remove inactive services
-        foreach ($shipping_methods as $key => $shipping_method) {
-            if (!in_array($shipping_method->shipping_method_code, $services)) {
-                unset($shipping_methods[$key]);
-            }
-        }
         if (!is_array($shipping_methods)) {
             $shipping_methods = array();
         }
@@ -646,8 +641,149 @@ class AppController extends Controller {
             'order_id' => $order_id,
             'type' => $this->type,
             'shipping_address' => $shipping_address,
-            'email' => $order['email']
+            'email' => $order['email'],
+            'unfulfiled_items' => $unfulfiled_items
         ]);
+    }
+
+    public function listShipments(Request $request)
+    {
+        $shop = request()->get('shop');
+
+        // Create client config and refresh token if necessary.
+        $this->pk_client = $this->getPakketikauppaClient($shop);
+
+        // Something went horribly wrong.
+        if (!$this->pk_client)
+        {
+            Log::debug("Custom shipment: client initialization error.");
+            throw new FatalErrorException();
+        }
+
+        $order_id = request()->get('id');
+        $this->client = $this->getShopifyClient();
+        try {
+            $order = $this->client->call(
+                    'GET',
+                    'admin',
+                    "/orders/{$order_id}.json",
+            );
+        } catch (ShopifyApiException $sae) {
+            Log::debug('Unauthorized.');
+            return redirect()->route('install-link', request()->all());
+        }
+
+        $fulfillments = [];
+        foreach($order['fulfillments'] as $fulfillment)
+        {
+            if(isset($fulfillment['tracking_number']))
+            {
+                $fulfillments[$fulfillment['tracking_number']] = $fulfillment;
+            }
+        }
+
+        $shipments = ShopifyShipment::where('shop_id', $shop->id)
+            ->where('order_id', $request->id)
+            ->orderBy('created_at', 'desc')
+            ->get();
+        $hmac = $request->get('hmac');
+        $url_params = [
+            'shop' => $shop->shop_origin,
+        ];
+        $url_params['hmac'] = createShopifyHMAC($url_params);
+
+        $hmac_print_url = http_build_query($url_params);
+        $shipping_methods = $this->pk_client->listShippingMethods();
+        $shipment_methods_names = [];
+        foreach($shipping_methods as $shipment_method)
+        {
+            $shipment_methods_names[$shipment_method->shipping_method_code] = $shipment_method->name;   
+        }
+
+        return view('app.list-shipments', [
+            'hmac' => $hmac,
+            'shop' => $shop,
+            'type' => $this->type,
+            'shipments' => $shipments,
+            'tracking_url' => $this->tracking_url,
+            'fulfillments' => $fulfillments,
+            'hmac_print_url' => $hmac_print_url,
+            'shipment_methods' => $shipment_methods_names
+        ]);
+    }
+    
+    private function prepareCustomShipmentProducts($products, $order_id, $ship_products = false){
+        $prepared = [];
+        $shipment_products = [];
+        if (empty($products) || empty($order_id)){
+            return $prepared;
+        }
+        $shop = request()->get('shop');
+        $shipped = [];
+        $_products = ShopifyShipment::where('shop_id', $shop->id)->where('order_id', $order_id)->whereNotNull('products')->get('products');
+        foreach ($_products as $_product){
+            $shipped = array_merge($shipped, $_product->products);
+        }
+        
+        if (isset($products['edges'])){
+            $products = $products['edges'];
+        }
+        foreach ($products as $product){
+            //if got graphql object
+            if( isset($product['node'])){
+                if ($product['node']['requiresShipping'] !== true){
+                    continue;
+                }
+                $product_id = $product['node']['product']['legacyResourceId'];
+                $item = [
+                    'name' => $product['node']['name'],
+                    'total' => $product['node']['quantity'],
+                    'shipped' => $this->countShippedProducts($product_id, $shipped)
+                ];
+                $item['remains'] = $item['total'] - $item['shipped'];
+                $prepared[$product_id] = $item;
+                if ($ship_products !== false){
+                    if (isset($ship_products[$product_id])){
+                        if ((int)$ship_products[$product_id] > $item['remains']){
+                            $product['node']['quantity'] = $item['remains'];
+                        } else {
+                            $product['node']['quantity'] = (int)$ship_products[$product_id];
+                        }
+                        if ($product['node']['quantity'] > 0){
+                            $shipment_products[] = $product['node'];
+                        }
+                    }
+                }
+            } else {
+                if ($product['requires_shipping'] !== true){
+                    continue;
+                }
+                $item = [
+                    'name' => $product['name'],
+                    'total' => $product['quantity'],
+                    'shipped' => $this->countShippedProducts($product['product_id'], $shipped)
+                ];
+                $item['remains'] = $item['total'] - $item['shipped'];
+                $prepared[$product['product_id']] = $item;
+            }
+        }
+        if ($ship_products !== false){
+            return $shipment_products;
+        }
+        return $prepared;
+    }
+    
+    private function countShippedProducts($id, $data){
+        $shipped = 0;
+        if (empty($data)){
+            return $shipped;
+        }
+        foreach ($data as $item){
+            if ($item['id'] == $id){
+                $shipped += $item['shipped'];
+            }
+        }
+        return $shipped;
     }
 
     public function getShippingAddressFromOrder($order) {
@@ -817,37 +953,86 @@ class AppController extends Controller {
             return redirect()->route('install-link', request()->all());
         }
 
+        $service_name = 'unnamed service';
         if (request()->get('pickup')) {
             $pickup = json_decode(trim(request()->get('pickup'), '"'), true);
-            $shipping_lines[] = [
-                'code' => $pickup['service_code'],
-                'price' => $pickup['total_price'] / 100.0,
-                'discounted_price' => $pickup['total_price'] / 100.0,
-                'title' => $pickup['service_name']
-            ];
-            $order['shipping_lines'] = $shipping_lines;
-        } else {
+            $code = $pickup['service_code'];
+            if(isset($pickup['service_name']))
+                $service_name = $pickup['service_name'];
+        }
+        elseif (request()->get('shipping_method'))
+        {
+            $code = request()->get('shipping_method');
+            if(request()->get('service_name'))
+                $service_name = request()->get('service_name');
+        }
+        else
+        {
             return response()->json([
-                        'message' => trans('app.custom_shipment.not_selected'),
-                        'status' => 'error',
+                'message' => trans('app.custom_shipment.not_selected'),
+                'status' => 'error',
             ]);
         }
-        
+
+        // Does not really matter, besides code, which API will use. Shipping_lines is immutable in Shopify.
+        $shipping_lines = [
+            'code' => $code,
+            'price' => 0,
+            'discounted_price' => 0,
+            'title' => $service_name,
+        ];
+        $order['shippingLine'] = $shipping_lines;
+
         $additional_services = request()->get('additional_services');
         if (is_array($additional_services) && count($additional_services)){
             $order['additional_services'] = $additional_services;
         }
         
+        
+
+        $order['gid'] = $order['id'];
+        $order['id'] = $order['legacyResourceId'];
         $shipment = [];
         $shipment['fulfillment_status'] = !empty($order['fulfillments']) ? $order['fulfillments'][0]['status'] : '';
         $shipment['line_items'] = [];
-        foreach ($order['lineItems']['edges'] as $line_item) {
-            if ($line_item['node']['requiresShipping']) {
-                $shipment['line_items'][] = $line_item['node'];
+        
+        $fulfil = (bool) request()->get('fulfil');
+
+        if($fulfil)
+        {
+            // Get unfulfiled items.
+            $unfulfiled_items = [];
+            $quantities_unfulfiled = request()->get('quantity');
+            foreach ($order['lineItems']['edges'] as $line_item) {
+                $node = $line_item['node'];
+                $item = explode("/", $node['id']);
+                $itemID = end($item);
+                if ($node['requiresShipping'] && isset($quantities_unfulfiled[$itemID])) {
+
+                    $qty_to_fulfil = $quantities_unfulfiled[$itemID];
+                    // Set the unfulfiled quantity selected. Check if it is not zero or exceeds maximum, in case client decides to play around..
+                    $order_quantity = $node['quantity'];
+                    if($qty_to_fulfil > $order_quantity)
+                        $qty_to_fulfil = $order_quantity;
+                    if($qty_to_fulfil < 1)
+                        continue;
+
+                    $node['quantity'] = $qty_to_fulfil; 
+                    $shipment['line_items'][] = $node;
+                }
             }
+        }
+        else
+        {
+            foreach ($order['lineItems']['edges'] as $line_item) {
+                if ($line_item['node']['requiresShipping']) {
+                    $shipment['line_items'][] = $line_item['node'];
+                }
+            }    
         }
 
         $shipment['id'] = $order['legacyResourceId'];
+        $shipment['gid'] = $order['gid'];
         $shipment['admin_order_url'] = 'https://' . $shop->shop_origin . '/admin/orders/' . $order['legacyResourceId'];
         $url_params = [
             'shop' => $shop->shop_origin,
@@ -913,34 +1098,10 @@ class AppController extends Controller {
                 $senderInfo,
                 $receiverInfo,
                 $contents,
+                false,
+                true
         );
         $shipment['status'] = $_shipment['status'];
-
-        if (
-                !empty($this->pk_client->getResponse()->{'response.trackingcode'}['labelcode']) and
-                $shop->create_activation_code === true
-        ) {
-            try {
-                if ($this->client->callsLeft() > 0 and $this->client->callLimit() == $this->client->callsLeft()) {
-                    sleep(2);
-                }
-
-                $this->client->call(
-                        'PUT',
-                        'admin',
-                        '/orders/' . $order['id'] . '.json',
-                        [
-                            'order' => [
-                                'id' => $order['id'],
-                                'note' => sprintf('%s: %s', trans('app.settings.activation_code'), $this->pk_client->getResponse()->{'response.trackingcode'}['labelcode'])
-                            ]
-                        ]
-                );
-            } catch (\Exception $e) {
-                Log::debug($e->getMessage());
-                Log::debug($e->getTraceAsString());
-            }
-        }
 
         if (isset($_shipment['error_message'])) {
             $shipment['error_message'] = $_shipment['error_message'];
@@ -964,6 +1125,114 @@ class AppController extends Controller {
         } else if (isset($_shipment['tracking_code'])) {
             $shipment['tracking_code'] = $_shipment['tracking_code'];
             $tracking_codes[] = $_shipment['tracking_code'];
+        }
+
+        if ($fulfil) {
+            Log::debug("Fullfilling order: " . implode(', ', $tracking_codes) . " - {$order['id']}");
+
+            $services = [];
+            $filtered_services = [];
+            $has_missing_products = false;
+            
+            foreach ($shipment['line_items'] as $item) {
+                try {
+                    $makeNull = true;
+                    if ($item['variant'] === null){
+                        $has_missing_products = true;
+                        continue;
+                    } 
+                    $inventoryLevels = $item['variant']['inventoryItem']['inventoryLevels']['edges'];
+                    foreach ($inventoryLevels as $_inventory) {
+                        //do not look at inventory quantity
+                        $service = $item['variant']['fulfillmentService']['type'];
+                        if (!isset($services[$service][$_inventory['node']['location']['id']] )){
+                            $services[$service][$_inventory['node']['location']['id']] = [];
+                        }
+                        $services[$service][$_inventory['node']['location']['id']][] = ['id' => $item['id'], 'quantity' => (int)$item['quantity']];
+                        $makeNull = false;
+                    }
+
+                    if ($makeNull) {
+                        Log::debug("NULL item: {$item['id']} - " . var_export($inventoryLevels, true));
+                    }
+                } catch (ShopifyApiException $sae) {
+                    $exceptionData = array(
+                        var_export($sae->getMethod(), true),
+                        var_export($sae->getPath(), true),
+                        var_export($sae->getParams(), true),
+                        var_export($sae->getResponseHeaders(), true),
+                        var_export($sae->getResponse(), true)
+                    );
+
+                    Log::debug('ShopiApiException: ' . var_export($exceptionData, true));
+                } catch (\Exception $e) {
+                    Log::debug(var_export($item, true));
+                    Log::debug('Fullfillment Exception: ' . $e->getMessage() . ' on line ' . $e->getLine());
+                }
+            }
+
+
+            //filter services to check if found all available quantities in one warehouse
+            foreach ($services as $fullfilment => $line_items) {
+                foreach ($line_items as $locationId => $items) {
+                    if (count($items) == count($shipment['line_items'])){
+                        $filtered_services[$fullfilment][$locationId] = $items;
+                        break;
+                    }
+                }
+            }
+            
+            if (!empty($filtered_services)){
+                foreach ($filtered_services as $line_items) {
+                    foreach ($line_items as $locationId => $items) {
+                        $fulfillment = [
+                            'orderId' => $order['gid'],
+                            'trackingNumbers' => implode(', ', $tracking_codes),
+                            'locationId' => $locationId,
+                            'notifyCustomer' => true,
+                            'trackingCompany' => trans('app.settings.company_name_' . $this->type),
+                            'trackingUrls' => $this->tracking_url . end($tracking_codes),
+                            'lineItems' => $items,
+                        ];
+
+                        try {
+                            $query_params = $this->buildGraphQLInput($fulfillment);
+                            $query = <<<GQL
+                            mutation CreateFulfillment {
+                                fulfillmentCreate(
+                                  input: $query_params
+                                )
+                                {
+                                    userErrors {
+                                      field
+                                      message
+                                    }
+                                }
+                              }        
+                            GQL;
+                            $result = $this->client->call($query);
+                            Log::debug(var_export($result, true));
+                        } catch (ShopifyApiException $sae) {
+                            $exceptionData = array(
+                                var_export($sae->getMethod(), true),
+                                var_export($sae->getPath(), true),
+                                var_export($sae->getParams(), true),
+                                var_export($sae->getResponseHeaders(), true),
+                                var_export($sae->getResponse(), true)
+                            );
+
+                            Log::debug('ShopiApiException: ' . var_export($exceptionData, true));
+                        } catch (\Exception $e) {
+                            Log::debug('Fullfillment Exception: ' . $e->getMessage() . ' on line ' . $e->getLine());
+                        }
+                    }
+                }
+            } else if ($has_missing_products){
+                $shipments[$orderKey]['status'] = 'product_deleted';
+            } else {
+                $shipments[$orderKey]['status'] = 'not_in_inventory';
+            }
+            Log::debug("Fullfilled order: {$order['id']}");
         }
 
         return response()->json([
@@ -1093,7 +1362,8 @@ class AppController extends Controller {
         if (!isset($shipment)) {
             return view('app.alert', [
                 'shop' => $shop,
-                'type' => 'error',
+                'message_type' => 'error',
+                'type' => $this->type,
                 'title' => trans('app.messages.no_tracking_info'),
                 'message' => '',
             ]);
@@ -1106,7 +1376,8 @@ class AppController extends Controller {
         if (!is_array($statuses) || count($statuses) == 0) {
             return view('app.alert', [
                 'shop' => $shop,
-                'type' => 'error',
+                'message_type' => 'error',
+                'type' => $this->type,
                 'title' => trans('app.messages.no_tracking_info'),
                 'message' => '',
             ]);
@@ -1121,6 +1392,7 @@ class AppController extends Controller {
             'current_shipment' => $shipment,
             'order_url' => $admin_order_url,
             'orders_url' => $admin_orders_url,
+            'type' => $this->type,
         ]);
     }
 

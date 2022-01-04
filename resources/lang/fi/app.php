@@ -14,6 +14,10 @@ return [
         'return_label' => 'Tulosta palautustarra',
         'description' => 'Lista luoduista lähetyksistä',
         'order_id' => 'Tilaus nro',
+        'date' => 'Pvm',
+        'time' => 'aika',
+        'service' => 'Palvelu',
+        'fulfilled_products' => 'Toimitetut tuotteet',
         'tracking_code' => 'Seurantakoodi',
         'status' => 'Tila',
         'get_the_label' => 'Hae osoitetarra',
@@ -25,6 +29,7 @@ return [
             'need_shipping_address' => 'Epäonnistui koska toimitusosoite puuttui',
             'no_shipping_service' => 'Ei toimitustapaa valittuna',
             'not_in_inventory' => 'Tuotetta ei varastossa',
+            'product_deleted' => 'Tuotetta ei löydy, täytä manuaalisesti',
             'nothing_to_ship' => 'Ei lähetettäviä tuotteita',
         ],
     ],
@@ -38,7 +43,14 @@ return [
         'save_failed' => 'Shipment update failed',
         'pickups_title' => 'Pickup points',
         'not_selected' => 'Shipping method not selected',
-        'multiparcel_title' => 'Packets'
+        'multiparcel_title' => 'Packets',
+        'products_title' => 'Tuotteet',
+        'product_name'  => 'Nimi',
+        'product_ship'  => 'Lähetä',
+        'product_remains'  => 'Toimittamattomat',
+        'product_shipped'  => 'Lähetetty',
+        'product_total'  => 'Kokonaismäärä',
+        'no_products' => 'Ei lähetettäviä tuotteita'
 
     ],
     'settings' => [

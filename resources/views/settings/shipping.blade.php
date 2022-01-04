@@ -104,7 +104,7 @@
                     {{trans('app.settings.additional_label_info')}}
                 </div>
                 <div class="columns eight">
-                    <textarea name="additional_label_info" rows ="5">@if($shop->additional_label_info){{$shop->additional_label_info}} @else {{trans('app.settings.default_additional_label_info')}}@endif</textarea>
+                    <textarea name="additional_label_info" rows ="5">{{$shop->additional_label_info}}</textarea>
                     <small>
                         @foreach ($additional_info_keys as $key => $desc)
                         {{ $key }} - {{ $desc }}<br/>
