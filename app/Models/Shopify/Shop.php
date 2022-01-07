@@ -114,7 +114,7 @@ class Shop extends Model
                     $pickupPointId = null;
                 }
             }
-            if(!$method_code && isset($order['shippingLine']['code']))
+            if(!$method_code && isset($order['shippingLine']['code']) && is_numeric($order['shippingLine']['code']))
             {
                 $method_code = $order['shippingLine']['code'];
             }
