@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.app-no-menu')
 
 @section('content')
 
@@ -91,9 +91,10 @@
 
     function customPageInit() {
         titleBar.set({
-            title: '{{trans('app.print_labels.' . $page_title)}}'
+            title: '{!! trans('app.print_labels.' . $page_title) !!}',
+            buttons: null
         });
-
+        
         // Collect all links to print label
         let printLinks = document.getElementsByClassName('print-label');
 

@@ -16,9 +16,9 @@
     <link href="{{url('css/uptown.css')}}" rel='stylesheet' type='text/css'>
     <link href="{{url('css/style.css')}}" rel='stylesheet' type='text/css'>
 
-@yield('after-style-end')
+    @yield('after-style-end')
 
-<!-- JavaScripts -->
+    <!-- JavaScripts -->
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
     <script src="https://unpkg.com/@shopify/app-bridge@2.0.5"></script>
