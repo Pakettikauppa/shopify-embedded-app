@@ -353,7 +353,7 @@ class ShopifyClient {
                       email
                       phone
                       totalWeight
-                      lineItems(first: 30 $line_items_cursor) {
+                      lineItems(first: 10 $line_items_cursor) {
                         edges {
                             cursor
                             node {
