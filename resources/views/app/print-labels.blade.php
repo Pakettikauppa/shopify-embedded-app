@@ -94,7 +94,7 @@
             title: '{!! trans('app.print_labels.' . $page_title) !!}',
             buttons: null
         });
-        
+
         // Collect all links to print label
         let printLinks = document.getElementsByClassName('print-label');
 
