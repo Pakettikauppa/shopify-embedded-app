@@ -640,7 +640,13 @@ class AppController extends Controller {
         }
         $hmac = $request->get('hmac');
         $shipping_address = $this->getShippingAddressFromOrder($order);
+
+        $shipping_line = $order['shipping_lines'][0];
+        $method_codes = explode(':', $shipping_line['code']);
+        $selected_method = $method_codes[0] ?? null;
+
         return view('app.custom-shipment', [
+            'selected_method' => $selected_method,
             'hmac' => $hmac,
             'shop' => $shop,
             'shipping_methods' => $shipping_methods,
@@ -928,8 +934,12 @@ class AppController extends Controller {
                 Log::debug($e->getTraceAsString());
             }
         }
+        $shipping_line = $order['shipping_lines'][0];
+        $method_codes = explode(':', $shipping_line['code']);
+        $selected_pickup = $method_codes[1] ?? null;
         return response()->json([
-                    'pickups' => $rates
+                    'pickups' => $rates,
+                    'selected_pickup' => $selected_pickup
         ]);
     }
 

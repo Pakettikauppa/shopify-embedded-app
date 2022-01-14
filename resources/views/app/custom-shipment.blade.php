@@ -16,7 +16,7 @@
                                     @if(count($service_provider) > 0)
                                         <optgroup label="{{$key}}">
                                             @foreach($service_provider as $product)
-                                                <option value="{{ $product['shipping_method_code'] }}" data-services="{{json_encode($product['additional_services'])}}">
+                                                <option value="{{ $product['shipping_method_code'] }}" @if($product['shipping_method_code'] == $selected_method) selected @endif data-services="{{json_encode($product['additional_services'])}}">
                                                     {{ $product['name'] }}
                                                 </option>
                                             @endforeach
@@ -177,6 +177,7 @@
             });
         }
         $(document).on('ready', () => {
+            handlePickupsAndAdditionalServices();
             $('#pickup-select-block').hide();
             $('#shipping-method, #country').on('change', e => {
                 handlePickupsAndAdditionalServices();
@@ -218,8 +219,15 @@
                         showToast({message: response.data.message, isError: false});
                         if(response.data.pickups.length > 0)
                         {
+                            let methodCodes, pickupCode;
+                            let selectedPickup = (typeof response.data.selected_pickup !== "undefined" && response.data.selected_pickup) ? response.data.selected_pickup : null;
                             response.data.pickups.forEach((pickup) => {
-                                $('#pickup-select').append(`<option value='"${JSON.stringify(pickup)}"'>${pickup.service_name}</option>`);
+                                methodCodes = pickup['service_code'].split(':');
+                                pickupCode = (typeof methodCodes[1] !== "undefined" && methodCodes[1]) ? methodCodes[1] : null;
+                                if(pickupCode == selectedPickup)
+                                    $('#pickup-select').append(`<option value='"${JSON.stringify(pickup)}"' selected>${pickup.service_name}</option>`);
+                                else
+                                    $('#pickup-select').append(`<option value='"${JSON.stringify(pickup)}"'>${pickup.service_name}</option>`);
                             });
                             $('#pickup-select-block').show();
                         }
