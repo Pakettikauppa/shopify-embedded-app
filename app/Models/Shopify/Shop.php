@@ -71,26 +71,6 @@ class Shop extends Model
             );
             $info->setAdditionalInfoText($this->prepareAdditionalInfoText($additional_info));
         }
-        $parcel = new Parcel();
-        $parcel->setReference($order['id']);
-        $parcel->setWeight(number_format($order['totalWeight'] * 0.001, 3)); // kg
-        $parcel->setVolume(number_format($order['totalWeight'] * 0.000001, 6)); // m3
-        $parcel->setContents('');
-
-        foreach ($contents as $item) {
-            $contentLine = new Shipment\ContentLine();
-            $contentLine->currency = 'EUR';
-            $contentLine->country_of_origin = $item['variant']['inventoryItem']['countryCodeOfOrigin'] ?? 'FI';
-            $contentLine->description = $item['name'];
-            $contentLine->quantity = $item['quantity'];
-            $contentLine->netweight = $this->toGrams($item['variant']['weight'] ?? 0, $item['variant']['weightUnit'] ?? 'GRAMS');
-            $contentLine->tariff_code = $item['variant']['inventoryItem']['harmonizedSystemCode'] ?? '';
-            $contentLine->value = $item['variant']['price'] ?? 0; // TODO why this failed if data had the price?
-            $parcel->addContentLine($contentLine);
-            //add products to shopify shipment
-            $shipment_products[] = ['id' => $item['product']['legacyResourceId'] ?? $item['id'], 'shipped' => $item['quantity']];
-        }
-
 
         $pickupPointId = null;
         $method_code = null;
@@ -153,7 +133,7 @@ class Shop extends Model
                 $contentLine->quantity = $item['quantity'];
                 //graphql does not support grams, so convert to grams manually
                 //$contentLine->netweight = $item['grams'];
-                $contentLine->netweight = $this->toGrams($item['variant']['weight'] ?? 0, $item['variant']['weightUnit'] ?? 'GRAMS');
+                $contentLine->netweight = $this->toGrams(($item['variant']['weight'] / $parcel_total_count) ?? 0, $item['variant']['weightUnit'] ?? 'GRAMS');
                 $contentLine->tariff_code = $item['variant']['inventoryItem']['harmonizedSystemCode'] ?? '';
                 $contentLine->value = $item['variant']['price'] ?? 0;
                 $parcel->addContentLine($contentLine);
