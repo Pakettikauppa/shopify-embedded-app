@@ -611,7 +611,13 @@ class AppController extends Controller {
             }
         }
         $shipping_methods = $this->pk_client->listShippingMethods();
-        $services = array_keys(json_decode($shop->settings, true));
+        //in case no settings, check
+        $shop_settings = json_decode($shop->settings, true);
+        if (is_array($shop_settings)) {
+            $services = array_keys($shop_settings);
+        } else {
+            $services = array();
+        }
         $services[] = $shop->default_service_code;
         foreach (unserialize($shop->shipping_settings) as $setting) {
             if ($setting['product_code'])
@@ -634,7 +640,13 @@ class AppController extends Controller {
         }
         $hmac = $request->get('hmac');
         $shipping_address = $this->getShippingAddressFromOrder($order);
+
+        $shipping_line = $order['shipping_lines'][0];
+        $method_codes = explode(':', $shipping_line['code']);
+        $selected_method = $method_codes[0] ?? null;
+
         return view('app.custom-shipment', [
+            'selected_method' => $selected_method,
             'hmac' => $hmac,
             'shop' => $shop,
             'shipping_methods' => $shipping_methods,
@@ -903,12 +915,18 @@ class AppController extends Controller {
                             $_pickupPoint->description = "{$_weekHours}{$_satHours}{$_sunHours}";
                         }
                     }
+                    //get price to var, to check if it is not false in case settings not found
+                    $total_rate_price = $this->priceForPickupPoint($_pickupPoint->provider_service, $totalValue);
+                    //if price not found - skip
+                    if ($total_rate_price === false) {
+                        continue;
+                    }
                     $rates[] = array(
                         'service_name' => "{$_pickupPointName}, " . "{$_pickupPoint->street_address}, {$_pickupPoint->postcode}, {$_pickupPoint->city}",
                         'description' => $_pickupPoint->provider . ' (' . ((is_object($_pickupPoint->service) && isset($_pickupPoint->service->name) && $_pickupPoint->service->name != null) ? $_pickupPoint->service->name : '') . ') ' . ($_pickupPoint->description == null ? '' : " ({$_pickupPoint->description})"),
                         'service_code' => "{$_pickupPoint->provider_service}:{$_pickupPoint->pickup_point_id}",
                         'currency' => 'EUR',
-                        'total_price' => $this->priceForPickupPoint($_pickupPoint->provider_service, $totalValue)
+                        'total_price' => $total_rate_price
                     );
                 }
             } catch (\Exception $e) {
@@ -916,8 +934,12 @@ class AppController extends Controller {
                 Log::debug($e->getTraceAsString());
             }
         }
+        $shipping_line = $order['shipping_lines'][0];
+        $method_codes = explode(':', $shipping_line['code']);
+        $selected_pickup = $method_codes[1] ?? null;
         return response()->json([
-                    'pickups' => $rates
+                    'pickups' => $rates,
+                    'selected_pickup' => $selected_pickup
         ]);
     }
 
@@ -1397,6 +1419,10 @@ class AppController extends Controller {
     }
 
     private function priceForPickupPoint($provider, $totalValue) {
+        if (!is_array($this->pickupPointSettings) || !isset($this->pickupPointSettings[$provider])) {
+            return false;
+        }
+
         $pickupPointSettings = $this->pickupPointSettings[$provider];
 
         if ($pickupPointSettings['trigger_price'] > 0 and $pickupPointSettings['trigger_price'] * 100 <= $totalValue) {
