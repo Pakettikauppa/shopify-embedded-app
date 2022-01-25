@@ -120,7 +120,6 @@ class PickupPointsController extends Controller {
             $pickupPointProviders = array();
 
             foreach ($this->pickupPointSettings as $_provider => $_settings) {
-                Log::debug('Provider = ' . $_provider);
                 if ($_settings['active'] == 'true') {
                     if (!($totalWeightInGrams > 20000 and $_provider == '80010')) {
                         $pickupPointProviders[] = $_provider;
@@ -141,6 +140,14 @@ class PickupPointsController extends Controller {
             );
 
             if (empty($pickupPoints) && ($destination->country == 'LT' || $destination->country == 'AX' || $destination->country == 'FI')) {
+                //debug response
+                Log::debug('Response from pickup point search: ' . json_encode(
+                        [
+                            'http_response_code' => $pk_client->http_response_code,
+                            'http_error' => $pk_client->http_error,
+                            'http_response' => $pk_client->http_response
+                        ]
+                ));
                 // search some pickup points if no pickup locations was found
                 $pickupPoints = $pk_client->searchPickupPoints(
                         '00100',
