@@ -2418,16 +2418,16 @@
         },
         {
             "name": "pakettikauppa/api-library",
-            "version": "2.0.2",
+            "version": "2.0.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Pakettikauppa/api-library.git",
-                "reference": "b0a197cc0dfda33c2e1dafba23de9617016b0300"
+                "reference": "65d6833922a9c8db962880519f1ee0f3b9fbd89d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Pakettikauppa/api-library/zipball/b0a197cc0dfda33c2e1dafba23de9617016b0300",
-                "reference": "b0a197cc0dfda33c2e1dafba23de9617016b0300",
+                "url": "https://api.github.com/repos/Pakettikauppa/api-library/zipball/65d6833922a9c8db962880519f1ee0f3b9fbd89d",
+                "reference": "65d6833922a9c8db962880519f1ee0f3b9fbd89d",
                 "shasum": ""
             },
             "require": {
@@ -2465,9 +2465,9 @@
             "support": {
                 "email": "integration@pakettikauppa.fi",
                 "issues": "https://github.com/Pakettikauppa/api-library/issues",
-                "source": "https://github.com/Pakettikauppa/api-library/tree/2.0.2"
+                "source": "https://github.com/Pakettikauppa/api-library/tree/2.0.3"
             },
-            "time": "2020-04-22T07:08:03+00:00"
+            "time": "2022-01-25T09:01:39+00:00"
         },
         {
             "name": "phpoption/phpoption",
