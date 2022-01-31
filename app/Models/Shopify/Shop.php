@@ -133,7 +133,7 @@ class Shop extends Model
                 $contentLine->quantity = $item['quantity'];
                 //graphql does not support grams, so convert to grams manually
                 //$contentLine->netweight = $item['grams'];
-                $contentLine->netweight = $this->toGrams(($item['variant']['weight'] / $parcel_total_count) ?? 0, $item['variant']['weightUnit'] ?? 'GRAMS');
+                $contentLine->netweight = $this->toGrams(($item['variant']['weight'] ?? 0) / $parcel_total_count, $item['variant']['weightUnit'] ?? 'GRAMS');
                 $contentLine->tariff_code = $item['variant']['inventoryItem']['harmonizedSystemCode'] ?? '';
                 $contentLine->value = $item['variant']['price'] ?? 0;
                 $parcel->addContentLine($contentLine);
@@ -160,13 +160,13 @@ class Shop extends Model
             $shipment->includeReturnLabel(true);
         }
 
-        if ($isReturn) {
+        if ($isReturn && $this->checkAdditionalServiceSupport($shipment->getShippingMethod(), 9902)) {
             $additional_service = new AdditionalService();
             $additional_service->setServiceCode(9902);
             $shipment->addAdditionalService($additional_service);
         }
 
-        if ($this->create_activation_code == true) {
+        if ($this->create_activation_code == true && $this->checkAdditionalServiceSupport($shipment->getShippingMethod(), 9902)) {
             $additional_service = new AdditionalService();
             $additional_service->setServiceCode(9902);
             $shipment->addAdditionalService($additional_service);
@@ -225,6 +225,17 @@ class Shop extends Model
         $order['status'] = 'created';
 
         return $order;
+    }
+    
+    private function checkAdditionalServiceSupport($service_code, $additional_service)
+    {
+        if ($additional_service === 9902) {
+            $matches = [];
+            $re = '/900[0-9]{2}|2[0-9]{3}/m';
+            preg_match($re, $service_code, $matches);
+            return !empty($matches);
+        }
+        return true;
     }
 
     public function shippingCode2Method($shippingCode, $receiverCountry = null)
