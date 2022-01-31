@@ -641,9 +641,13 @@ class AppController extends Controller {
         $hmac = $request->get('hmac');
         $shipping_address = $this->getShippingAddressFromOrder($order);
 
-        $shipping_line = $order['shipping_lines'][0];
-        $method_codes = explode(':', $shipping_line['code']);
-        $selected_method = $method_codes[0] ?? null;
+        if (!empty($order['shipping_lines'])) {
+            $shipping_line = $order['shipping_lines'][0];
+            $method_codes = explode(':', $shipping_line['code']);
+            $selected_method = $method_codes[0] ?? null;
+        } else {
+            $selected_method = null;
+        }
 
         return view('app.custom-shipment', [
             'selected_method' => $selected_method,
@@ -800,15 +804,15 @@ class AppController extends Controller {
 
     public function getShippingAddressFromOrder($order) {
         return [
-            'first_name' => $order['shipping_address']['first_name'],
-            'last_name' => $order['shipping_address']['last_name'],
-            'company' => $order['shipping_address']['company'],
-            'address1' => $order['shipping_address']['address1'],
-            'address2' => $order['shipping_address']['address2'],
-            'zip' => $order['shipping_address']['zip'],
-            'city' => $order['shipping_address']['city'],
-            'country_code' => $order['shipping_address']['country_code'],
-            'phone' => $order['shipping_address']['phone'],
+            'first_name' => $order['shipping_address']['first_name'] ?? '',
+            'last_name' => $order['shipping_address']['last_name'] ?? '',
+            'company' => $order['shipping_address']['company'] ?? '',
+            'address1' => $order['shipping_address']['address1'] ?? '',
+            'address2' => $order['shipping_address']['address2'] ?? '',
+            'zip' => $order['shipping_address']['zip'] ?? '',
+            'city' => $order['shipping_address']['city'] ?? '',
+            'country_code' => $order['shipping_address']['country_code'] ?? '',
+            'phone' => $order['shipping_address']['phone'] ?? '',
         ];
     }
 
