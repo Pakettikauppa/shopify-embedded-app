@@ -2418,16 +2418,16 @@
         },
         {
             "name": "pakettikauppa/api-library",
-            "version": "2.0.3",
+            "version": "2.0.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Pakettikauppa/api-library.git",
-                "reference": "65d6833922a9c8db962880519f1ee0f3b9fbd89d"
+                "reference": "4c2a89bb5644e5cb6c3dba06679d227fba0df1b0"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Pakettikauppa/api-library/zipball/65d6833922a9c8db962880519f1ee0f3b9fbd89d",
-                "reference": "65d6833922a9c8db962880519f1ee0f3b9fbd89d",
+                "url": "https://api.github.com/repos/Pakettikauppa/api-library/zipball/4c2a89bb5644e5cb6c3dba06679d227fba0df1b0",
+                "reference": "4c2a89bb5644e5cb6c3dba06679d227fba0df1b0",
                 "shasum": ""
             },
             "require": {
@@ -2447,6 +2447,10 @@
             ],
             "authors": [
                 {
+                    "name": "Joose Vettenranta",
+                    "email": "joose.vettenranta@kompassi.fi"
+                },
+                {
                     "name": "Matti Särkikoski",
                     "email": "matti@pakettikauppa.fi"
                 }
@@ -2465,9 +2469,9 @@
             "support": {
                 "email": "integration@pakettikauppa.fi",
                 "issues": "https://github.com/Pakettikauppa/api-library/issues",
-                "source": "https://github.com/Pakettikauppa/api-library/tree/2.0.3"
+                "source": "https://github.com/Pakettikauppa/api-library/tree/2.0.4"
             },
-            "time": "2022-01-25T09:01:39+00:00"
+            "time": "2022-01-27T06:25:45+00:00"
         },
         {
             "name": "phpoption/phpoption",
@@ -8249,5 +8253,5 @@
         "ext-simplexml": "*"
     },
     "platform-dev": [],
-    "plugin-api-version": "2.1.0"
+    "plugin-api-version": "2.2.0"
 }

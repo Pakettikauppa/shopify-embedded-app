@@ -143,6 +143,7 @@ class PickupPointsController extends Controller {
                 //debug response
                 Log::debug('Response from pickup point search: ' . json_encode(
                         [
+                            'http_request' => $pk_client->http_request,
                             'http_response_code' => $pk_client->http_response_code,
                             'http_error' => $pk_client->http_error,
                             'http_response' => $pk_client->http_response
