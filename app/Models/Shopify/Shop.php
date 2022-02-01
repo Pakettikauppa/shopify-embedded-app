@@ -218,6 +218,7 @@ class Shop extends Model
         } catch (\Exception $ex) {
             Log::debug('Failed to create tracking code of shipment: ' . json_encode(
                 [
+                    'http_request' => $pk_client->http_request,
                     'http_response_code' => $pk_client->http_response_code,
                     'http_error' => $pk_client->http_error,
                     'http_response' => $pk_client->http_response

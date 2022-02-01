@@ -1326,6 +1326,7 @@ class AppController extends Controller {
         } catch (\Exception $e){
             Log::debug('Failed to get labels: ' . json_encode(
                 [
+                    'http_request' => $this->pk_client->http_request,
                     'http_response_code' => $this->pk_client->http_response_code,
                     'http_error' => $this->pk_client->http_error,
                     'http_response' => $this->pk_client->http_response
@@ -1379,6 +1380,7 @@ class AppController extends Controller {
         } catch (\Exception $e){
             Log::debug('Failed to get label: ' . json_encode(
                 [
+                    'http_request' => $this->pk_client->http_request,
                     'http_response_code' => $this->pk_client->http_response_code,
                     'http_error' => $this->pk_client->http_error,
                     'http_response' => $this->pk_client->http_response
