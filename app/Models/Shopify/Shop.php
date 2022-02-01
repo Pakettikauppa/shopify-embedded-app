@@ -216,7 +216,15 @@ class Shop extends Model
             }
             $shopify_shipment->save();
         } catch (\Exception $ex) {
-            Log::debug('Failed creating tracking code: ' . $ex->getMessage());
+            Log::debug('Failed to create tracking code of shipment: ' . json_encode(
+                [
+                    'http_request' => $pk_client->http_request,
+                    'http_response_code' => $pk_client->http_response_code,
+                    'http_error' => $pk_client->http_error,
+                    'http_response' => $pk_client->http_response
+                ]
+            ));
+            Log::debug('Exception message: ' . $ex->getMessage());
             $order['status'] = 'custom_error';
             $order['error_message'] = $ex->getMessage();
             return $order;
