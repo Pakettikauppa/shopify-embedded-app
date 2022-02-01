@@ -1324,6 +1324,13 @@ class AppController extends Controller {
                         'Content-Disposition' => 'inline; filename="multiple-shipping-labels.pdf"'
             ]);
         } catch (\Exception $e){
+            Log::debug('Failed to get labels: ' . json_encode(
+                [
+                    'http_response_code' => $this->pk_client->http_response_code,
+                    'http_error' => $this->pk_client->http_error,
+                    'http_response' => $this->pk_client->http_response
+                ]
+            ));
             Log::debug($e->getMessage());
             throw new NotFoundHttpException();
         }
@@ -1370,6 +1377,13 @@ class AppController extends Controller {
                         'Content-Disposition' => 'inline; filename="' . $shipment->tracking_code . '.pdf"'
             ]);
         } catch (\Exception $e){
+            Log::debug('Failed to get label: ' . json_encode(
+                [
+                    'http_response_code' => $this->pk_client->http_response_code,
+                    'http_error' => $this->pk_client->http_error,
+                    'http_response' => $this->pk_client->http_response
+                ]
+            ));
             Log::debug($e->getMessage());
             throw new NotFoundHttpException();
         }
