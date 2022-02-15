@@ -239,7 +239,7 @@ class Shop extends Model
     {
         if ($additional_service === 9902) {
             $matches = [];
-            $re = '/900[0-9]{2}|2[0-9]{3}/m';
+            $re = '/2017|2015|2004|27[0-9]{2}/m';
             preg_match($re, $service_code, $matches);
             return !empty($matches);
         }
