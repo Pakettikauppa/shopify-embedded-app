@@ -66,6 +66,7 @@ return [
         'no_shipping' => 'No shipping label',
         'activation_code' => 'Activation code',
         'create_activation_code' => 'Create activation code for every shipment. Activation code is added to order Notes, so it might be visible to the end user.',
+        'create_activation_code_desc' => 'Use only if you do not print shipping labels',
         'add_additional_label_info' => 'Add additional text on label',
         'additional_label_info' => 'Additional text on label',
         'default_additional_label_info' => "Order number {ORDER_NUMBER}\nItems: {PRODUCTS_NAMES}\nSKU: {PRODUCTS_SKU}",
