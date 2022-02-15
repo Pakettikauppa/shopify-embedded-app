@@ -230,10 +230,15 @@ class Shop extends Model
 
     private function checkAdditionalServiceSupport($service_code, $additional_service) {
         if ($additional_service === 9902) {
-            $matches = [];
-            $re = '/900[0-9]{2}|2[0-9]{3}/m';
-            preg_match($re, $service_code, $matches);
-            return !empty($matches);
+            $must_matche = [];
+            $re = '/900[0-9]{2}|2[0-9]{3}/';
+            preg_match($re, $service_code, $must_matche);
+            
+            $must_not_matche = [];
+            $re2 = '/2017|2015|2004|27[0-9]{2}/';
+            preg_match($re2, $service_code, $must_not_matche);
+            
+            return empty($must_not_matche) && !empty($must_matche);
         }
         return true;
     }
