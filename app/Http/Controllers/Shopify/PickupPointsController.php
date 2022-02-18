@@ -23,6 +23,7 @@ class PickupPointsController extends Controller {
 
     public function list(Request $request) {
         // SETUP EVERYTHING
+        $rates = array();
         // setup and validate Shop
         $shop = Shop::where('shop_origin', $request->header('x-shopify-shop-domain'))->first();
 
@@ -83,6 +84,8 @@ class PickupPointsController extends Controller {
         // test if pickup points are available in settings
         if (!(isset($shop->pickuppoints_count) && $shop->pickuppoints_count > 0)) {
             Log::debug("no pickup point counts");
+            $json = json_encode(['rates' => $rates]);
+            echo $json;
             return;
         }
 
@@ -97,7 +100,8 @@ class PickupPointsController extends Controller {
         Log::debug($request->getContent());
         $destination = $requestBody->rate->destination;
 
-        $rates = array();
+        $this->showShippingMethods($rates, $shop, $requestBody);
+        
         if (count($this->pickupPointSettings) > 0) {
             // calculate total value of the cart
             $totalValue = 0;
@@ -256,6 +260,104 @@ class PickupPointsController extends Controller {
         }
 
         return (int) round($pickupPointSettings['base_price'] * 100.0);
+    }
+    
+    private function showShippingMethods(&$rates, $shop, $request) {
+        if ($shop->shipping_settings) {
+            $settings = unserialize($shop->shipping_settings);
+            if (isset($settings['advanced_shipping'])) {
+                $cart_weight = $this->cartWeight($request);
+                $cart_value = $this->cartValue($request);
+                foreach ($settings['advanced_shipping'] as $service) {
+                    $price = false;
+                    if ($service['price_calc'] == "fixed") {
+                        $price = $service['price_value'] * 100;
+                    } else if ($service['price_calc'] == "percent") {
+                        $price = round($cart_value * $service['price_value'] / 100, 2);
+                    } else if ($service['price_calc'] == "cart_based" || $service['price_calc'] == "weight_based") {
+                        if (isset($service['price_conditions']['value'] )) {
+                            $total_rows = count($service['price_conditions']['value']);
+                            $compare_value = $cart_value/100;
+                            if ($service['price_calc'] == "weight_based") {
+                                $compare_value = $cart_weight;
+                            }
+                            for ($i = 0; $i < $total_rows; $i++) {
+                                if ($service['price_conditions']['from'][$i] <= $compare_value && $service['price_conditions']['to'][$i] > $compare_value) {
+                                    $price = $service['price_conditions']['value'][$i] * 100;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    //visibility checking
+                    if (isset($service['visibility_conditions']['value'] )) {
+                        $total_rows = count($service['visibility_conditions']['value']);
+                        for ($i = 0; $i < $total_rows; $i++) {
+                            $has = false;
+                            if ($service['visibility_conditions']['condition'][$i] == 'has') {
+                                $has = true;
+                            } else if ($service['visibility_conditions']['condition'][$i] == 'has_not') {
+                                $has = false;
+                            }
+                            $values = explode('|', $service['visibility_conditions']['value'][$i]);
+                            $field = $service['visibility_conditions']['field'][$i];
+                            
+                            $matched = false;
+                            if ($field == 'country') {
+                                foreach ($values as $value) {
+                                    if ($request->rate->destination->country == $value) {
+                                        $matched = true;
+                                    }
+                                }
+                            }
+                            if ($field == 'tag') {
+                                foreach ($request->rate->items as $_item) {
+                                    foreach ($values as $value) {
+                                        if (stripos($_item->name, $value) !== false) {
+                                            $matched = true;
+                                        }
+                                    }
+                                }
+                            }
+                            
+                            //if must have and doesnt have - skip
+                            if ($has && !$matched) {
+                                $price = false;
+                            }
+                            //if must not have and has - skip
+                            if (!$has && $matched) {
+                                $price = false;
+                            }
+                        }
+                    }    
+                    if ($price) {
+                        $rates[] = array(
+                            'service_name' => $service['name'],
+                            'description' => '',
+                            'service_code' => $service['code'],
+                            'currency' => 'EUR',
+                            'total_price' => $price
+                        );
+                    }
+                }
+            }
+        }
+    }
+    
+    private function cartWeight($request) {
+        $totalWeightInGrams = 0;
+        foreach ($request->rate->items as $_item) {
+            $totalWeightInGrams += $_item->grams * $_item->quantity;
+        }
+        return $totalWeightInGrams/1000;
+    }
+    
+    private function cartValue($request) {
+        $totalValue = 0;
+        foreach ($request->rate->items as $_item) {
+            $totalValue += $_item->price * $_item->quantity;
+        }
+        return $totalValue;
     }
 
 }
