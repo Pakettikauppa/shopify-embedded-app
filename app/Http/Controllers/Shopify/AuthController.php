@@ -7,15 +7,18 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Shopify\Shop;
 use Illuminate\Support\Str;
+use App\Models\Shopify\ShopifyClient;
 use Log;
 
 class AuthController extends Controller
 {
     private $type;
+    private $shopifyClient;
 
     public function __construct(Request $request)
     {
         $this->type = config('shopify.type');
+        $this->shopifyClient = null;
     }
     
     public function index(Request $request)
@@ -95,7 +98,6 @@ class AuthController extends Controller
         //         . $response . PHP_EOL,
         //     FILE_APPEND
         // );
-
         return $jsonResponse['access_token'];
     }
 
@@ -175,6 +177,13 @@ class AuthController extends Controller
             $shop->token = $token;
 
             $shop->save();
+            
+            try {
+                $client = $this->getShopifyClient($shop);
+                $shop->setDefaultData($client);
+            } catch (\Exception $e){
+                Log::debug($e->getMessage());
+            }
 
             return $shop;
         }
@@ -186,5 +195,27 @@ class AuthController extends Controller
         }
 
         return $shop;
+    }
+    
+    /**
+     * Gives ShopifyClient instance if it is created, creates if not. Can be forced to recreate by using $getNew set as true
+     * 
+     * @param bool $getNew true to create new ShopifyClient instance
+     * 
+     * @return \App\Models\Shopify\ShopifyClient
+     */
+    public function getShopifyClient($shop, $getNew = false) {
+        if (!$getNew && $this->shopifyClient) {
+            return $this->shopifyClient;
+        }
+
+        $this->shopifyClient = new ShopifyClient(
+                $shop->shop_origin,
+                $shop->token,
+                config('shopify.api_key'),
+                config('shopify.secret')
+        );
+
+        return $this->shopifyClient;
     }
 }

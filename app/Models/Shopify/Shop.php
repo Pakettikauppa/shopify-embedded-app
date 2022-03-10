@@ -15,16 +15,16 @@ use Psy\Exception\FatalErrorException;
 
 class Shop extends Model
 {
+
     protected $table = 'shopify_shops';
- 
+
     /**
      * @var $pk_client \Pakettikauppa\Client
      */
-    public function sendShipment($pk_client, $order, $senderInfo, $receiverInfo, $contents, $isReturn = false, $customShipment = false)
-    {
+    public function sendShipment($pk_client, $order, $senderInfo, $receiverInfo, $contents, $isReturn = false, $customShipment = false) {
         $shipment_products = [];
         //bugfix between app and graphql calls
-        if (isset($order['total_weight']) && !isset($order['totalWeight'])){
+        if (isset($order['total_weight']) && !isset($order['totalWeight'])) {
             $order['totalWeight'] = $order['total_weight'];
         }
         $sender = new Sender();
@@ -64,7 +64,7 @@ class Shop extends Model
 
         $info = new Info();
         $info->setReference($order['id']);
-        if ($this->add_additional_label_info && $this->additional_label_info){
+        if ($this->add_additional_label_info && $this->additional_label_info) {
             $additional_info = array(
                 'order_number' => $order['name'],
                 'products' => $contents,
@@ -74,7 +74,7 @@ class Shop extends Model
 
         $pickupPointId = null;
         $method_code = null;
-        
+
         if (isset($order['shippingLine']['title'])) {
             $shipping_settings = unserialize($this->shipping_settings);
             $service_name = $order['shippingLine']['title'];
@@ -87,15 +87,14 @@ class Shop extends Model
             if ($order['shippingLine'] != null) {
                 $pickupPoint = $this->shippingCode2Method($order['shippingLine']['code'], $receiverInfo['country']);
                 $pickupPointId = $pickupPoint['pickup_point_id'];
-                
+
                 if (!empty($pickupPointId)) {
                     $method_code = $pickupPoint['method_code'];
                 } else {
                     $pickupPointId = null;
                 }
             }
-            if(!$method_code && isset($order['shippingLine']['code']) && is_numeric($order['shippingLine']['code']))
-            {
+            if (!$method_code && isset($order['shippingLine']['code']) && is_numeric($order['shippingLine']['code'])) {
                 $method_code = $order['shippingLine']['code'];
             }
         }
@@ -141,15 +140,14 @@ class Shop extends Model
             $shipment->addParcel($parcel);
         }
 
-        if ($parcel_total_count > 1)
-        {
+        if ($parcel_total_count > 1) {
             $additional_service = new AdditionalService();
             $additional_service->setServiceCode(3102);
             $additional_service->addSpecifier('count', $parcel_total_count);
             $shipment->addAdditionalService($additional_service);
         }
-        
-        if ($pickupPointId != null and !$isReturn) {
+
+        if ($pickupPointId != null and!$isReturn) {
             $additional_service = new AdditionalService();
             $additional_service->setServiceCode(2106);
             $additional_service->addSpecifier('pickup_point_id', $pickupPointId);
@@ -171,37 +169,32 @@ class Shop extends Model
             $additional_service->setServiceCode(9902);
             $shipment->addAdditionalService($additional_service);
         }
-        
+
         //add additional services
-        if (isset($order['additional_services'])){
-            foreach ($order['additional_services'] as $service_code){
+        if (isset($order['additional_services'])) {
+            foreach ($order['additional_services'] as $service_code) {
                 $additional_service = new AdditionalService();
                 $additional_service->setServiceCode($service_code);
                 $shipment->addAdditionalService($additional_service);
             }
         }
-        
+
         try {
             $resp = $pk_client->createTrackingCode($shipment);
 
-            if($parcel_total_count > 1)
-            {
+            if ($parcel_total_count > 1) {
                 $tracking_codes = [];
-                for($i = 0; $i < $parcel_total_count; $i++)
-                {
-                    if(isset($resp[$i]))
-                    {
+                for ($i = 0; $i < $parcel_total_count; $i++) {
+                    if (isset($resp[$i])) {
                         $tracking_codes[] = (string) $resp[$i];
                     }
                 }
                 $order['tracking_code'] = $tracking_codes;
-            }
-            else
-            {
+            } else {
                 $order['tracking_code'] = (string) $shipment->getTrackingCode();
             }
 
-            $reference = (string)$shipment->getReference();
+            $reference = (string) $shipment->getReference();
 
             $shopify_shipment = new ShopifyShipment();
             $shopify_shipment->shop_id = $this->id;
@@ -211,18 +204,18 @@ class Shop extends Model
             $shopify_shipment->test_mode = $this->test_mode;
             $shopify_shipment->return = $isReturn;
             $shopify_shipment->product_code = $method_code;
-            if ($customShipment){
+            if ($customShipment) {
                 $shopify_shipment->products = $shipment_products;
             }
             $shopify_shipment->save();
         } catch (\Exception $ex) {
             Log::debug('Failed to create tracking code of shipment: ' . json_encode(
-                [
-                    'http_request' => $pk_client->http_request,
-                    'http_response_code' => $pk_client->http_response_code,
-                    'http_error' => $pk_client->http_error,
-                    'http_response' => $pk_client->http_response
-                ]
+                            [
+                                'http_request' => $pk_client->http_request,
+                                'http_response_code' => $pk_client->http_response_code,
+                                'http_error' => $pk_client->http_error,
+                                'http_response' => $pk_client->http_response
+                            ]
             ));
             Log::debug('Exception message: ' . $ex->getMessage());
             $order['status'] = 'custom_error';
@@ -234,20 +227,23 @@ class Shop extends Model
 
         return $order;
     }
-    
-    private function checkAdditionalServiceSupport($service_code, $additional_service)
-    {
+
+    private function checkAdditionalServiceSupport($service_code, $additional_service) {
         if ($additional_service === 9902) {
-            $matches = [];
-            $re = '/900[0-9]{2}|2[0-9]{3}/m';
-            preg_match($re, $service_code, $matches);
-            return !empty($matches);
+            $must_matche = [];
+            $re = '/900[0-9]{2}|2[0-9]{3}/';
+            preg_match($re, $service_code, $must_matche);
+            
+            $must_not_matche = [];
+            $re2 = '/2017|2015|2004|27[0-9]{2}/';
+            preg_match($re2, $service_code, $must_not_matche);
+            
+            return empty($must_not_matche) && !empty($must_matche);
         }
         return true;
     }
 
-    public function shippingCode2Method($shippingCode, $receiverCountry = null)
-    {
+    public function shippingCode2Method($shippingCode, $receiverCountry = null) {
         $pickupPoint = explode(":", $shippingCode);
         $pickupPointId = null;
         $method_code = null;
@@ -264,7 +260,7 @@ class Shop extends Model
         if ($method_code[0] == 2103 && $receiverCountry != 'FI' && $receiverCountry != null) {
             $method_code[0] = 2331;
         }
-        
+
         if ($method_code[0] == 2331 && $receiverCountry == 'FI') {
             $method_code[0] = 2103;
         }
@@ -301,8 +297,7 @@ class Shop extends Model
      * 
      * @return bool true on success
      */
-    public function saveTestMode($test_mode = true)
-    {
+    public function saveTestMode($test_mode = true) {
         $this->test_mode = $test_mode;
 
         return $this->save();
@@ -316,8 +311,7 @@ class Shop extends Model
      * 
      * @return bool true on success
      */
-    public function saveApiCredentials($api_key = '', $api_secret = '')
-    {
+    public function saveApiCredentials($api_key = '', $api_secret = '') {
         $this->api_key = $api_key;
         $this->api_secret = $api_secret;
 
@@ -331,8 +325,7 @@ class Shop extends Model
      * 
      * @return bool true on success
      */
-    public function saveLocale($locale = 'en')
-    {
+    public function saveLocale($locale = 'en') {
         $this->locale = $locale;
 
         return $this->save();
@@ -346,8 +339,7 @@ class Shop extends Model
      * 
      * @return array build shipping settings array
      */
-    public function buildShippingSettings($shipping_methods, $productProviderByCode = [])
-    {
+    public function buildShippingSettings($shipping_methods, $productProviderByCode = []) {
         $shipping_settings = array();
 
         if (!$shipping_methods) {
@@ -358,7 +350,7 @@ class Shop extends Model
             $shipping_settings[] = [
                 'shipping_rate_id' => $key,
                 'product_code' => $code,
-                'service_provider' => ($code == null ? '' : $productProviderByCode[(string)$code])
+                'service_provider' => ($code == null ? '' : $productProviderByCode[(string) $code])
             ];
         }
 
@@ -373,8 +365,7 @@ class Shop extends Model
      * 
      * @return bool true on success
      */
-    public function saveShippingSettings($settings)
-    {
+    public function saveShippingSettings($settings) {
         // if its array serialize it, otherwise assume we got serialized array
         $this->shipping_settings = is_array($settings['shipping_settings']) ? serialize($settings['shipping_settings']) : $settings['shipping_settings'];
         $this->default_service_code = $settings['default_service_code'] ? $settings['default_service_code'] : 0;
@@ -393,8 +384,7 @@ class Shop extends Model
      * 
      * @return bool true on success
      */
-    public function saveSender($sender_data)
-    {
+    public function saveSender($sender_data) {
         foreach ($sender_data as $key => $value) {
             $this->$key = $value;
         }
@@ -409,8 +399,7 @@ class Shop extends Model
      * 
      * @return bool true on success
      */
-    public function savePickupPointsSettings($data)
-    {
+    public function savePickupPointsSettings($data) {
         foreach ($data as $key => $value) {
             $this->$key = $value;
         }
@@ -423,8 +412,7 @@ class Shop extends Model
      * 
      * @return array settings array
      */
-    public function getSettings()
-    {
+    public function getSettings() {
         return $this->settings == null ? array() : json_decode($this->settings, true);
     }
 
@@ -435,17 +423,16 @@ class Shop extends Model
      * 
      * @return array pickup points settings array
      */
-    public function getPickupPointSettings($products)
-    {
+    public function getPickupPointSettings($products) {
         $pickupPointSettings = $this->getSettings();
 
         foreach ($products as $product) {
             $shippingMethodCode = (string) $product['shipping_method_code'];
 
             if ($product['has_pickup_points'] && empty($pickupPointSettings[$shippingMethodCode])) {
-                $pickupPointSettings[$shippingMethodCode]['active']          = 'false';
-                $pickupPointSettings[$shippingMethodCode]['base_price']      = '0';
-                $pickupPointSettings[$shippingMethodCode]['trigger_price']   = '';
+                $pickupPointSettings[$shippingMethodCode]['active'] = 'false';
+                $pickupPointSettings[$shippingMethodCode]['base_price'] = '0';
+                $pickupPointSettings[$shippingMethodCode]['trigger_price'] = '';
                 $pickupPointSettings[$shippingMethodCode]['triggered_price'] = '';
             }
 
@@ -463,30 +450,28 @@ class Shop extends Model
      * 
      * @return bool true on success
      */
-    public function saveCarrierServiceId($carrierServiceId = null, $pickupPointsCount = 10)
-    {
+    public function saveCarrierServiceId($carrierServiceId = null, $pickupPointsCount = 10) {
         $this->carrier_service_id = $carrierServiceId;
         $this->pickuppoints_count = $pickupPointsCount;
 
         return $this->save();
     }
-    
-    public function getApiTokenAttribute($value)
-    {
+
+    public function getApiTokenAttribute($value) {
         return @json_decode($value);
     }
-    
-    private function toGrams($weight, $unit){
-        if ($unit == "GRAMS"){
+
+    private function toGrams($weight, $unit) {
+        if ($unit == "GRAMS") {
             return $weight;
         }
-        if ($unit == "KILOGRAMS"){
+        if ($unit == "KILOGRAMS") {
             return $weight * 1000;
         }
     }
-    
-    private function prepareAdditionalInfoText( $values = array() ) {
-        if ( ! is_array($values) ) {
+
+    private function prepareAdditionalInfoText($values = array()) {
+        if (!is_array($values)) {
             return '';
         }
 
@@ -502,7 +487,7 @@ class Shop extends Model
 
         $additional_info = '';
 
-        if ( ! empty($this->additional_label_info) ) {
+        if (!empty($this->additional_label_info)) {
             $additional_info = $this->additional_label_info;
             //remove new line, because it is not supported yet
             $additional_info = str_replace(["\n", "\r"], ' ', $additional_info);
@@ -511,16 +496,16 @@ class Shop extends Model
 
             $products_names_text = '';
             $products_sku_text = '';
-            if ( is_array($values['products']) && !empty($values['products']) ) {
+            if (is_array($values['products']) && !empty($values['products'])) {
                 foreach ($values['products'] as $item) {
-                    if ( ! empty($products_names_text) ) {
+                    if (!empty($products_names_text)) {
                         $products_names_text .= ', ';
                     }
-                    if ( ! empty($products_sku_text) ) {
+                    if (!empty($products_sku_text)) {
                         $products_sku_text .= ', ';
                     }
                     $products_names_text .= $item['name'];
-                    $products_sku_text .= (! empty($item['sku'])) ? $item['sku'] : '-';
+                    $products_sku_text .= (!empty($item['sku'])) ? $item['sku'] : '-';
                 }
             } else {
                 $products_names_text = $values['products_names'];
@@ -529,7 +514,50 @@ class Shop extends Model
             $additional_info = str_replace('{PRODUCTS_NAMES}', $products_names_text, $additional_info);
             $additional_info = str_replace('{PRODUCTS_SKU}', $products_sku_text, $additional_info);
         }
-        
+
         return $additional_info;
     }
+
+    public function setDefaultData($shopify_client) {
+        $fields_map = [
+            'business_name' => 'shop.name',
+            'address' => 'shop.billingAddress.address1',
+            'postcode' => 'shop.billingAddress.zip',
+            'city' => 'shop.billingAddress.city',
+            'country' => 'shop.billingAddress.countryCode',
+            'email' => 'shop.contactEmail',
+            'phone' => 'shop.billingAddress.phone'
+        ];
+
+        $filled_default = false;
+        $default_data = null;
+        foreach ($fields_map as $key => $map){
+            if (empty($this->{$key})){
+                if (!$default_data) {
+                    //get default values from shopify shop contacts
+                    $default_data = $shopify_client->getShopContacts();
+                }
+                $this->{$key} = $this->mapDefaultData($default_data, $map);
+                $filled_default = true;
+            }
+        }
+        if ($filled_default === true) {
+            $this->save();
+        }
+        return $this;
+    }
+
+    private function mapDefaultData($default, $map) {
+        $path = explode('.', $map);
+        foreach ($path as $part) {
+            if (isset($default[$part])) {
+                $default = $default[$part];
+            }
+        }
+        if (!is_array($default)) {
+            return $default;
+        }
+        return null;
+    }
+
 }

@@ -60,6 +60,7 @@ return [
         'no_shipping' => 'Älä luo lähetystä',
         'activation_code' => 'Asiointikoodi',
         'create_activation_code' => 'Luo asiointikoodi (Helposti-koodi, aktivointikoodi) kaikille lähetyksille. Koodi lisätään tilauksen Notesiin, jolloinka se saattaa tulla näkyviin myös asiakkaalle meneviin tietoihin!',
+        'create_activation_code_desc' => 'Käytä vain jos et tulosta pakettikortteja',
         'add_additional_label_info' => 'Lisää sisältöä pakettikortin lisätietoihin',
         'additional_label_info' => 'Pakettikortin sisältö lisätietoa varten',
         'default_additional_label_info' => "Tilausnumero {ORDER_NUMBER}\nTuotteet: {PRODUCTS_NAMES}\nSKU: {PRODUCTS_SKU}",
