@@ -263,9 +263,9 @@ class PickupPointsController extends Controller {
     }
     
     private function showShippingMethods(&$rates, $shop, $request) {
-        if ($shop->shipping_settings) {
-            $settings = unserialize($shop->shipping_settings);
-            if (isset($settings['advanced_shipping'])) {
+        if ($shop->advanced_shipping_settings) {
+            $settings = unserialize($shop->advanced_shipping_settings);
+            if ($settings && isset($settings['advanced_shipping'])) {
                 $cart_weight = $this->cartWeight($request);
                 $cart_value = $this->cartValue($request);
                 foreach ($settings['advanced_shipping'] as $service) {
