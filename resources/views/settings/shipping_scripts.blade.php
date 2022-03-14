@@ -3,12 +3,14 @@
         <td>
             <input type ="hidden" name ="advanced_shipping[${shippingMethodCode}][code]" value ="${shippingMethodCode}">
             <input type ="hidden" name ="advanced_shipping[${shippingMethodCode}][name]" value ="${name}">
-            ${name}
+            <input type ="hidden" name ="advanced_shipping[${shippingMethodCode}][pickuppoint]" value ="${pickupPoint}">
+            ${name} ${pickupTitle}
         </td>
         <td>
             <a href = "#" class = "button closed settings_button" data-container=".price_settings_container">{{trans('app.settings.additional.price_settings')}}</a>
             <a href = "#" class = "button closed settings_button" data-container=".visibility_settings_container">{{trans('app.settings.additional.visibility_settings')}}</a>
             <a href = "#" class = "button closed settings_button" data-container=".service_settings_container">{{trans('app.settings.additional.service_settings')}}</a>
+            <a href = "#" class = "button closed settings_button" data-container=".extra_settings_container">{{trans('app.settings.additional.extra_settings')}}</a>
             <div class="row price_settings_container mt-20 settings_container" style = "display: none;">
                 <div class ="row">
                     <div class="input-group">
@@ -32,6 +34,10 @@
                 <div class = "service_container">
                 </div>
             </div>  
+            <div class="row extra_settings_container mt-20 settings_container" style = "display: none;">
+                <div class = "extra_container">
+                </div>
+            </div>    
          </td>
          <td><a href ="#" class = "button warning remove_shipping_method">{{trans('app.settings.additional.remove')}}</a></td>
     </tr>
@@ -93,6 +99,23 @@
     </div>
 </template>
 
+<template data-template="extraRow">
+    <div class="row extraRow mb-10">
+        <div class="columns twelve">
+            <div class="input-group">
+                <div class = "append">{{trans('app.settings.additional.title')}}</div>
+                <input type = "text" name="advanced_shipping[${code}][extra][title]" class = "value" value = "${title}">
+            </div>  
+        </div>
+        <div class="columns twelve d-none mt-10">
+            <div class="input-group">
+                <div class = "append">{{trans('app.settings.additional.pickups_limit')}}</div>
+                <input type = "text" name="advanced_shipping[${code}][extra][limit]" class = "value" value = "${limit}">
+            </div>  
+        </div>
+    </div>
+</template>
+
 <template data-template="serviceItem">
     <label>
         <input type="hidden" name="advanced_shipping[${shippingMethodCode}][all_services][${code}]" value="${name}">
@@ -108,6 +131,7 @@
     var price_range_template = $('template[data-template="priceRangeContainer"]').html().split(/\$\{(.+?)\}/g);
     var price_range_row_template = $('template[data-template="priceRangeRow"]').html().split(/\$\{(.+?)\}/g);
     var visibility_row_template = $('template[data-template="visibilityRow"]').html().split(/\$\{(.+?)\}/g);
+    var extra_row_template = $('template[data-template="extraRow"]').html().split(/\$\{(.+?)\}/g);
     var service_row_template = $('template[data-template="serviceItem"]').html().split(/\$\{(.+?)\}/g);
     
     var items = $.parseJSON(settings_json);
@@ -116,7 +140,8 @@
             e.preventDefault();
             var $select = $(this).parent('.input-group').find('select');
             if ($select.val()) {
-                var data = {name: $('option:selected', $select).attr('data-name'), shippingMethodCode: $select.val()};
+                var pickupTitle = $('option:selected', $select).attr('data-pickuppoint') ? '({{ trans('app.settings.additional.pickup_points')}})' : '';
+                var data = {name: $('option:selected', $select).attr('data-name'), shippingMethodCode: $select.val(), pickupPoint: $('option:selected', $select).attr('data-pickuppoint'), pickupTitle: pickupTitle};
                 var row = $(row_template.map(render(data)).join(''));
                 addServices($.parseJSON($('option:selected', $select).attr('data-services')), row.find('.service_container'), $select.val());
                 $('table.advanced_shipping_table tbody').append( row );
@@ -208,7 +233,8 @@
         
     $.each(items, function(code, item){
         try {
-            var data = {name: item.name, shippingMethodCode: code};
+            var pickupTitle = item.pickuppoint == '1' ? '({{ trans('app.settings.additional.pickup_points')}})' : '';
+            var data = {name: item.name, shippingMethodCode: code, pickupPoint: item.pickuppoint, pickupTitle: pickupTitle};
             var row = $(row_template.map(render(data)).join(''));
             //select price method
             row.find('.price_calc').val(item.price_calc);
@@ -259,6 +285,14 @@
                         inner_container.find('input[type="checkbox"]').prop('checked', true);
                     }
                 });
+                
+                //add extra
+                var extra_container = $(extra_row_template.map(render({code: code, title: item.extra ? item.extra.title : '', limit: item.extra ? item.extra.limit : 5})).join(''));
+                if (item.pickuppoint == '1') {
+                    extra_container.find('.d-none').removeClass('d-none');
+                }
+                row.find('.extra_container').append(extra_container);
+                
 
             $('table.advanced_shipping_table tbody').append( row );
         } catch(err) {

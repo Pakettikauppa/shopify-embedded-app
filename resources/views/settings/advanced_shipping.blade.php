@@ -24,12 +24,13 @@
                                     @if(count($service_provider) > 0)
                                     <optgroup label="{{$key}}">
                                         @foreach($service_provider as $product)
-                                            @if (!$product['has_pickup_points'])
-                                            <option value="{{ $product['shipping_method_code'] }}" data-name ="{{ $product['service_provider'] . ': ' . $product['name'] }}" data-services="{{json_encode($product['additional_services'])}}"
+                                            <option value="{{ $product['shipping_method_code'] }}" data-pickuppoint ="{{ $product['has_pickup_points']?1:0 }}" data-name ="{{ $product['service_provider'] . ': ' . $product['name'] }}" data-services="{{json_encode($product['additional_services'])}}"
                                                     @if (isset($shipping_settings[$product['shipping_method_code']])) disabled @endif>
                                                 {{ $product['name'] }}
+                                                @if ($product['has_pickup_points'])
+                                                   ({{ trans('app.settings.additional.pickup_points')}})
+                                                @endif
                                             </option>
-                                            @endif
                                         @endforeach
                                     </optgroup>
                                     @endif

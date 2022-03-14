@@ -155,6 +155,7 @@ return [
             'price_settings' => 'Price settings',
             'visibility_settings' => 'Visibility settings',
             'service_settings' => 'Service settings',
+            'extra_settings' => 'Extra',
             'price_calculation' => 'Price calculation',
             'price' => 'Price',
             'from' => 'From',
@@ -166,6 +167,9 @@ return [
             'has_not' => 'Has not',
             'country' => 'Country (XX)',
             'tag' => 'Tag',
+            'title' => 'Title',
+            'pickup_points' => 'Pickup points',
+            'pickups_limit' => 'Pickup points limit',
         ],
     ],
 
