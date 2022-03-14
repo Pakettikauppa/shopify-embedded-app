@@ -354,7 +354,7 @@ class SettingsController extends Controller {
             });
             ksort($grouped_services);
         }
-        $shipping_settings = unserialize($shop->shipping_settings);
+        $shipping_settings = unserialize($shop->advanced_shipping_settings);
 
         return view('settings.advanced_shipping', [
             'shipping_settings' => $shipping_settings['advanced_shipping'] ?? [],
@@ -382,6 +382,9 @@ class SettingsController extends Controller {
 
         $shipping_zones = $client->call('GET', 'admin', '/shipping_zones.json');
         $shipping_settings = unserialize($shop->shipping_settings);
+        if (!$shipping_settings) {
+            $shipping_settings = [];
+        }
 
         $result_rates = [];
         foreach ($shipping_zones as $shipping_zone) {
@@ -690,15 +693,17 @@ class SettingsController extends Controller {
 
             return response()->json($result);
         }
-
+        $advanced_shipping_settings = false;
+        $shipping_settings = false;
         $productProviderByCode = $this->getProductProvidersByCode($products);
         if (request()->has('advanced_shipping')) {
-            $shipping_settings = $shop->buildAdvancedShippingSettings(request()->get('advanced_shipping'));
+            $advanced_shipping_settings = $shop->buildAdvancedShippingSettings(request()->get('advanced_shipping'));
         } else {
             $shipping_settings = $shop->buildShippingSettings(request()->get('shipping_method'), $productProviderByCode);
         }
 
         $shop_shipping_settings = array(
+            'advanced_shipping_settings' => $advanced_shipping_settings,
             'shipping_settings' => $shipping_settings,
             'default_service_code' => request()->get('default_shipping_method'),
             'always_create_return_label' => (bool) request()->get('print_return_labels'),

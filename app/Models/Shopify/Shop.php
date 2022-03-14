@@ -407,7 +407,12 @@ class Shop extends Model
      */
     public function saveShippingSettings($settings) {
         // if its array serialize it, otherwise assume we got serialized array
-        $this->shipping_settings = is_array($settings['shipping_settings']) ? serialize($settings['shipping_settings']) : $settings['shipping_settings'];
+        if ($settings['advanced_shipping_settings'] !== false) {
+            $this->advanced_shipping_settings = is_array($settings['advanced_shipping_settings']) ? serialize($settings['advanced_shipping_settings']) : $settings['advanced_shipping_settings'];
+        }
+        if ($settings['shipping_settings'] !== false) {
+            $this->shipping_settings = is_array($settings['shipping_settings']) ? serialize($settings['shipping_settings']) : $settings['shipping_settings'];
+        }
         $this->default_service_code = $settings['default_service_code'] ? $settings['default_service_code'] : 0;
         $this->always_create_return_label = $settings['always_create_return_label'];
         $this->create_activation_code = $settings['create_activation_code'];
