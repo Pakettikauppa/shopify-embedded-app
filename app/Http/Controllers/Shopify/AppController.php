@@ -938,9 +938,13 @@ class AppController extends Controller {
                 Log::debug($e->getTraceAsString());
             }
         }
-        $shipping_line = $order['shipping_lines'][0];
-        $method_codes = explode(':', $shipping_line['code']);
-        $selected_pickup = $method_codes[1] ?? null;
+        if (!empty($order['shipping_lines'])) {
+            $shipping_line = $order['shipping_lines'][0];
+            $method_codes = explode(':', $shipping_line['code']);
+            $selected_pickup = $method_codes[1] ?? null;
+        } else {
+            $selected_pickup = null;
+        }
         return response()->json([
                     'pickups' => $rates,
                     'selected_pickup' => $selected_pickup
