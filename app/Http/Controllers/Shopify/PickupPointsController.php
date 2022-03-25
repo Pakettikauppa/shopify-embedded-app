@@ -109,7 +109,7 @@ class PickupPointsController extends Controller {
             }
 
             Log::debug('TotalWeight: ' . $totalWeightInGrams);
-            //if weight is more than 35kg, do not return
+            //if weight is more than 35kg, no pick up points support it, return empty
             if ($totalWeightInGrams > 35000) {
                 $json = json_encode(['rates' => $rates]);
                 Log::debug($json);
@@ -121,12 +121,12 @@ class PickupPointsController extends Controller {
 
             foreach ($this->pickupPointSettings as $_provider => $_settings) {
                 if ($_settings['active'] == 'true') {
-                    if (!($totalWeightInGrams > 20000 and $_provider == '80010')) {
+                    if ($this->checkProviderWeightLimit($_provider, $totalWeightInGrams)) {
                         $pickupPointProviders[] = $_provider;
                     }
                 }
             }
-
+            
             // convert array to string
             $pickupPointProviders = implode(",", $pickupPointProviders);
 
@@ -230,6 +230,24 @@ class PickupPointsController extends Controller {
 
         Log::debug($json);
         echo $json;
+    }
+    
+    private function checkProviderWeightLimit($provider, $weight) {
+        $provider_weight_map = array(
+            '2103' => 25000,
+            '2331' => 35000,
+            '2771' => 31500,
+            '90080' => 30000,
+            '90084' => 30000,
+            '80010' => 20000
+        );
+        if (!isset($provider_weight_map[$provider])) {
+            return true;
+        }
+        if ($provider_weight_map[$provider] > $weight) {
+            return true;
+        }
+        return false;
     }
 
     private function convertDBSTime($openingHours) {
