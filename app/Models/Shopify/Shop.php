@@ -235,7 +235,7 @@ class Shop extends Model
             preg_match($re, $service_code, $must_matche);
             
             $must_not_matche = [];
-            $re2 = '/2017|2015|2004|27[0-9]{2}/';
+            $re2 = '/2017|2015|2004|233[0-9]|27[0-9]{2}/';
             preg_match($re2, $service_code, $must_not_matche);
             
             return empty($must_not_matche) && !empty($must_matche);
