@@ -19,7 +19,7 @@
     @yield('after-style-end')
 
     <!-- JavaScripts -->
-    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script src="https://unpkg.com/axios@0.26.1/dist/axios.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
     <script src="https://unpkg.com/@shopify/app-bridge@2.0.5"></script>
     <script src="https://unpkg.com/@shopify/app-bridge-utils@2.0.5"></script>
