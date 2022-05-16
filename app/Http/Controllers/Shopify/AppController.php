@@ -1258,9 +1258,9 @@ class AppController extends Controller {
                     }
                 }
             } else if ($has_missing_products){
-                $shipments[$orderKey]['status'] = 'product_deleted';
+                $shipment['status'] = 'product_deleted';
             } else {
-                $shipments[$orderKey]['status'] = 'not_in_inventory';
+                $shipment['status'] = 'not_in_inventory';
             }
             Log::debug("Fullfilled order: {$order['id']}");
         }

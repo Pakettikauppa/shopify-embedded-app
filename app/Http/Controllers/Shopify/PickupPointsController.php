@@ -267,7 +267,17 @@ class PickupPointsController extends Controller {
     private function priceForPickupPoint($provider, $totalValue) {
         //take first provider if multi provider string
         $provider = explode(',', $provider);
-        $pickupPointSettings = $this->pickupPointSettings[$provider[0]];
+        $main_provider = $provider[0] ?? false;
+
+        if(!$main_provider){
+            return 0;
+        }
+
+        $pickupPointSettings = $this->pickupPointSettings[$main_provider] ?? [];
+
+        if(empty($pickupPointSettings)){
+            return 0;
+        }
 
         if ($pickupPointSettings['trigger_price'] > 0 and $pickupPointSettings['trigger_price'] * 100 <= $totalValue) {
             return (int) round($pickupPointSettings['triggered_price'] * 100.0);
