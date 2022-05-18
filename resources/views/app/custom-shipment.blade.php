@@ -48,7 +48,7 @@
                         </div>
                         <div class="columns twelve">
                             <label for="lqweight">{{trans('app.custom_shipment.hazardous_substances')}}</label>
-                            <input class="columns one" type="number" id="lqweight" name="lqweight" min="0.001" step="0.001">
+                            <input class="columns one" type="number" id="lqweight" name="lqweight" min="1">
                         </div>
                     </div>
                 </div>
