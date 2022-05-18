@@ -157,10 +157,28 @@ class Shop extends Model
         if ($this->always_create_return_label == true && !$isReturn) {
             $shipment->includeReturnLabel(true);
         }
-
         if ($isReturn && $this->checkAdditionalServiceSupport($shipment->getShippingMethod(), 9902)) {
+            $type = config('shopify.type');
             $additional_service = new AdditionalService();
-            $additional_service->setServiceCode(9902);
+
+            //When in Posti environment, all return labels should be created with return service code:
+            if($type == 'posti')
+            {
+                $shipping_method = $shipment->getShippingMethod();
+                if($shipping_method == 2331){
+                    $additional_service->setServiceCode(2338);
+                }
+                else if($shipping_method == 2711){
+                    $additional_service->setServiceCode(2718);
+                }
+                else{
+                    $additional_service->setServiceCode(2108);
+                }
+            }
+            else{
+                $additional_service->setServiceCode(9902);
+            }
+            
             $shipment->addAdditionalService($additional_service);
         }
 
