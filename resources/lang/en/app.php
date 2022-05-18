@@ -56,7 +56,10 @@ return [
         'product_remains'  => 'Remains',
         'product_shipped'  => 'Shipped',
         'product_total'  => 'Total',
-        'no_products' => 'No products to ship'
+        'no_products' => 'No products to ship',
+        'hazardous_substances' => 'Weight of hazardous substances (kg)',
+        'qty_dangerous_products' => 'Quantity of dangerous products',
+        'lq_specifiers_title' => 'LQ specifiers'
 
     ],
     'settings' => [
