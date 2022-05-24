@@ -1124,13 +1124,15 @@ class AppController extends Controller {
         $order['packets'] = request()->get('packets');
 
         $lqcount = request()->get('lqcount');
-        if($lqcount)
+        if($lqcount){
             $order['lqcount'] = $lqcount;
-        
-        $lqweigth = request()->get('lqweight');
-        if($lqweigth)
-            $order['lqweight'] = $lqweigth;
+        }
 
+        $lqweight = request()->get('lqweight');
+        if($lqweight){
+            $order['lqweight'] = $lqweight;
+        }
+        
         $_shipment = $shop->sendShipment(
                 $this->pk_client,
                 $order,
