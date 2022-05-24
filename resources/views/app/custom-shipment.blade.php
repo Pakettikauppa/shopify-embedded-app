@@ -40,7 +40,7 @@
                 </div>
 
                 <div class="row" id="lq-specifiers" style="margin-bottom: 2em; display: none;">
-                    <h3>{{trans('app.custom_shipment.lq_specifiers_title')}}</h3>
+                    <h3>{{trans('app.custom_shipment.dangerous_goods')}}</h3>
                     <div class="column twelve">
                         <div class="columns twelve" style="margin-bottom: 1em;">
                             <label for="lqcount">{{trans('app.custom_shipment.qty_dangerous_products')}}</label>

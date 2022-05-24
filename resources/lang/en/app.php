@@ -57,9 +57,9 @@ return [
         'product_shipped'  => 'Shipped',
         'product_total'  => 'Total',
         'no_products' => 'No products to ship',
-        'hazardous_substances' => 'Weight of hazardous substances (grams)',
-        'qty_dangerous_products' => 'Quantity of dangerous products',
-        'lq_specifiers_title' => 'LQ specifiers'
+        'hazardous_substances' => 'Weight (grams)',
+        'qty_dangerous_products' => 'Quantity',
+        'dangerous_goods' => 'Dangerous goods'
 
     ],
     'settings' => [
