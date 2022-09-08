@@ -31,6 +31,7 @@ class SettingsController extends Controller {
     private $test_mode;
     private $pkUseToken = false;
     private $additional_info_keys;
+    private $carrier_service_id = null;
     protected Request $request;
 
     public function __construct(Request $request) {
@@ -279,11 +280,98 @@ class SettingsController extends Controller {
             'type' => $this->type
         ]);
     }
+    
+    /**
+     * Shipping settings action
+     */
+    public function shipping() {
+        $shop = request()->get('shop');
+        //if we have carrier service id, we can use carrier service api and show addvanced settings
+        if ($this->getCarrierServiceId($shop)) {
+            return $this->advancedShippingSettings();
+        } else {
+            return $this->shippingSettings();
+        }
+    }
+    
+    /**
+     * Advanced shipping settings view endpoint
+     */
+    public function advancedShippingSettings() {
+        $price_calcs = [
+          'fixed' => trans('app.settings.additional.fixed'),  
+          'percent' => trans('app.settings.additional.percent'),  
+          'cart_based' => trans('app.settings.additional.cart_based'),  
+          'weight_based' => trans('app.settings.additional.weight_based'),  
+        ];
+        $visibility_params = [
+            'conditions' => [
+                'has' => trans('app.settings.additional.has'),
+                'has_not' => trans('app.settings.additional.has_not'),
+            ],
+            'fields' => [
+                'country' => trans('app.settings.additional.country'),
+                'tag' => trans('app.settings.additional.tag'),
+            ],
+        ];
+        $shop = request()->get('shop');
+
+        if ($shop->carrier_service_id != null) {
+            $carrier_service = $this->getCarrierServiceFromShopify($shop->carrier_service_id);
+        }
+        
+        if ($shop->carrier_service_id == null || $carrier_service == null) {
+            $carrier_service_id = $this->saveCarrierServiceToShopify();
+            $shop->saveCarrierServiceId($carrier_service_id);
+        }
+        
+        $pk_client = $this->getPakketikauppaClient($shop);
+
+        if ($this->pkUseToken && (!$shop->api_token || $shop->api_token->expires_in < time())){
+            return view('settings.api', [
+                'shop' => $shop,
+                'api_valid' => true,
+                'type' => $this->type,
+                'error_message' => trans('app.messages.invalid_credentials')
+            ]);
+        }
+
+        $products = $pk_client->listShippingMethods();
+
+        // dont let it crash and burn
+        if (!is_array($products)) {
+            $products = array();
+        }
+
+        // We want products to be as array and not as object
+        $products = json_decode(json_encode($products), true);
+
+        $api_valid = !empty($products);
+        if ($api_valid) {
+            
+            $grouped_services = array_group_by($products, function ($i) {
+                return $i['service_provider'];
+            });
+            ksort($grouped_services);
+        }
+        $shipping_settings = unserialize($shop->advanced_shipping_settings);
+
+        return view('settings.advanced_shipping', [
+            'shipping_settings' => $shipping_settings['advanced_shipping'] ?? [],
+            'shipping_methods' => $grouped_services,
+            'shop' => $shop,
+            'api_valid' => $api_valid,
+            'type' => $this->type,
+            'additional_info_keys' => $this->additional_info_keys,
+            'price_calcs' => $price_calcs,
+            'visibility_params' => $visibility_params,
+        ]);
+    }
 
     /**
      * Shipping settings view endpoint
      */
-    public function shipping() {
+    public function shippingSettings() {
         $shop = request()->get('shop');
 
         if ($shop->settings == null) {
@@ -294,6 +382,9 @@ class SettingsController extends Controller {
 
         $shipping_zones = $client->call('GET', 'admin', '/shipping_zones.json');
         $shipping_settings = unserialize($shop->shipping_settings);
+        if (!$shipping_settings) {
+            $shipping_settings = [];
+        }
 
         $result_rates = [];
         foreach ($shipping_zones as $shipping_zone) {
@@ -602,11 +693,17 @@ class SettingsController extends Controller {
 
             return response()->json($result);
         }
-
+        $advanced_shipping_settings = false;
+        $shipping_settings = false;
         $productProviderByCode = $this->getProductProvidersByCode($products);
-        $shipping_settings = $shop->buildShippingSettings(request()->get('shipping_method'), $productProviderByCode);
+        if (request()->has('advanced_shipping')) {
+            $advanced_shipping_settings = $shop->buildAdvancedShippingSettings(request()->get('advanced_shipping'));
+        } else {
+            $shipping_settings = $shop->buildShippingSettings(request()->get('shipping_method'), $productProviderByCode);
+        }
 
         $shop_shipping_settings = array(
+            'advanced_shipping_settings' => $advanced_shipping_settings,
             'shipping_settings' => $shipping_settings,
             'default_service_code' => request()->get('default_shipping_method'),
             'always_create_return_label' => (bool) request()->get('print_return_labels'),
@@ -724,6 +821,33 @@ class SettingsController extends Controller {
                     'status' => $isSaved ? self::MSG_OK : self::MSG_ERROR,
                     'message' => $isSaved ? trans('app.settings.saved') : trans('app.settings.save_failed')
         ]);
+    }
+    
+    /**
+     * Returns carrier service id
+     * 
+     * @param type $shop/
+     */
+    private function getCarrierServiceId($shop) {
+        $carrier_service_id = null;
+        if ($this->carrier_service_id) {
+            return $this->carrier_service_id;
+        }
+        if ($shop->carrier_service_id != null) {
+            //asume that save din settings is right one
+            //$carrier_service = $this->getCarrierServiceFromShopify($shop->carrier_service_id);
+            $this->carrier_service_id = $shop->carrier_service_id;
+            return $this->carrier_service_id;
+        }
+        
+        if ($shop->carrier_service_id == null || $carrier_service == null) {
+            $carrier_service_id = $this->saveCarrierServiceToShopify();
+            $shop->saveCarrierServiceId($carrier_service_id);
+        } else if (!empty($carrier_service)) {
+            $carrier_service_id = $carrier_service['id'];
+        }
+        $this->carrier_service_id = $carrier_service_id;
+        return $this->carrier_service_id;
     }
 
 }

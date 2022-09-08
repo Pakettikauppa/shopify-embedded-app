@@ -10,7 +10,8 @@ use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 use Psy\Exception\FatalErrorException;
 use Log;
 
-class PickupPointsController extends Controller {
+class PickupPointsController extends Controller
+{
 
     private $pickupPointSettings;
     private $type;
@@ -23,6 +24,7 @@ class PickupPointsController extends Controller {
 
     public function list(Request $request) {
         // SETUP EVERYTHING
+        $rates = array();
         // setup and validate Shop
         $shop = Shop::where('shop_origin', $request->header('x-shopify-shop-domain'))->first();
 
@@ -83,6 +85,8 @@ class PickupPointsController extends Controller {
         // test if pickup points are available in settings
         if (!(isset($shop->pickuppoints_count) && $shop->pickuppoints_count > 0)) {
             Log::debug("no pickup point counts");
+            $json = json_encode(['rates' => $rates]);
+            echo $json;
             return;
         }
 
@@ -97,8 +101,11 @@ class PickupPointsController extends Controller {
         Log::debug($request->getContent());
         $destination = $requestBody->rate->destination;
 
-        $rates = array();
-        if (count($this->pickupPointSettings) > 0) {
+        if ($shop->carrier_service_id != null) {
+            $this->showShippingMethods($rates, $shop, $requestBody, $pk_client);
+        }
+
+        if (count($this->pickupPointSettings) > 0 && $shop->carrier_service_id === null) {
             // calculate total value of the cart
             $totalValue = 0;
             $totalWeightInGrams = 0;
@@ -129,95 +136,7 @@ class PickupPointsController extends Controller {
             
             // convert array to string
             $pickupPointProviders = implode(",", $pickupPointProviders);
-
-            // search nearest pickup locations
-            $pickupPoints = $pk_client->searchPickupPoints(
-                    $destination->postal_code,
-                    $destination->address1,
-                    $destination->country,
-                    $pickupPointProviders,
-                    $shop->pickuppoints_count
-            );
-
-            if (empty($pickupPoints) && ($destination->country == 'LT' || $destination->country == 'AX' || $destination->country == 'FI')) {
-                //debug response
-                Log::debug('Response from pickup point search: ' . json_encode(
-                        [
-                            'http_request' => $pk_client->http_request,
-                            'http_response_code' => $pk_client->http_response_code,
-                            'http_error' => $pk_client->http_error,
-                            'http_response' => $pk_client->http_response
-                        ]
-                ));
-                // search some pickup points if no pickup locations was found
-                $pickupPoints = $pk_client->searchPickupPoints(
-                        '00100',
-                        null,
-                        'FI',
-                        $pickupPointProviders,
-                        $shop->pickuppoints_count
-                );
-            }
-            
-            //check if array received, sometimes got none array and exception is thrown
-            if (!is_array($pickupPoints)) {
-                Log::debug('Pickup points list is not array: ' . var_export($pickupPoints, true));
-                $json = json_encode(array('rates' => $rates));
-                echo $json;
-                return;
-            }
-            
-            // generate custom carrier service response
-            try {
-                foreach ($pickupPoints as $_pickupPoint) {
-                    $_pickupPointName = ucwords(mb_strtolower($_pickupPoint->name));
-
-                    $_pickupPoint->provider_service = 0;
-                    if (isset($_pickupPoint->service->service_code) && $_pickupPoint->service->service_code) {
-                        $_pickupPoint->provider_service = $_pickupPoint->service->service_code;
-                    } else if (isset($_pickupPoint->service_code) && $_pickupPoint->service_code) {
-                        $_pickupPoint->provider_service = $_pickupPoint->service_code;
-                    }
-
-
-                    if ($_pickupPoint->provider_service == '80010') {
-                        $_descriptionArray = [];
-                        preg_match(
-                                "/V(?<week>[0-9-]*)[ ]*L?(?<sat>[0-9-]*)[ ]*S?(?<sun>[0-9-]?.*)/",
-                                $_pickupPoint->description,
-                                $_descriptionArray
-                        );
-
-                        if (count($_descriptionArray) > 0) {
-                            $_weekHours = 'ma-pe ' . $this->convertDBSTime($_descriptionArray['week']);
-                            $_satHours = '';
-                            $_sunHours = '';
-
-                            if (isset($_descriptionArray['sat'])) {
-                                $_satHours = ', la ' . $this->convertDBSTime($_descriptionArray['sat']);
-                            }
-                            if (isset($_descriptionArray['sun'])) {
-                                $_sunHours = ', su ' . $this->convertDBSTime($_descriptionArray['sun']);
-                            }
-
-                            $_pickupPoint->description = "{$_weekHours}{$_satHours}{$_sunHours}";
-                        }
-                    }
-
-                    $rates[] = array(
-                        'service_name' => "{$_pickupPointName}, " . "{$_pickupPoint->street_address}, {$_pickupPoint->postcode}, {$_pickupPoint->city}",
-                        'description' => $_pickupPoint->provider . ' (' . ((is_object($_pickupPoint->service) && isset($_pickupPoint->service->name) && $_pickupPoint->service->name != null) ? $_pickupPoint->service->name : '') . ') ' . ($_pickupPoint->description == null ? '' : " ({$_pickupPoint->description})"),
-                        'service_code' => "{$_pickupPoint->provider_service}:{$_pickupPoint->pickup_point_id}",
-                        'currency' => 'EUR',
-                        'total_price' => $this->priceForPickupPoint($_pickupPoint->provider_service, $totalValue)
-                    );
-                }
-            } catch (\Exception $e) {
-                Log::debug($e->getMessage());
-                Log::debug($e->getTraceAsString());
-                Log::debug(var_export($pickupPoints, true));
-                Log::debug(var_export($request->all(), true));
-            }
+            $this->getPickupPoints($pk_client, $destination, $pickupPointProviders, $shop, $rates, $request, $totalValue);
         }
 
         $customCarrierServices = array('rates' => $rates);
@@ -248,6 +167,97 @@ class PickupPointsController extends Controller {
             return true;
         }
         return false;
+    }
+
+    private function getPickupPoints($pk_client, $destination, $pickupPointProviders, $shop, &$rates, $request, $totalValue, $name = null, $price = null, $limit = null) {
+        // search nearest pickup locations
+        $pickupPoints = $pk_client->searchPickupPoints(
+                $destination->postal_code,
+                $destination->address1,
+                $destination->country,
+                $pickupPointProviders,
+                $limit ?? $shop->pickuppoints_count
+        );
+
+        if (empty($pickupPoints) && ($destination->country == 'LT' || $destination->country == 'AX' || $destination->country == 'FI')) {
+            //debug response
+            Log::debug('Response from pickup point search: ' . json_encode(
+                            [
+                                'http_request' => $pk_client->http_request,
+                                'http_response_code' => $pk_client->http_response_code,
+                                'http_error' => $pk_client->http_error,
+                                'http_response' => $pk_client->http_response
+                            ]
+            ));
+            // search some pickup points if no pickup locations was found
+            $pickupPoints = $pk_client->searchPickupPoints(
+                    '00100',
+                    null,
+                    'FI',
+                    $pickupPointProviders,
+                    $limit ?? $shop->pickuppoints_count
+            );
+        }
+
+        //check if array received, sometimes got none array and exception is thrown
+        if (!is_array($pickupPoints)) {
+            Log::debug('Pickup points list is not array: ' . var_export($pickupPoints, true));
+            //$json = json_encode(array('rates' => $rates));
+            //echo $json;
+            return;
+        }
+
+        // generate custom carrier service response
+        try {
+            foreach ($pickupPoints as $_pickupPoint) {
+                $_pickupPointName = ucwords(mb_strtolower($_pickupPoint->name));
+
+                $_pickupPoint->provider_service = 0;
+                if (isset($_pickupPoint->service->service_code) && $_pickupPoint->service->service_code) {
+                    $_pickupPoint->provider_service = $_pickupPoint->service->service_code;
+                } else if (isset($_pickupPoint->service_code) && $_pickupPoint->service_code) {
+                    $_pickupPoint->provider_service = $_pickupPoint->service_code;
+                }
+
+
+                if ($_pickupPoint->provider_service == '80010') {
+                    $_descriptionArray = [];
+                    preg_match(
+                            "/V(?<week>[0-9-]*)[ ]*L?(?<sat>[0-9-]*)[ ]*S?(?<sun>[0-9-]?.*)/",
+                            $_pickupPoint->description,
+                            $_descriptionArray
+                    );
+
+                    if (count($_descriptionArray) > 0) {
+                        $_weekHours = 'ma-pe ' . $this->convertDBSTime($_descriptionArray['week']);
+                        $_satHours = '';
+                        $_sunHours = '';
+
+                        if (isset($_descriptionArray['sat'])) {
+                            $_satHours = ', la ' . $this->convertDBSTime($_descriptionArray['sat']);
+                        }
+                        if (isset($_descriptionArray['sun'])) {
+                            $_sunHours = ', su ' . $this->convertDBSTime($_descriptionArray['sun']);
+                        }
+
+                        $_pickupPoint->description = "{$_weekHours}{$_satHours}{$_sunHours}";
+                    }
+                }
+
+                $rates[] = array(
+                    'service_name' => ($name ?? $_pickupPointName) . ", " . "{$_pickupPoint->street_address}, {$_pickupPoint->postcode}, {$_pickupPoint->city}",
+                    'description' => $_pickupPoint->provider . ' (' . ((is_object($_pickupPoint->service) && isset($_pickupPoint->service->name) && $_pickupPoint->service->name != null) ? $_pickupPoint->service->name : '') . ') ' . ($_pickupPoint->description == null ? '' : " ({$_pickupPoint->description})"),
+                    'service_code' => "{$_pickupPoint->provider_service}:{$_pickupPoint->pickup_point_id}",
+                    'currency' => 'EUR',
+                    'total_price' => $price ?? $this->priceForPickupPoint($_pickupPoint->provider_service, $totalValue)
+                );
+            }
+        } catch (\Exception $e) {
+            Log::debug($e->getMessage());
+            Log::debug($e->getTraceAsString());
+            Log::debug(var_export($pickupPoints, true));
+            Log::debug(var_export($request->all(), true));
+        }
     }
 
     private function convertDBSTime($openingHours) {
@@ -284,6 +294,111 @@ class PickupPointsController extends Controller {
         }
 
         return (int) round($pickupPointSettings['base_price'] * 100.0);
+    }
+
+    private function showShippingMethods(&$rates, $shop, $request, $pk_client) {
+        if ($shop->advanced_shipping_settings) {
+            $settings = unserialize($shop->advanced_shipping_settings);
+            if ($settings && isset($settings['advanced_shipping'])) {
+                $cart_weight = $this->cartWeight($request);
+                $cart_value = $this->cartValue($request);
+                foreach ($settings['advanced_shipping'] as $service) {
+                    $price = false;
+                    if ($service['price_calc'] == "fixed") {
+                        $price = $service['price_value'] * 100;
+                    } else if ($service['price_calc'] == "percent") {
+                        $price = round($cart_value * $service['price_value'] / 100, 2);
+                    } else if ($service['price_calc'] == "cart_based" || $service['price_calc'] == "weight_based") {
+                        if (isset($service['price_conditions']['value'])) {
+                            $total_rows = count($service['price_conditions']['value']);
+                            $compare_value = $cart_value / 100;
+                            if ($service['price_calc'] == "weight_based") {
+                                $compare_value = $cart_weight;
+                            }
+                            for ($i = 0; $i < $total_rows; $i++) {
+                                if ($service['price_conditions']['from'][$i] <= $compare_value && $service['price_conditions']['to'][$i] > $compare_value) {
+                                    $price = $service['price_conditions']['value'][$i] * 100;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    //visibility checking
+                    if (isset($service['visibility_conditions']['value'])) {
+                        $total_rows = count($service['visibility_conditions']['value']);
+                        for ($i = 0; $i < $total_rows; $i++) {
+                            $has = false;
+                            if ($service['visibility_conditions']['condition'][$i] == 'has') {
+                                $has = true;
+                            } else if ($service['visibility_conditions']['condition'][$i] == 'has_not') {
+                                $has = false;
+                            }
+                            $values = explode('|', $service['visibility_conditions']['value'][$i]);
+                            $field = $service['visibility_conditions']['field'][$i];
+
+                            $matched = false;
+                            if ($field == 'country') {
+                                foreach ($values as $value) {
+                                    if ($request->rate->destination->country == $value) {
+                                        $matched = true;
+                                    }
+                                }
+                            }
+                            if ($field == 'tag') {
+                                foreach ($request->rate->items as $_item) {
+                                    foreach ($values as $value) {
+                                        if (stripos($_item->name, $value) !== false) {
+                                            $matched = true;
+                                        }
+                                    }
+                                }
+                            }
+
+                            //if must have and doesnt have - skip
+                            if ($has && !$matched) {
+                                $price = false;
+                            }
+                            //if must not have and has - skip
+                            if (!$has && $matched) {
+                                $price = false;
+                            }
+                        }
+                    }
+                    if ($price) {
+                        if ($service['pickuppoint'] == '1') {
+                            if ($cart_weight < 35) {
+                                $destination = $request->rate->destination;
+                                $this->getPickupPoints($pk_client, $destination, $service['code'], $shop, $rates, $request, $cart_value * 1000, $service['extra']['title'] ?? $service['name'], $price, $service['extra']['limit'] ?? '5');
+                            }
+                        } else {
+                            $rates[] = array(
+                                'service_name' => $service['extra']['title'] ?? $service['name'],
+                                'description' => '',
+                                'service_code' => $service['code'],
+                                'currency' => 'EUR',
+                                'total_price' => $price
+                            );
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private function cartWeight($request) {
+        $totalWeightInGrams = 0;
+        foreach ($request->rate->items as $_item) {
+            $totalWeightInGrams += $_item->grams * $_item->quantity;
+        }
+        return $totalWeightInGrams / 1000;
+    }
+
+    private function cartValue($request) {
+        $totalValue = 0;
+        foreach ($request->rate->items as $_item) {
+            $totalValue += $_item->price * $_item->quantity;
+        }
+        return $totalValue;
     }
 
 }

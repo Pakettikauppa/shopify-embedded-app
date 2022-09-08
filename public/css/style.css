@@ -53,3 +53,27 @@ header.card-header{
     display: flex;
     align-items: center;
 }
+
+.mb-10 {
+    margin-bottom: 10px!important;
+}
+
+.mb-20 {
+    margin-bottom: 20px;
+}
+
+.mt-20 {
+    margin-top: 20px;
+}
+
+.mt-10 {
+    margin-top: 10px;
+}
+
+.settings_button.closed {
+    opacity: 0.7;
+}
+
+.d-none {
+   display: none!important;
+}

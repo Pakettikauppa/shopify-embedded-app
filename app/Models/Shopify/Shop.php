@@ -78,9 +78,16 @@ class Shop extends Model
         if (isset($order['shippingLine']['title'])) {
             $shipping_settings = unserialize($this->shipping_settings);
             $service_name = $order['shippingLine']['title'];
-            foreach ($shipping_settings as $item) {
-                if ($item['shipping_rate_id'] == $service_name) {
-                    $method_code = $item['product_code'];
+            //if not have advanced shipping
+            if (!isset($shipping_settings['advanced_shipping'])) {
+                foreach ($shipping_settings as $item) {
+                    if ($item['shipping_rate_id'] == $service_name) {
+                        $method_code = $item['product_code'];
+                    }
+                }
+            } else {
+                if (isset($shipping_settings['advanced_shipping'][$order['shippingLine']['code']])) {
+                    $method_code = $order['shippingLine']['code'];
                 }
             }
 
@@ -201,6 +208,14 @@ class Shop extends Model
                 $shipment->addAdditionalService($additional_service);
             }
         }
+        
+        //add additional services from settings
+        foreach ($this->getAdditionalServices($method_code) as $_service_code) {
+            $additional_service = new AdditionalService();
+            $additional_service->setServiceCode($_service_code);
+            $shipment->addAdditionalService($additional_service);
+        }
+            
 
         try {
             $resp = $pk_client->createTrackingCode($shipment);
@@ -357,7 +372,7 @@ class Shop extends Model
     /**
      * Builds shipping settings array available providers
      * 
-     * @param array|null $shipping_methods shiping methods array 
+     * @param array|null $shipping_methods shipping methods array 
      * @param array $productProviderByCode service providers array
      * 
      * @return array build shipping settings array
@@ -379,6 +394,31 @@ class Shop extends Model
 
         return $shipping_settings;
     }
+    
+    /**
+     * Builds advanced shipping settings array available providers
+     * 
+     * @param array|null $shipping_methods shipping methods array 
+     * 
+     * @return array build shipping settings array
+     */
+    public function buildAdvancedShippingSettings($shipping_methods) {
+        $shipping_settings = array();
+        $shipping_settings['advanced_shipping'] = array();
+        if (!$shipping_methods) {
+            return $shipping_settings;
+        }
+
+        foreach ($shipping_methods as $code => $data) {
+            $shipping_setting = array();
+            foreach ($data as $key => $value) {
+                $shipping_setting[$key] = $value;
+            }
+            $shipping_settings['advanced_shipping'][$code] = $shipping_setting;
+        }
+
+        return $shipping_settings;
+    }
 
     /**
      * Updates shiping settings
@@ -390,7 +430,12 @@ class Shop extends Model
      */
     public function saveShippingSettings($settings) {
         // if its array serialize it, otherwise assume we got serialized array
-        $this->shipping_settings = is_array($settings['shipping_settings']) ? serialize($settings['shipping_settings']) : $settings['shipping_settings'];
+        if ($settings['advanced_shipping_settings'] !== false) {
+            $this->advanced_shipping_settings = is_array($settings['advanced_shipping_settings']) ? serialize($settings['advanced_shipping_settings']) : $settings['advanced_shipping_settings'];
+        }
+        if ($settings['shipping_settings'] !== false) {
+            $this->shipping_settings = is_array($settings['shipping_settings']) ? serialize($settings['shipping_settings']) : $settings['shipping_settings'];
+        }
         $this->default_service_code = $settings['default_service_code'] ? $settings['default_service_code'] : 0;
         $this->always_create_return_label = $settings['always_create_return_label'];
         $this->create_activation_code = $settings['create_activation_code'];
@@ -581,6 +626,14 @@ class Shop extends Model
             return $default;
         }
         return null;
+    }
+    
+    private function getAdditionalServices($service) {
+        $settings = unserialize($this->shipping_settings);
+        if (isset($settings['advanced_shipping'][$service]['selected_services'])) {
+            return $settings['advanced_shipping'][$service]['selected_services'];
+        }
+        return [];
     }
 
 }

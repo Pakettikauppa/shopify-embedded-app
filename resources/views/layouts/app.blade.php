@@ -332,6 +332,7 @@
         /* SHIPMENT SETTINGS BUTTON END */
 
         /* PICKUP POINTS SETTINGS BUTTON */
+        @if($shop->carrier_service_id === null)
         const buttonPickupPointsSettings = Actions.Button.create(
             ShopifyApp,
             { 
@@ -350,6 +351,7 @@
                 }
             );
         });
+        @endif
         /* PICKUP POINTS SETTINGS BUTTON END */
 
         /* COMPANY INFORMATION SETTINGS BUTTON */
@@ -443,14 +445,22 @@
         /* VIEWS FUNCTIONS END */
             
         // Register buttons to shoppify app
+        if (typeof(buttonPickupPointsSettings) != "undefined"){
+            var subButtons = [
+                    buttonShipmentSettings, buttonPickupPointsSettings, buttonCompanyInformationSettings,
+                     buttonApiSettings, buttonOtherSettings
+                ];
+        } else {
+            var subButtons = [
+                    buttonShipmentSettings, buttonCompanyInformationSettings,
+                     buttonApiSettings, buttonOtherSettings
+                ];
+        }        
         const optionsBtnGroup = Actions.ButtonGroup.create(
             ShopifyApp, 
             {
                 label: '{{trans('app.settings.settings')}}',
-                buttons: [
-                    buttonShipmentSettings, buttonPickupPointsSettings, buttonCompanyInformationSettings,
-                     buttonApiSettings, buttonOtherSettings
-                ]
+                buttons: subButtons
             }
         );
         
@@ -476,7 +486,7 @@
             buttonNews: buttonNews,
             optionsBtnGroup: optionsBtnGroup,
             buttonShipmentSettings: buttonShipmentSettings, 
-            buttonPickupPointsSettings: buttonPickupPointsSettings,
+            buttonPickupPointsSettings: typeof(buttonPickupPointsSettings) != "undefined" ? buttonPickupPointsSettings : null,
             buttonCompanyInformationSettings: buttonCompanyInformationSettings,
             buttonApiSettings: buttonApiSettings,
             buttonOtherSettings: buttonOtherSettings,
