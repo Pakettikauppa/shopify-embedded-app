@@ -136,7 +136,8 @@ class PickupPointsController extends Controller {
                     $destination->address1,
                     $destination->country,
                     $pickupPointProviders,
-                    $shop->pickuppoints_count
+                    $shop->pickuppoints_count,
+                    $shop->pickup_filter
             );
 
             if (empty($pickupPoints) && ($destination->country == 'LT' || $destination->country == 'AX' || $destination->country == 'FI')) {
@@ -155,7 +156,8 @@ class PickupPointsController extends Controller {
                         null,
                         'FI',
                         $pickupPointProviders,
-                        $shop->pickuppoints_count
+                        $shop->pickuppoints_count,
+                        $shop->pickup_filter
                 );
             }
             

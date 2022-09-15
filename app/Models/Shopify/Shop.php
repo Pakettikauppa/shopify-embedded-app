@@ -391,6 +391,7 @@ class Shop extends Model
         $this->create_activation_code = $settings['create_activation_code'];
         $this->add_additional_label_info = $settings['add_additional_label_info'];
         $this->additional_label_info = $settings['additional_label_info'];
+        $this->pickup_filter = $settings['pickup_filter'] ?? null;
 
         return $this->save();
     }

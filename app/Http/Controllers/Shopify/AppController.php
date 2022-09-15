@@ -870,7 +870,8 @@ class AppController extends Controller {
                     request()->get('address1'),
                     request()->get('country'),
                     $service_id,
-                    $shop->pickuppoints_count
+                    $shop->pickuppoints_count,
+                    $shop->pickup_filter
             );
 
             if (empty($pickupPoints) && (request()->get('country') == 'LT' || request()->get('country') == 'AX' || request()->get('country') == 'FI')) {
@@ -880,7 +881,8 @@ class AppController extends Controller {
                         null,
                         'FI',
                         $service_id,
-                        $shop->pickuppoints_count
+                        $shop->pickuppoints_count,
+                        $shop->pickup_filter
                 );
             }
             // generate custom carrier service response
