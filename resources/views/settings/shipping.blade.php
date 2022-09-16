@@ -37,22 +37,6 @@
                 </div>
             </div>
 
-            <div class="row">
-                <div class="columns four">
-                    <h5>{{trans('app.settings.pickup_filter')}}</h5>
-                </div>
-                <div class="columns eight">
-                    <select name="pickup_filter">
-                        <option value="">—</option>
-                        @foreach($pickup_filter_types as $key => $value)
-                            <option value="{{ $value }}" @if($shop->pickup_filter == $value) selected @endif>
-                                {{ trans("app.settings.pickuppoints.$key") }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
-            </div>
-
             <div>
                 <div class="columns four">
                     <h5>{{trans('app.settings.shopify_method')}}</h5>

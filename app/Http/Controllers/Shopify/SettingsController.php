@@ -255,6 +255,7 @@ class SettingsController extends Controller {
         return view('settings.pickuppoints', [
             'pickuppoint_settings' => $pickupPointSettings,
             'shipping_methods' => $products,
+            'pickup_filter_types' => self::PICKUP_FILTER_TYPES,
             'shop' => $shop,
             'api_valid' => $api_valid,
             'type' => $this->type
@@ -401,7 +402,6 @@ class SettingsController extends Controller {
         return view('settings.shipping', [
             'shopify_shipping' => $shipping_zones,
             'pickuppoint_settings' => $pickupPointSettings,
-            'pickup_filter_types' => self::PICKUP_FILTER_TYPES,
             'shipping_methods' => $grouped_services,
             'shop' => $shop,
             'additional_services' => unserialize($shop->additional_services),
@@ -618,7 +618,6 @@ class SettingsController extends Controller {
         $shop_shipping_settings = array(
             'shipping_settings' => $shipping_settings,
             'default_service_code' => request()->get('default_shipping_method'),
-            'pickup_filter' => request()->get('pickup_filter'),
             'always_create_return_label' => (bool) request()->get('print_return_labels'),
             'create_activation_code' => (bool) request()->get('create_activation_code'),
             'add_additional_label_info' => (bool) request()->get('add_additional_label_info'),
@@ -723,6 +722,7 @@ class SettingsController extends Controller {
         $shop = request()->get('shop');
 
         $data = array(
+            'pickup_filter' => request()->get('pickup_filter'),
             'pickuppoints_count' => (int) request()->get('pickuppoints_count'),
             'include_discounted_price_in_trigger' => (bool) request()->get('include_discounted_price_in_trigger'),
             'settings' => json_encode($this->prepPickupPointsData(request()->get('pickuppoint'))),
