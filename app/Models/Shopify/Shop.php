@@ -193,6 +193,11 @@ class Shop extends Model
             foreach ($order['additional_services'] as $service_code) {
                 $additional_service = new AdditionalService();
                 $additional_service->setServiceCode($service_code);
+
+                if($service_code == 3143){
+                    $additional_service->addSpecifier('lqweight', $order['lqweight']);
+                    $additional_service->addSpecifier('lqcount', $order['lqcount']);
+                }
                 $shipment->addAdditionalService($additional_service);
             }
         }
