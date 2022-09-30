@@ -244,7 +244,7 @@ class AppController extends Controller {
                 continue;
             }
 
-            if (!isset($order['shippingAddress']) and!isset($order['billingAddress'])) {
+            if (!isset($order['shippingAddress']) and !isset($order['billingAddress'])) {
                 $shipment['status'] = 'need_shipping_address';
                 $shipments[] = $shipment;
                 continue;
