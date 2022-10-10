@@ -5,6 +5,7 @@
 
     <article>
         <div class="card">
+            <!-- pickup points 2 -->
             <h2>{{trans('app.settings.pickuppoints.title')}}</h2>
             @if ($shop->carrier_service_id == null)
             {{trans('app.settings.enable_carrier_api')}}
@@ -27,6 +28,11 @@
                                </th>
                            </tr>
                             @foreach($shipping_methods as $shipping_method)
+                                <!--
+                                @php
+                                echo json_encode($shipping_method);
+                                @endphp
+                                -->
                                 @if ($shipping_method['has_pickup_points'])
                                     @php
                                         $shippingMethodCode = (string) $shipping_method['shipping_method_code'];

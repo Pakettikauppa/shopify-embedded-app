@@ -207,6 +207,7 @@ class SettingsController extends Controller {
      * Pickup points settings view endpoint
      */
     public function pickuppoints() {
+        Log::debug('Pickup point settings');
         $shop = request()->get('shop');
 
         if ($shop->carrier_service_id != null) {
@@ -231,6 +232,7 @@ class SettingsController extends Controller {
 
         $products = $pk_client->listShippingMethods();
 
+        Log::debug('Products from server:' . json_encode($products));
         // dont let it crash and burn
         if (!is_array($products)) {
             $products = array();
