@@ -232,7 +232,6 @@ class SettingsController extends Controller {
 
         $products = $pk_client->listShippingMethods();
 
-        Log::debug('Products from server:' . json_encode($products));
         // dont let it crash and burn
         if (!is_array($products)) {
             $products = array();
