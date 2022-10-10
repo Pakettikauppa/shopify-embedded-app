@@ -119,6 +119,7 @@
 
     <article>
         <div class="card">
+            <!-- Pickup points 1 -->
             <h2>{{trans('app.settings.pickuppoints.title')}}</h2>
             @if ($shop->carrier_service_id == null)
             {{trans('app.settings.enable_carrier_api')}}
