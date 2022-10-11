@@ -36,8 +36,23 @@
                 </div>
                 <div class="row" style="margin-bottom: 2em; display: none;" id = "additional-services">
                     <h3>{{trans('app.custom_shipment.additional_service_title')}}</h3>
-                    <div id ="additional-services-items"></div>
+                    <div id="additional-services-items" style="display: inline-block; width: 100%;"></div>
                 </div>
+
+                <div class="row" id="lq-specifiers" style="margin-bottom: 2em; display: none;">
+                    <h3>{{trans('app.custom_shipment.dangerous_goods')}}</h3>
+                    <div class="column twelve">
+                        <div class="columns twelve" style="margin-bottom: 1em;">
+                            <label for="lqcount">{{trans('app.custom_shipment.qty_dangerous_products')}}</label>
+                            <input class="columns one" type="number" id="lqcount" name="lqcount" min="1">
+                        </div>
+                        <div class="columns twelve">
+                            <label for="lqweight">{{trans('app.custom_shipment.hazardous_substances')}}</label>
+                            <input class="columns one" type="number" id="lqweight" name="lqweight" min="1">
+                        </div>
+                    </div>
+                </div>
+
                 <div class="row" style="margin-bottom: 2em">
                     <div id="multi-parcel-block" class="columns six hidden">
                         <div class="row">
@@ -185,6 +200,15 @@
             $('[name="address1"], [name="zip"]').on('focusout', () => {
                 handlePickupsAndAdditionalServices();
             });
+            
+            $(document).on('change', '#service-3143', function() {
+                if($(this).is(':checked')){
+                    $('#lq-specifiers').show();
+                }else{
+                    $('#lq-specifiers').hide();
+                }
+            });
+            
         });
 
         function handlePickupsAndAdditionalServices()
@@ -215,8 +239,9 @@
                 }
             ).then(
                 response => {
-                    if (response.status === 200 && response.data.status !== 'error') {
+                    if (response.status === 200 && response.data.status !== 'error' && response.data != '') {
                         showToast({message: response.data.message, isError: false});
+                        console.log(response);
                         if(response.data.pickups.length > 0)
                         {
                             let methodCodes, pickupCode;

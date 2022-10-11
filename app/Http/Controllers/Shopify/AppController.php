@@ -247,7 +247,7 @@ class AppController extends Controller {
                     return $shipment;
                 }
 
-                if (!isset($order['shippingAddress']) and!isset($order['billingAddress'])) {
+                if (!isset($order['shippingAddress']) and !isset($order['billingAddress'])) {
                     $shipment['status'] = 'need_shipping_address';
                     // $shipments[] = $shipment;
                     // continue;
@@ -1130,6 +1130,17 @@ class AppController extends Controller {
         $contents = $shipment['line_items'];
 
         $order['packets'] = request()->get('packets');
+
+        $lqcount = request()->get('lqcount');
+        if($lqcount){
+            $order['lqcount'] = $lqcount;
+        }
+
+        $lqweight = request()->get('lqweight');
+        if($lqweight){
+            $order['lqweight'] = $lqweight;
+        }
+        
         $_shipment = $shop->sendShipment(
                 $this->pk_client,
                 $order,
@@ -1266,9 +1277,9 @@ class AppController extends Controller {
                     }
                 }
             } else if ($has_missing_products){
-                $shipments[$orderKey]['status'] = 'product_deleted';
+                $shipment['status'] = 'product_deleted';
             } else {
-                $shipments[$orderKey]['status'] = 'not_in_inventory';
+                $shipment['status'] = 'not_in_inventory';
             }
             Log::debug("Fullfilled order: {$order['id']}");
         }
