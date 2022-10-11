@@ -8,6 +8,7 @@ use App\Models\Shopify\ShopifyClient;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 use App\Models\Shopify\Shop;
 use App\Models\Shopify\Shipment as ShopifyShipment;
 use Pakettikauppa\Client;
@@ -225,9 +226,8 @@ class AppController extends Controller {
                 continue;
             }
 
-            DB::transaction(function () {
-
-                $done_shipment = ShopifyShipment::where('shop_id', $shop->id)
+            $shipment = DB::transaction(function () use ($shop, $order, $is_return, $shipment){
+                $done_shipment = ShopifyShipment::lockForUpdate()->where('shop_id', $shop->id)
                         ->where('order_id', $order['legacyResourceId'])
                         ->where('test_mode', $shop->test_mode)
                         ->where('return', $is_return)
@@ -242,14 +242,16 @@ class AppController extends Controller {
                         $tracking_codes[] = $done_shipment->tracking_code;
                     }
                     $shipment['tracking_codes'] = $tracking_codes;
-                    $shipments[] = $shipment;
-                    continue;
+                    // $shipments[] = $shipment;
+                    // continue;
+                    return $shipment;
                 }
 
                 if (!isset($order['shippingAddress']) and!isset($order['billingAddress'])) {
                     $shipment['status'] = 'need_shipping_address';
-                    $shipments[] = $shipment;
-                    continue;
+                    // $shipments[] = $shipment;
+                    // continue;
+                    return $shipment;
                 }
 
                 /*
@@ -377,10 +379,12 @@ class AppController extends Controller {
                 if (isset($_shipment['error_message'])) {
                     $shipment['error_message'] = $_shipment['error_message'];
                 }
-            
 
-                $shipments[] = $shipment;
-            }
+                return $shipment;
+
+            });
+
+            $shipments[] = $shipment;
 
             Log::debug("Processed order: " . implode(', ', $shipment['tracking_codes']) . " - {$order['id']}");
         }
