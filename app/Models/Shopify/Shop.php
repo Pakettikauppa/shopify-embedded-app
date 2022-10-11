@@ -170,7 +170,7 @@ class Shop extends Model
                     $shipment->setShippingMethod(2338);
                 } else if($shipping_method == 2711) {
                     $shipment->setShippingMethod(2718);
-                } else if(in_arry($shipping_method, [2352, 2351])) {
+                } else if(in_array($shipping_method, [2352, 2351])) {
                     $shipment->setShippingMethod(2358);
                 } else if($shipping_method == 2354) {
                     $shipment->setShippingMethod(2359);
