@@ -8,6 +8,7 @@ use App\Models\Shopify\ShopifyClient;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 use App\Models\Shopify\Shop;
 use App\Models\Shopify\Shipment as ShopifyShipment;
 use Pakettikauppa\Client;
@@ -225,156 +226,163 @@ class AppController extends Controller {
                 continue;
             }
 
-            $done_shipment = ShopifyShipment::where('shop_id', $shop->id)
-                    ->where('order_id', $order['legacyResourceId'])
-                    ->where('test_mode', $shop->test_mode)
-                    ->where('return', $is_return)
-                    ->first();
+            $shipment = DB::transaction(function () use ($shop, $order, $is_return, $shipment){
+                $done_shipment = ShopifyShipment::lockForUpdate()->where('shop_id', $shop->id)
+                        ->where('order_id', $order['legacyResourceId'])
+                        ->where('test_mode', $shop->test_mode)
+                        ->where('return', $is_return)
+                        ->first();
 
-            if ($done_shipment) {
-                $shipment['status'] = 'sent';
+                if ($done_shipment) {
+                    $shipment['status'] = 'sent';
 
-                if (strpos($done_shipment->tracking_code, ',')) {
-                    $tracking_codes = explode(', ', $done_shipment->tracking_code);
+                    if (strpos($done_shipment->tracking_code, ',')) {
+                        $tracking_codes = explode(', ', $done_shipment->tracking_code);
+                    } else {
+                        $tracking_codes[] = $done_shipment->tracking_code;
+                    }
+                    $shipment['tracking_codes'] = $tracking_codes;
+                    // $shipments[] = $shipment;
+                    // continue;
+                    return $shipment;
+                }
+
+                if (!isset($order['shippingAddress']) and !isset($order['billingAddress'])) {
+                    $shipment['status'] = 'need_shipping_address';
+                    // $shipments[] = $shipment;
+                    // continue;
+                    return $shipment;
+                }
+
+                /*
+                if ($order['gateway'] == 'Cash on Delivery (COD)') {
+
+                }
+                */
+
+                if (isset($order['shippingAddress'])) {
+                    $shipping_address = $order['shippingAddress'];
                 } else {
-                    $tracking_codes[] = $done_shipment->tracking_code;
+                    $shipping_address = $order['billingAddress'];
                 }
-                $shipment['tracking_codes'] = $tracking_codes;
-                $shipments[] = $shipment;
-                continue;
-            }
 
-            if (!isset($order['shippingAddress']) and !isset($order['billingAddress'])) {
-                $shipment['status'] = 'need_shipping_address';
-                $shipments[] = $shipment;
-                continue;
-            }
+                $senderInfo = [
+                    'name' => $shop->business_name,
+                    'company' => '',
+                    'address' => $shop->address,
+                    'postcode' => $shop->postcode,
+                    'city' => $shop->city,
+                    'country' => $shop->country,
+                    'phone' => $shop->phone,
+                    'email' => $shop->email,
+                ];
 
-            /*
-              if ($order['gateway'] == 'Cash on Delivery (COD)') {
+                $receiverPhone = $shipping_address['phone'];
 
-              }
-             */
-
-            if (isset($order['shippingAddress'])) {
-                $shipping_address = $order['shippingAddress'];
-            } else {
-                $shipping_address = $order['billingAddress'];
-            }
-
-            $senderInfo = [
-                'name' => $shop->business_name,
-                'company' => '',
-                'address' => $shop->address,
-                'postcode' => $shop->postcode,
-                'city' => $shop->city,
-                'country' => $shop->country,
-                'phone' => $shop->phone,
-                'email' => $shop->email,
-            ];
-
-            $receiverPhone = $shipping_address['phone'];
-
-            if (empty($receiverPhone) and isset($order['billingAddress']['phone'])) {
-                $receiverPhone = $order['billingAddress']['phone'];
-            }
-
-            if (empty($receiverPhone)) {
-                $receiverPhone = $order['phone'];
-            }
-
-            if (empty($receiverPhone) and isset($order['customer']['phone'])) {
-                $receiverPhone = $order['customer']['phone'];
-            }
-
-            $receiverName = $shipping_address['name'];
-            $receiverCompany = $shipping_address['company'];
-            if (empty($receiverCompany)) {
-                $receiverCompany = null;
-            }
-            $receiverAddress = $shipping_address['address1'];
-            $receiverAddress2 = empty($shipping_address['address2']) ? null : $shipping_address['address2'];
-
-            $receiverZip = $shipping_address['zip'];
-            $receiverCity = $shipping_address['city'];
-            $receiverCountry = $shipping_address['countryCode'];
-
-            $receiverInfo = [
-                'name' => $receiverName,
-                'company' => $receiverCompany,
-                'address' => $receiverAddress,
-                'address2' => $receiverAddress2,
-                'postcode' => $receiverZip,
-                'city' => $receiverCity,
-                'country' => $receiverCountry,
-                'phone' => $receiverPhone,
-                'email' => $order['email'],
-            ];
-            if ($is_return) {
-                $tmp = $receiverInfo;
-                $receiverInfo = $senderInfo;
-                $senderInfo = $tmp;
-            }
-
-            $contents = $shipment['line_items'];
-
-            $_shipment = $shop->sendShipment(
-                    $this->pk_client,
-                    $order,
-                    $senderInfo,
-                    $receiverInfo,
-                    $contents,
-                    $is_return
-            );
-            $shipment['status'] = $_shipment['status'];
-            $shipment['tracking_code'] = '';
-            $shipment['tracking_codes'] = [];
-            
-            if (isset($_shipment['tracking_code'])) {
-                if (is_array($_shipment['tracking_code'])) 
-                {
-                    $tracking_codes = $_shipment['tracking_code'];
-                } 
-                else if (strpos($_shipment['tracking_code'], ','))
-                {
-                    $tracking_codes = explode(', ', $_shipment['tracking_code']);
+                if (empty($receiverPhone) and isset($order['billingAddress']['phone'])) {
+                    $receiverPhone = $order['billingAddress']['phone'];
                 }
-                else
-                {
-                    $tracking_codes = [$_shipment['tracking_code']];
+
+                if (empty($receiverPhone)) {
+                    $receiverPhone = $order['phone'];
                 }
-                $shipment['tracking_codes'] = $tracking_codes;
-                $shipment['tracking_code'] = end($shipment['tracking_codes']);
-            }
-            
-            if (
-                    !empty($this->pk_client->getResponse()->{'response.trackingcode'}['labelcode']) && $shop->create_activation_code === true
-            ) {
-                try {
-                    $query_params = $this->client->buildGraphQLInput(['id' => $order['gid'], 'note' => sprintf('%s: %s', trans('app.settings.activation_code'), $this->pk_client->getResponse()->{'response.trackingcode'}['labelcode'])]);
-                    $query = <<<GQL
-                            mutation UpdateOrder {
-                                orderUpdate(input: $query_params){
-                                    userErrors {
-                                      field
-                                      message
+
+                if (empty($receiverPhone) and isset($order['customer']['phone'])) {
+                    $receiverPhone = $order['customer']['phone'];
+                }
+
+                $receiverName = $shipping_address['name'];
+                $receiverCompany = $shipping_address['company'];
+                if (empty($receiverCompany)) {
+                    $receiverCompany = null;
+                }
+                $receiverAddress = $shipping_address['address1'];
+                $receiverAddress2 = empty($shipping_address['address2']) ? null : $shipping_address['address2'];
+
+                $receiverZip = $shipping_address['zip'];
+                $receiverCity = $shipping_address['city'];
+                $receiverCountry = $shipping_address['countryCode'];
+
+                $receiverInfo = [
+                    'name' => $receiverName,
+                    'company' => $receiverCompany,
+                    'address' => $receiverAddress,
+                    'address2' => $receiverAddress2,
+                    'postcode' => $receiverZip,
+                    'city' => $receiverCity,
+                    'country' => $receiverCountry,
+                    'phone' => $receiverPhone,
+                    'email' => $order['email'],
+                ];
+                if ($is_return) {
+                    $tmp = $receiverInfo;
+                    $receiverInfo = $senderInfo;
+                    $senderInfo = $tmp;
+                }
+
+                $contents = $shipment['line_items'];
+
+                $_shipment = $shop->sendShipment(
+                        $this->pk_client,
+                        $order,
+                        $senderInfo,
+                        $receiverInfo,
+                        $contents,
+                        $is_return
+                );
+                $shipment['status'] = $_shipment['status'];
+                $shipment['tracking_code'] = '';
+                $shipment['tracking_codes'] = [];
+                
+                if (isset($_shipment['tracking_code'])) {
+                    if (is_array($_shipment['tracking_code'])) 
+                    {
+                        $tracking_codes = $_shipment['tracking_code'];
+                    } 
+                    else if (strpos($_shipment['tracking_code'], ','))
+                    {
+                        $tracking_codes = explode(', ', $_shipment['tracking_code']);
+                    }
+                    else
+                    {
+                        $tracking_codes = [$_shipment['tracking_code']];
+                    }
+                    $shipment['tracking_codes'] = $tracking_codes;
+                    $shipment['tracking_code'] = end($shipment['tracking_codes']);
+                }
+                
+                if (
+                        !empty($this->pk_client->getResponse()->{'response.trackingcode'}['labelcode']) && $shop->create_activation_code === true
+                ) {
+                    try {
+                        $query_params = $this->client->buildGraphQLInput(['id' => $order['gid'], 'note' => sprintf('%s: %s', trans('app.settings.activation_code'), $this->pk_client->getResponse()->{'response.trackingcode'}['labelcode'])]);
+                        $query = <<<GQL
+                                mutation UpdateOrder {
+                                    orderUpdate(input: $query_params){
+                                        userErrors {
+                                        field
+                                        message
+                                        }
+                                        order {
+                                        id
+                                        }
                                     }
-                                    order {
-                                      id
-                                    }
-                                }
-                            }        
-                            GQL;
-                    $this->client->call($query);
-                } catch (\Exception $e) {
-                    Log::debug($e->getMessage());
-                    Log::debug($e->getTraceAsString());
+                                }        
+                                GQL;
+                        $this->client->call($query);
+                    } catch (\Exception $e) {
+                        Log::debug($e->getMessage());
+                        Log::debug($e->getTraceAsString());
+                    }
                 }
-            }
 
-            if (isset($_shipment['error_message'])) {
-                $shipment['error_message'] = $_shipment['error_message'];
-            }
+                if (isset($_shipment['error_message'])) {
+                    $shipment['error_message'] = $_shipment['error_message'];
+                }
+
+                return $shipment;
+
+            });
 
             $shipments[] = $shipment;
 
