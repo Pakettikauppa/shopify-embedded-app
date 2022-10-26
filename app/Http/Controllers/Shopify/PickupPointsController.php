@@ -111,7 +111,7 @@ class PickupPointsController extends Controller {
             Log::debug('TotalWeight: ' . $totalWeightInGrams);
             //if weight is more than 35kg, no pick up points support it, return empty
             if ($totalWeightInGrams > 35000) {
-                $json = json_encode(['rates' => $rates]);
+                $json = json_encode(['rates' => []]);
                 Log::debug($json);
                 echo $json;
                 return;
@@ -126,7 +126,15 @@ class PickupPointsController extends Controller {
                     }
                 }
             }
-            
+
+            if (empty($pickupPointProviders)) {
+                // no pickup point providers
+                Log::debug('No pickup point providers');
+                $json = json_encode(['rates' => []]);
+                echo $json;
+                return;
+            }
+
             // convert array to string
             $pickupPointProviders = implode(",", $pickupPointProviders);
 
