@@ -286,24 +286,11 @@ class Shop extends Model
             $method_code[0] = 2103;
         }
 
-        // FIX for api server problem ends here
+        // FIX if merchants service name contains : char
         if (!is_numeric($method_code[0])) {
-            switch ($pickupPoint[0]) {
-                case 'Posti':
-                    $method_code[0] = '2103';
-                    break;
-                case 'Matkahuolto':
-                    $method_code[0] = '90080';
-                    break;
-                case 'DB Schenker':
-                    $method_code[0] = '80010';
-                    break;
-                default:
-                    // reset to defaults.
-                    $method_code[0] = null;
-                    $pickupPointId = null;
-                    break;
-            }
+            $method_code[0] = null;
+            $pickupPointId = null;
+            break;
         }
         return [
             'method_code' => $method_code[0],
