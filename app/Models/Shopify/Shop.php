@@ -290,7 +290,6 @@ class Shop extends Model
         if (!is_numeric($method_code[0])) {
             $method_code[0] = null;
             $pickupPointId = null;
-            break;
         }
         return [
             'method_code' => $method_code[0],
