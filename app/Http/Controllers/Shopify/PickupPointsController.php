@@ -138,7 +138,6 @@ class PickupPointsController extends Controller {
             // convert array to string
             $pickupPointProviders = implode(",", $pickupPointProviders);
 
-            Log::debug('Providers: ' . $pickupPointProviders);
             // search nearest pickup locations
             $pickupPoints = $pk_client->searchPickupPoints(
                     $destination->postal_code,
