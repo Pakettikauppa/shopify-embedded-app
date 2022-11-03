@@ -9,8 +9,8 @@
     <title>Shopify</title>
 
     <!-- JavaScripts -->
-    <script src="https://unpkg.com/@shopify/app-bridge@2.0.5"></script>
-    <script src="https://unpkg.com/@shopify/app-bridge-utils@2.0.5"></script>
+    <script src="https://unpkg.com/@shopify/app-bridge@3.0.1"></script>
+    <script src="https://unpkg.com/@shopify/app-bridge-utils@3.4.3"></script>
 
     <script>
         @if (isset($redirect_back_url) && $redirect_back_url)
@@ -26,6 +26,15 @@
 
         var permissionUrl = '{{ $install_url }}';
 
+        //get host parameter
+        const queryString = window.location.search;
+        const urlParams = new URLSearchParams(queryString);
+        var host = urlParams.get('host');
+
+        if(!host || host == ''){
+            host = '{{$shopOrigin}}';
+        }
+
         // If the current window is the 'parent', change the URL by setting location.href       
         if (window.top == window.self) {
             window.location.assign(permissionUrl);
@@ -34,7 +43,7 @@
             var app = createApp({
                 apiKey: '{{ $api_key }}',
                 shopOrigin: '{{ $shopOrigin }}',
-                host: '{{$shopOrigin}}'
+                host: host
             });
 
             Redirect.create(app).dispatch(Redirect.Action.REMOTE, permissionUrl);
