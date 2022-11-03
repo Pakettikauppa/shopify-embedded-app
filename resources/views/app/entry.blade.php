@@ -9,8 +9,8 @@
     <title>Shopify</title>
 
     <!-- JavaScripts -->
-    <script src="https://unpkg.com/@shopify/app-bridge@2.0.5"></script>
-    <script src="https://unpkg.com/@shopify/app-bridge-utils@2.0.5"></script>
+    <script src="https://unpkg.com/@shopify/app-bridge@3.0.1"></script>
+    <script src="https://unpkg.com/@shopify/app-bridge-utils@3.4.3"></script>
 
     <script>
         @if (isset($redirect_back_url) && $redirect_back_url)
