@@ -26,6 +26,15 @@
 
         var permissionUrl = '{{ $install_url }}';
 
+        //get host parameter
+        const queryString = window.location.search;
+        const urlParams = new URLSearchParams(queryString);
+        var host = urlParams.get('host');
+
+        if(!host || host == ''){
+            host = '{{$shopOrigin}}';
+        }
+
         // If the current window is the 'parent', change the URL by setting location.href       
         if (window.top == window.self) {
             window.location.assign(permissionUrl);
@@ -34,7 +43,7 @@
             var app = createApp({
                 apiKey: '{{ $api_key }}',
                 shopOrigin: '{{ $shopOrigin }}',
-                host: '{{$shopOrigin}}'
+                host: host
             });
 
             Redirect.create(app).dispatch(Redirect.Action.REMOTE, permissionUrl);

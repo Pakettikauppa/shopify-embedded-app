@@ -26,12 +26,21 @@
     <script>
         var AppBridge = window['app-bridge'];
 
+        //get host parameter
+        const queryString = window.location.search;
+        const urlParams = new URLSearchParams(queryString);
+        var host = urlParams.get('host');
+
+        if(!host || host == ''){
+            host = '{{$shop->shop_origin}}';
+        }
+
         var Actions = AppBridge.actions;
         var createApp = AppBridge.default;
         var ShopifyApp = createApp({
             apiKey: '{{config('shopify.api_key')}}',
             shopOrigin: '{{$shop->shop_origin}}',
-            host: '{{$shop->shop_origin}}',
+            host: host,
             debug: true,
             forceRedirect: true
         });
