@@ -35,9 +35,20 @@
     var createApp = AppBridge.default;
     var actions = AppBridge.actions;
     var Redirect  = actions.Redirect;
+
+    //get host parameter
+    const queryString = window.location.search;
+    const urlParams = new URLSearchParams(queryString);
+    var host = urlParams.get('host');
+
+    if(!host || host == ''){
+        host = '{!! $shop_origin !!}';
+    }
+
     var app = createApp({
         apiKey: '{!! env('SHOPIFY_API_KEY') !!}',
-        shopOrigin: '{!! $shop_origin !!}'
+        shopOrigin: '{!! $shop_origin !!}',
+        host: host 
     });
 
     const redirect = Redirect.create(app);

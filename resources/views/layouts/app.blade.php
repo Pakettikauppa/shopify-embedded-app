@@ -21,20 +21,29 @@
     <!-- JavaScripts -->
     <script src="https://unpkg.com/axios@0.26.1/dist/axios.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
-    <script src="https://unpkg.com/@shopify/app-bridge@2.0.5"></script>
-    <script src="https://unpkg.com/@shopify/app-bridge-utils@2.0.5"></script>
+    <script src="https://unpkg.com/@shopify/app-bridge@3.0.1"></script>
+    <script src="https://unpkg.com/@shopify/app-bridge-utils@3.4.3"></script>
     <script>
         //check if we have any redirect backs
         const redirect_url = document.cookie.match('(^|;)\\s*redirect_back_url\\s*=\\s*([^;]+)')?.pop() || false;
         
         var AppBridge = window['app-bridge'];
 
+        //get host parameter
+        const queryString = window.location.search;
+        const urlParams = new URLSearchParams(queryString);
+        var host = urlParams.get('host');
+
+        if(!host || host == ''){
+            host = '{{$shop->shop_origin}}';
+        }
+
         var Actions = AppBridge.actions;
         var createApp = AppBridge.default;
         var ShopifyApp = createApp({
             apiKey: '{{config('shopify.api_key')}}',
             shopOrigin: '{{$shop->shop_origin}}',
-            host: '{{$shop->shop_origin}}',
+            host: host,
             debug: true,
             forceRedirect: true
         });
