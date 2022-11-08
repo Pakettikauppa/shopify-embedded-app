@@ -123,6 +123,11 @@ return [
             'base_price' => 'Perushinta (€)',
             'trigger_price' => 'Hintaraja (€)',
             'triggered_price' => 'Hinta ylityksen jälkeen (€)',
+            'all' => 'Kaikki',
+            'private_lockers' => 'Yksityiset automaatit',
+            'outdoor_lockers' => 'Ulkoautomaatit',
+            'pickup_points' => 'Automaatit',
+            'agencies' => 'Noutopisteet',
         ],
         'wizard' => [
             'is_new_user' => 'Onko sinulla jo Pakettikaupan API tunnukset?',
