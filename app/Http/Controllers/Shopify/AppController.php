@@ -23,6 +23,8 @@ use Storage;
  */
 class AppController extends Controller {
 
+    const SKIP_FULFILL_STATUSES = ['on_hold', 'custom_error', 'need_shipping_address'];
+
     /**
      * @var ShopifyClient
      */
@@ -254,11 +256,30 @@ class AppController extends Controller {
                     return $shipment;
                 }
 
-                /*
-                if ($order['gateway'] == 'Cash on Delivery (COD)') {
+                try {
+                    $gid = $order['gid'];
+                    $query = <<<GQL
+                            query {
+                                node(id: "$gid") {
+                                id
+                                ... on Order {
+                                    displayFinancialStatus
+                                }
+                                }
+                            }        
+                            GQL;
+                    $response = $this->client->call($query);
 
+                    $status = $response['data']['node']['displayFinancialStatus'] ?? null;
+                    if($status && $status == 'ON_HOLD')
+                    {
+                        $shipment['status'] = 'on_hold';
+                        return $shipment;
+                    }
+                } catch (\Exception $e) {
+                    Log::debug($e->getMessage());
+                    Log::debug($e->getTraceAsString());
                 }
-                */
 
                 if (isset($order['shippingAddress'])) {
                     $shipping_address = $order['shippingAddress'];
@@ -400,10 +421,7 @@ class AppController extends Controller {
                 if ($order['fulfillment_status'] == 'fulfilled') {
                     continue;
                 }
-                if ($order['status'] == 'custom_error') {
-                    continue;
-                }
-                if ($order['status'] == 'need_shipping_address') {
+                if (in_array($order['status'], self::SKIP_FULFILL_STATUSES)) {
                     continue;
                 }
 
