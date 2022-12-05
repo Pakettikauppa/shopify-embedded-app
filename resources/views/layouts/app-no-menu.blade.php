@@ -70,7 +70,7 @@
             if (!loader) {
                 return;
             }
-
+            saveBtnDisabled(true);
             loader.classList.remove('hidden');
         }
 
@@ -79,7 +79,7 @@
             if (!loader) {
                 return;
             }
-
+            saveBtnDisabled(false);
             loader.classList.add('hidden');
         }
         /* LOADING BAR END */

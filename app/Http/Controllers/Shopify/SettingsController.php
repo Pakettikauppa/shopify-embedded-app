@@ -21,6 +21,14 @@ class SettingsController extends Controller {
     const MSG_OK = 'ok';
     const MSG_ERROR = 'error';
 
+    const PICKUP_FILTER_TYPES = [
+        'all' => null,
+        'private_lockers' => 'PRIVATE_LOCKER',
+        'outdoor_lockers' => 'OUTDOOR_LOCKER',
+        'pickup_points' => 'PICKUP_POINT',
+        'agencies' => 'AGENCY',
+    ];
+
     private $shopifyClient;
     private Shop $shop;
     private Client $pk_client;
@@ -248,6 +256,7 @@ class SettingsController extends Controller {
         return view('settings.pickuppoints', [
             'pickuppoint_settings' => $pickupPointSettings,
             'shipping_methods' => $products,
+            'pickup_filter_types' => self::PICKUP_FILTER_TYPES,
             'shop' => $shop,
             'api_valid' => $api_valid,
             'type' => $this->type
@@ -714,6 +723,7 @@ class SettingsController extends Controller {
         $shop = request()->get('shop');
 
         $data = array(
+            'pickup_filter' => request()->get('pickup_filter'),
             'pickuppoints_count' => (int) request()->get('pickuppoints_count'),
             'include_discounted_price_in_trigger' => (bool) request()->get('include_discounted_price_in_trigger'),
             'settings' => json_encode($this->prepPickupPointsData(request()->get('pickuppoint'))),

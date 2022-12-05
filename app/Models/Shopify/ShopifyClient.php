@@ -39,7 +39,7 @@ class ShopifyClient {
     private $api_key;
     private $secret;
     private $last_response_headers = null;
-    private $api_version = '2021-07';
+    private $api_version = '2022-10';
     private $api_calls = 0;
 
     public function __construct($shop_domain, $token, $api_key, $secret) {
