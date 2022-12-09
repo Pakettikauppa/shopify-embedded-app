@@ -335,7 +335,10 @@ class AppController extends Controller {
                     'phone' => $receiverPhone,
                     'email' => $order['email'],
                 ];
-                if ($is_return) {
+                $type = config('shopify.type');
+                //When in Posti environment, all return labels should be created with return service code:
+
+                if ($is_return && $type != 'posti') {
                     $tmp = $receiverInfo;
                     $receiverInfo = $senderInfo;
                     $senderInfo = $tmp;
