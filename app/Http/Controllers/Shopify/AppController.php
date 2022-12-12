@@ -162,7 +162,7 @@ class AppController extends Controller {
                 'message_type' => 'error',
                 'type' => $this->type,
                 'title' => trans('app.messages.invalid_credentials'),
-                'message' => trans('app.messages.no_api_set_error', ['settings_url' => route('shopify.settings')]),
+                'message' => trans('app.messages.no_api_set_error', ['settings_url' => route('shopify.settings.api-link')]),
             ]);
         }
 
