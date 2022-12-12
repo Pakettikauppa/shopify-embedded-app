@@ -1498,7 +1498,7 @@ class AppController extends Controller {
         return (int) round($pickupPointSettings['base_price'] * 100.0);
     }
     
-    private function buildGraphQLInput($array) {
+    private function buildGraphQLInput(array $array) {
         $output_as_array = false;
         $output = '';
         $total = count($array);
@@ -1553,6 +1553,15 @@ class AppController extends Controller {
         }
         $client = $this->getPakketikauppaClient($shop);
         $methods = $client->listShippingMethods();
+
+        if(empty($methods))
+        {
+            return response()->json([
+                'data' => 'Could not load any shipping methods.',
+                'status' => 'error',
+            ]);
+        }
+
         foreach ($methods as $method) {
             if ($method->shipping_method_code == $service) {
                 return response()->json([
