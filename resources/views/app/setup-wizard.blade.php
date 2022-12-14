@@ -44,7 +44,7 @@
 </div>
 
 <div class="row wizard-navigation">
-    <a href="{{route('shopify.settings')}}" class="button secondary"><i class="icon icon-gear"></i><span style="padding-left: 15px;">{{trans('app.settings.wizard.back_to_settings')}}</span></a>
+    <a href="{{route('shopify.settings.api-link')}}" class="button secondary"><i class="icon icon-gear"></i><span style="padding-left: 15px;">{{trans('app.settings.wizard.back_to_settings')}}</span></a>
     <button id="next-btn" class="secondary"><span style="padding-right: 15px;">{{trans('app.settings.wizard.next')}}</span><i class="icon icon-next"></i></button>
 </div>
 
