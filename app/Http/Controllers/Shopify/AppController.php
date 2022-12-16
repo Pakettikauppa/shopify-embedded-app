@@ -195,12 +195,6 @@ class AppController extends Controller {
             return redirect()->route('install-link', $params);
         }
 
-        if ($request->session()->has('printing_locked')) {
-            return;
-        } else {
-            $request->session()->put('printing_locked', '1');
-        }
-
         $shipments = [];
 
         foreach ($orders['orders']['edges'] as $orderNode) {
@@ -234,6 +228,9 @@ class AppController extends Controller {
                 continue;
             }
 
+            $lock_index = (int) hexdec(md5($shop->id . '-' . $order['legacyResourceId'] . '-' . $shop->test_mode));
+            DB::select("pg_try_advisory_xact_lock($lock_index)");
+
             $shipment = DB::transaction(function () use ($shop, $order, $is_return, $shipment, $request){
 
                 $done_shipment = ShopifyShipment::lockForUpdate()->where('shop_id', $shop->id)
@@ -253,7 +250,6 @@ class AppController extends Controller {
                     $shipment['tracking_codes'] = $tracking_codes;
                     // $shipments[] = $shipment;
                     // continue;
-                    $request->session()->forget('printing_locked');
                     return $shipment;
                 }
 
@@ -261,7 +257,6 @@ class AppController extends Controller {
                     $shipment['status'] = 'need_shipping_address';
                     // $shipments[] = $shipment;
                     // continue;
-                    $request->session()->forget('printing_locked');
                     return $shipment;
                 }
 
@@ -283,7 +278,6 @@ class AppController extends Controller {
                     if($status && $status == 'ON_HOLD')
                     {
                         $shipment['status'] = 'on_hold';
-                        $request->session()->forget('printing_locked');
                         return $shipment;
                     }
                 } catch (\Exception $e) {
@@ -414,7 +408,6 @@ class AppController extends Controller {
                     $shipment['error_message'] = $_shipment['error_message'];
                 }
 
-                $request->session()->forget('printing_locked');
                 return $shipment;
 
             });
@@ -598,8 +591,6 @@ class AppController extends Controller {
 
         $print_all_url_params['hmac'] = createShopifyHMAC($print_all_url_params);
         $hmac_print_all_url = http_build_query($print_all_url_params);
-
-        $request->session()->forget('printing_locked');
 
         return view('app.print-labels', [
             'shop' => $shop,
