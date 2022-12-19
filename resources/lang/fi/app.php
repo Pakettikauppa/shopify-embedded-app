@@ -126,7 +126,7 @@ return [
             'all' => 'Kaikki',
             'private_lockers' => 'Yksityiset automaatit',
             'outdoor_lockers' => 'Ulkoautomaatit',
-            'pickup_points' => 'Automaatit',
+            'pickup_points' => 'Noutopiste',
             'agencies' => 'Noutopisteet',
         ],
         'wizard' => [
