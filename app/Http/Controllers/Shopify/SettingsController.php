@@ -25,8 +25,8 @@ class SettingsController extends Controller {
         'all' => null,
         'private_lockers' => 'PRIVATE_LOCKER',
         'outdoor_lockers' => 'OUTDOOR_LOCKER',
-        'pickup_points' => 'PICKUP_POINT',
-        'agencies' => 'AGENCY',
+        'pickup_points' => 'PICKUP_POINT,AGENCY',
+        'parcel_lockers' => 'PARCEL_LOCKER'
     ];
 
     private $shopifyClient;
@@ -55,9 +55,9 @@ class SettingsController extends Controller {
 
     /**
      * Gives ShopifyClient instance if it is created, creates if not. Can be forced to recreate by using $getNew set as true
-     * 
+     *
      * @param bool $getNew true to create new ShopifyClient instance
-     * 
+     *
      * @return \App\Models\Shopify\ShopifyClient
      */
     public function getShopifyClient($getNew = false) {
@@ -79,9 +79,9 @@ class SettingsController extends Controller {
 
     /**
      * Returns Shop object by supplied shopOrigin
-     * 
+     *
      * @param string $shopOrigin
-     * 
+     *
      * @return \App\Models\Shopify\Shop;
      */
     public function getShop($shopOrigin) {
@@ -101,7 +101,7 @@ class SettingsController extends Controller {
 
     /**
      * Buttons / Page title translation endpoint
-     * 
+     *
      * @return \Illuminate\Http\JsonResponse
      */
     public function getButtonsTranslations() {
@@ -128,9 +128,9 @@ class SettingsController extends Controller {
 
     /**
      * Request carrier service from shopify by service ID
-     * 
+     *
      * @param mixed $carrier_service_id
-     * 
+     *
      * @return mixed carrier service from shopify
      */
     private function getCarrierServiceFromShopify($carrier_service_id) {
@@ -153,7 +153,7 @@ class SettingsController extends Controller {
 
     /**
      * Saves carrier service to shopify and return its ID
-     * 
+     *
      * @return mixed carrier service ID or null
      */
     public function saveCarrierServiceToShopify() {
@@ -185,7 +185,7 @@ class SettingsController extends Controller {
 
             // it failed, why? Did carrier service already exists but our db shows that it is not active?
             $carrierServices = $client->call('GET', 'admin', '/carrier_services.json');
-            
+
             if (count($carrierServices) > 0) {
                 // yes, we have a carrier service!
                 foreach ($carrierServices as $_service) {
@@ -221,12 +221,12 @@ class SettingsController extends Controller {
         if ($shop->carrier_service_id != null) {
             $carrier_service = $this->getCarrierServiceFromShopify($shop->carrier_service_id);
         }
-        
+
         if ($shop->carrier_service_id == null || $carrier_service == null) {
             $carrier_service_id = $this->saveCarrierServiceToShopify();
             $shop->saveCarrierServiceId($carrier_service_id);
         }
-        
+
         $pk_client = $this->getPakketikauppaClient($shop);
 
         if ($this->pkUseToken && (!$shop->api_token || $shop->api_token->expires_in < time())){
@@ -416,9 +416,9 @@ class SettingsController extends Controller {
 
     /**
      * Creates pakettikauppa client according to supplied shop settings
-     * 
+     *
      * @param \App\Models\Shopify\Shop $shop
-     * 
+     *
      * @return \Pakettikauppa\Client
      */
     public function getPakketikauppaClient($shop) {
@@ -468,10 +468,10 @@ class SettingsController extends Controller {
 
     /**
      * Calls pakettikauppa api to check if key and secret is valid
-     * 
+     *
      * @param string $api_key
      * @param string $api_secret
-     * 
+     *
      * @return bool true if credentials valid, false otherwise
      */
     public function isApiCredentialsValid($api_key, $api_secret) {
@@ -512,9 +512,9 @@ class SettingsController extends Controller {
 
     /**
      * Gives back test mode message according to its status
-     * 
+     *
      * @param bool $test_mode test mode status
-     * 
+     *
      * @return string test mode message
      */
     private function testModeMessage($test_mode) {
@@ -523,7 +523,7 @@ class SettingsController extends Controller {
 
     /**
      * Sets shop test mode
-     * 
+     *
      * @return \Illuminate\Http\JsonResponse
      */
     public function updateTestMode() {
@@ -550,7 +550,7 @@ class SettingsController extends Controller {
 
     /**
      * Sets shop api key and secret
-     * 
+     *
      * @return \Illuminate\Http\JsonResponse
      */
     public function updateApiSettings() {
@@ -579,9 +579,9 @@ class SettingsController extends Controller {
 
     /**
      * Builds service provider list
-     * 
+     *
      * @param array $products Service providers list from pakettikauppa client
-     * 
+     *
      * @return array product providers array with method code as key and service provider as value
      */
     private function getProductProvidersByCode($products) {
@@ -595,7 +595,7 @@ class SettingsController extends Controller {
 
     /**
      * Save shipping settings
-     * 
+     *
      * @return \Illuminate\Http\JsonResponse
      */
     public function updateShippingSettings() {
@@ -635,7 +635,7 @@ class SettingsController extends Controller {
 
     /**
      * Save locale setting
-     * 
+     *
      * @return \Illuminate\Http\JsonResponse
      */
     public function updateLocale() {
@@ -664,7 +664,7 @@ class SettingsController extends Controller {
 
     /**
      * Updates sender information
-     * 
+     *
      * @return \Illuminate\Http\JsonResponse
      */
     public function updateSender() {
@@ -692,9 +692,9 @@ class SettingsController extends Controller {
 
     /**
      * Sets default values based on posted data
-     * 
+     *
      * @param array $pickuppoints Data from pickup points settings form
-     * 
+     *
      * @return array
      */
     public function prepPickupPointsData($pickuppoints) {
@@ -716,7 +716,7 @@ class SettingsController extends Controller {
 
     /**
      * Updates pickup points settings
-     * 
+     *
      * @return \Illuminate\Http\JsonResponse
      */
     public function updatePickupPoints() {

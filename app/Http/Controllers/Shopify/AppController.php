@@ -67,9 +67,9 @@ class AppController extends Controller {
 
     /**
      * Creates pakettikauppa client with supplied key and secret
-     * 
+     *
      * @param \App\Models\Shopify\Shop $shop
-     * 
+     *
      * @return \Pakettikauppa\Client
      */
     public function getPakketikauppaClient($shop) {
@@ -117,9 +117,9 @@ class AppController extends Controller {
 
     /**
      * Gives ShopifyClient instance if it is created, creates if not. Can be forced to recreate by using $getNew set as true
-     * 
+     *
      * @param bool $getNew true to create new ShopifyClient instance
-     * 
+     *
      * @return \App\Models\Shopify\ShopifyClient
      */
     public function getShopifyClient($getNew = false) {
@@ -162,7 +162,7 @@ class AppController extends Controller {
                 'message_type' => 'error',
                 'type' => $this->type,
                 'title' => trans('app.messages.invalid_credentials'),
-                'message' => trans('app.messages.no_api_set_error', ['settings_url' => route('shopify.settings')]),
+                'message' => trans('app.messages.no_api_set_error', ['settings_url' => route('shopify.settings.api-link')]),
             ]);
         }
 
@@ -228,7 +228,10 @@ class AppController extends Controller {
                 continue;
             }
 
-            $shipment = DB::transaction(function () use ($shop, $order, $is_return, $shipment){
+             $shipment = DB::transaction(function () use ($shop, $order, $is_return, $shipment){
+                $lock_index = (int) hexdec(md5($shop->id . '-' . $order['legacyResourceId'] . '-' . $shop->test_mode));
+                DB::select("pg_try_advisory_xact_lock($lock_index)");
+
                 $done_shipment = ShopifyShipment::lockForUpdate()->where('shop_id', $shop->id)
                         ->where('order_id', $order['legacyResourceId'])
                         ->where('test_mode', $shop->test_mode)
@@ -266,7 +269,7 @@ class AppController extends Controller {
                                     displayFinancialStatus
                                 }
                                 }
-                            }        
+                            }
                             GQL;
                     $response = $this->client->call($query);
 
@@ -357,12 +360,12 @@ class AppController extends Controller {
                 $shipment['status'] = $_shipment['status'];
                 $shipment['tracking_code'] = '';
                 $shipment['tracking_codes'] = [];
-                
+
                 if (isset($_shipment['tracking_code'])) {
-                    if (is_array($_shipment['tracking_code'])) 
+                    if (is_array($_shipment['tracking_code']))
                     {
                         $tracking_codes = $_shipment['tracking_code'];
-                    } 
+                    }
                     else if (strpos($_shipment['tracking_code'], ','))
                     {
                         $tracking_codes = explode(', ', $_shipment['tracking_code']);
@@ -374,7 +377,7 @@ class AppController extends Controller {
                     $shipment['tracking_codes'] = $tracking_codes;
                     $shipment['tracking_code'] = end($shipment['tracking_codes']);
                 }
-                
+
                 if (
                         !empty($this->pk_client->getResponse()->{'response.trackingcode'}['labelcode']) && $shop->create_activation_code === true
                 ) {
@@ -391,7 +394,7 @@ class AppController extends Controller {
                                         id
                                         }
                                     }
-                                }        
+                                }
                                 GQL;
                         $this->client->call($query);
                     } catch (\Exception $e) {
@@ -431,7 +434,7 @@ class AppController extends Controller {
                 $services = [];
                 $filtered_services = [];
                 $has_missing_products = false;
-                
+
                 foreach ($order['line_items'] as $item) {
                     //$variantId = $item['variant_id'];
 
@@ -461,7 +464,7 @@ class AppController extends Controller {
                         if ($item['variant'] === null){
                             $has_missing_products = true;
                             continue;
-                        } 
+                        }
                         $inventoryLevels = $item['variant']['inventoryItem']['inventoryLevels']['edges'];
                         foreach ($inventoryLevels as $_inventory) {
                             //do not look at inventory quantity
@@ -500,7 +503,7 @@ class AppController extends Controller {
                         }
                     }
                 }
-                
+
                 if (!empty($filtered_services)){
                     foreach ($filtered_services as $line_items) {
                         foreach ($line_items as $locationId => $items) {
@@ -519,7 +522,7 @@ class AppController extends Controller {
                                   if ($this->client->callsLeft() > 0 and $this->client->callLimit() == $this->client->callsLeft()) {
                                   sleep(2);
                                   }
-                                 * 
+                                 *
                                  */
                                 $query_params = $this->buildGraphQLInput($fulfillment);
                                 $query = <<<GQL
@@ -533,7 +536,7 @@ class AppController extends Controller {
                                           message
                                         }
                                     }
-                                  }        
+                                  }
                                 GQL;
                                 $result = $this->client->call($query);
                                 /*
@@ -545,7 +548,7 @@ class AppController extends Controller {
                                   'fulfillment' => $fulfillment
                                   ]
                                   );
-                                 * 
+                                 *
                                  */
                                 Log::debug(var_export($result, true));
                             } catch (ShopifyApiException $sae) {
@@ -636,7 +639,7 @@ class AppController extends Controller {
         {
             if(!$item['fulfillment_status'] || $item['fulfillable_quantity'] > 0)
             {
-                $unfulfiled_items[] = $item;       
+                $unfulfiled_items[] = $item;
             }
         }
         $shipping_methods = $this->pk_client->listShippingMethods();
@@ -742,7 +745,7 @@ class AppController extends Controller {
         $shipment_methods_names = [];
         foreach($shipping_methods as $shipment_method)
         {
-            $shipment_methods_names[$shipment_method->shipping_method_code] = $shipment_method->name;   
+            $shipment_methods_names[$shipment_method->shipping_method_code] = $shipment_method->name;
         }
 
         return view('app.list-shipments', [
@@ -756,7 +759,7 @@ class AppController extends Controller {
             'shipment_methods' => $shipment_methods_names
         ]);
     }
-    
+
     private function prepareCustomShipmentProducts($products, $order_id, $ship_products = false){
         $prepared = [];
         $shipment_products = [];
@@ -769,7 +772,7 @@ class AppController extends Controller {
         foreach ($_products as $_product){
             $shipped = array_merge($shipped, $_product->products);
         }
-        
+
         if (isset($products['edges'])){
             $products = $products['edges'];
         }
@@ -817,7 +820,7 @@ class AppController extends Controller {
         }
         return $prepared;
     }
-    
+
     private function countShippedProducts($id, $data){
         $shipped = 0;
         if (empty($data)){
@@ -1048,15 +1051,15 @@ class AppController extends Controller {
         if (is_array($additional_services) && count($additional_services)){
             $order['additional_services'] = $additional_services;
         }
-        
-        
+
+
 
         $order['gid'] = $order['id'];
         $order['id'] = $order['legacyResourceId'];
         $shipment = [];
         $shipment['fulfillment_status'] = !empty($order['fulfillments']) ? $order['fulfillments'][0]['status'] : '';
         $shipment['line_items'] = [];
-        
+
         $fulfil = (bool) request()->get('fulfil');
 
         if($fulfil)
@@ -1078,7 +1081,7 @@ class AppController extends Controller {
                     if($qty_to_fulfil < 1)
                         continue;
 
-                    $node['quantity'] = $qty_to_fulfil; 
+                    $node['quantity'] = $qty_to_fulfil;
                     $shipment['line_items'][] = $node;
                 }
             }
@@ -1089,7 +1092,7 @@ class AppController extends Controller {
                 if ($line_item['node']['requiresShipping']) {
                     $shipment['line_items'][] = $line_item['node'];
                 }
-            }    
+            }
         }
 
         $shipment['id'] = $order['legacyResourceId'];
@@ -1163,7 +1166,7 @@ class AppController extends Controller {
         if($lqweight){
             $order['lqweight'] = $lqweight;
         }
-        
+
         $_shipment = $shop->sendShipment(
                 $this->pk_client,
                 $order,
@@ -1205,14 +1208,14 @@ class AppController extends Controller {
             $services = [];
             $filtered_services = [];
             $has_missing_products = false;
-            
+
             foreach ($shipment['line_items'] as $item) {
                 try {
                     $makeNull = true;
                     if ($item['variant'] === null){
                         $has_missing_products = true;
                         continue;
-                    } 
+                    }
                     $inventoryLevels = $item['variant']['inventoryItem']['inventoryLevels']['edges'];
                     foreach ($inventoryLevels as $_inventory) {
                         //do not look at inventory quantity
@@ -1253,7 +1256,7 @@ class AppController extends Controller {
                     }
                 }
             }
-            
+
             if (!empty($filtered_services)){
                 foreach ($filtered_services as $line_items) {
                     foreach ($line_items as $locationId => $items) {
@@ -1280,7 +1283,7 @@ class AppController extends Controller {
                                       message
                                     }
                                 }
-                              }        
+                              }
                             GQL;
                             $result = $this->client->call($query);
                             Log::debug(var_export($result, true));
@@ -1497,8 +1500,8 @@ class AppController extends Controller {
 
         return (int) round($pickupPointSettings['base_price'] * 100.0);
     }
-    
-    private function buildGraphQLInput($array) {
+
+    private function buildGraphQLInput(array $array) {
         $output_as_array = false;
         $output = '';
         $total = count($array);
@@ -1534,8 +1537,8 @@ class AppController extends Controller {
     private function getGraphId($gid) {
         $data = explode('/', $gid);
         return end($data);
-    }                        
-                            
+    }
+
     public function ajaxLoadAdditionalServices(Request $request) {
         $shop = Shop::where('shop_origin', request()->get('shop')->shop_origin)->first();
         if ($shop == null) {
@@ -1553,6 +1556,15 @@ class AppController extends Controller {
         }
         $client = $this->getPakketikauppaClient($shop);
         $methods = $client->listShippingMethods();
+
+        if(empty($methods))
+        {
+            return response()->json([
+                'data' => 'Could not load any shipping methods.',
+                'status' => 'error',
+            ]);
+        }
+
         foreach ($methods as $method) {
             if ($method->shipping_method_code == $service) {
                 return response()->json([
