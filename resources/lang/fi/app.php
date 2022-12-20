@@ -126,8 +126,9 @@ return [
             'all' => 'Kaikki',
             'private_lockers' => 'Yksityiset automaatit',
             'outdoor_lockers' => 'Ulkoautomaatit',
-            'pickup_points' => 'Automaatit',
+            'pickup_points' => 'Noutopiste',
             'agencies' => 'Noutopisteet',
+            'parcel_lockers' => 'Pakettiautomaatti',
         ],
         'wizard' => [
             'is_new_user' => 'Onko sinulla jo Pakettikaupan API tunnukset?',
