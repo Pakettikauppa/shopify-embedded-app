@@ -723,7 +723,7 @@ class SettingsController extends Controller {
         $shop = request()->get('shop');
 
         $data = array(
-            'pickup_filter' => request()->get('pickup_filter'),
+            'pickup_filter' => json_encode(request()->get('pickup_filter')),
             'pickuppoints_count' => (int) request()->get('pickuppoints_count'),
             'include_discounted_price_in_trigger' => (bool) request()->get('include_discounted_price_in_trigger'),
             'settings' => json_encode($this->prepPickupPointsData(request()->get('pickuppoint'))),

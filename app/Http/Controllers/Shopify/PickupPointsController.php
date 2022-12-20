@@ -138,6 +138,7 @@ class PickupPointsController extends Controller {
             // convert array to string
             $pickupPointProviders = implode(",", $pickupPointProviders);
 
+            $pickupFilterQuery = implode(',', $shop->pickup_filter);
             // search nearest pickup locations
             $pickupPoints = $pk_client->searchPickupPoints(
                     $destination->postal_code,
@@ -145,7 +146,7 @@ class PickupPointsController extends Controller {
                     $destination->country,
                     $pickupPointProviders,
                     $shop->pickuppoints_count,
-                    $shop->pickup_filter
+                    $pickupFilterQuery
             );
 
             if (empty($pickupPoints) && ($destination->country == 'LT' || $destination->country == 'AX' || $destination->country == 'FI')) {
@@ -165,7 +166,7 @@ class PickupPointsController extends Controller {
                         'FI',
                         $pickupPointProviders,
                         $shop->pickuppoints_count,
-                        $shop->pickup_filter
+                        $pickupFilterQuery
                 );
             }
             
