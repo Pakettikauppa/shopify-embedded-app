@@ -228,10 +228,9 @@ class AppController extends Controller {
                 continue;
             }
 
-            $lock_index = (int) hexdec(md5($shop->id . '-' . $order['legacyResourceId'] . '-' . $shop->test_mode));
-            DB::select("pg_try_advisory_xact_lock($lock_index)");
-
-            $shipment = DB::transaction(function () use ($shop, $order, $is_return, $shipment, $request){
+             $shipment = DB::transaction(function () use ($shop, $order, $is_return, $shipment){
+                $lock_index = (int) hexdec(md5($shop->id . '-' . $order['legacyResourceId'] . '-' . $shop->test_mode));
+                DB::select("pg_try_advisory_xact_lock($lock_index)");
 
                 $done_shipment = ShopifyShipment::lockForUpdate()->where('shop_id', $shop->id)
                         ->where('order_id', $order['legacyResourceId'])
