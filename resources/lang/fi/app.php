@@ -128,6 +128,7 @@ return [
             'outdoor_lockers' => 'Ulkoautomaatit',
             'pickup_points' => 'Noutopiste',
             'agencies' => 'Noutopisteet',
+            'parcel_lockers' => 'Pakettiautomaatti',
         ],
         'wizard' => [
             'is_new_user' => 'Onko sinulla jo Pakettikaupan API tunnukset?',

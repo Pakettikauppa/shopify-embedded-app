@@ -26,6 +26,7 @@ class SettingsController extends Controller {
         'private_lockers' => 'PRIVATE_LOCKER',
         'outdoor_lockers' => 'OUTDOOR_LOCKER',
         'pickup_points' => 'PICKUP_POINT,AGENCY',
+        'parcel_lockers' => 'PARCEL_LOCKER'
     ];
 
     private $shopifyClient;

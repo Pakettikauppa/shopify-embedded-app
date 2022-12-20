@@ -139,6 +139,7 @@ return [
             'outdoor_lockers' => 'Outdoor Lockers',
             'pickup_points' => 'Pickup Points',
             'agencies' => 'Agency',
+            'parcel_lockers' => 'Parcel Lockers',
         ],
         'wizard' => [
             'is_new_user' => 'Do you have Pakettikauppa API credentials?',
