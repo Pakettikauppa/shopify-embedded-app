@@ -229,7 +229,7 @@ class AppController extends Controller {
             }
 
              $shipment = DB::transaction(function () use ($shop, $order, $is_return, $shipment){
-                $lock_index = (int) hexdec(md5($shop->id . '-' . $order['legacyResourceId'] . '-' . $shop->test_mode));
+                $lock_index = (int) $order['legacyResourceId'];
                 Log::debug('Using log_index ' . $lock_index);
                 DB::select("select pg_try_advisory_xact_lock($lock_index)");
 
