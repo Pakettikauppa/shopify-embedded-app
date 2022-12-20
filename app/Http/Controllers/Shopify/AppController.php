@@ -898,13 +898,15 @@ class AppController extends Controller {
             }
             $service_id = request()->get('shipping_method');
             // search nearest pickup locations
+
+            $pickupFilterQuery = implode(',', $shop->pickup_filter);
             $pickupPoints = $pk_client->searchPickupPoints(
                     request()->get('zip'),
                     request()->get('address1'),
                     request()->get('country'),
                     $service_id,
                     $shop->pickuppoints_count,
-                    $shop->pickup_filter
+                    $pickupFilterQuery
             );
 
             if (empty($pickupPoints) && (request()->get('country') == 'LT' || request()->get('country') == 'AX' || request()->get('country') == 'FI')) {
@@ -915,7 +917,7 @@ class AppController extends Controller {
                         'FI',
                         $service_id,
                         $shop->pickuppoints_count,
-                        $shop->pickup_filter
+                        $pickupFilterQuery
                 );
             }
             // generate custom carrier service response
