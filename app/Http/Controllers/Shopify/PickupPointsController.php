@@ -138,7 +138,7 @@ class PickupPointsController extends Controller {
             // convert array to string
             $pickupPointProviders = implode(",", $pickupPointProviders);
 
-            $pickupFilterQuery = implode(',', $shop->pickup_filter);
+            $pickupFilterQuery = implode(',', $shop->pickup_filter ?? []);
             // search nearest pickup locations
             $pickupPoints = $pk_client->searchPickupPoints(
                     $destination->postal_code,
