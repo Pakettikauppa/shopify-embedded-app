@@ -15,8 +15,10 @@ use Pakettikauppa\Client;
 use Pakettikauppa\Shipment;
 use Psy\Exception\FatalErrorException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
-use Shopify\Rest\Admin2022_10\FulfillmentOrder;
-use Shopify\Utils;
+use Shopify\Clients\Graphql;
+use Shopify\Context;
+use App\Helpers\ShopifySessionStorage;
+
 //use Log;
 use Storage;
 
@@ -47,6 +49,16 @@ class AppController extends Controller {
         $this->type = config('shopify.type');
         $this->test_mode = config('shopify.test_mode');
         $this->tracking_url = config('shopify.tracking_url');
+        Context::initialize(
+            config('shopify.api_key'),
+            config('shopify.secret'),
+            config('shopify.scope'),
+            config('shopify.app_host_name'),
+            new ShopifySessionStorage(storage_path('shopify/sessions')),
+            '2022-10',
+            true,
+            false,
+    );
     }
 
     /**
@@ -511,6 +523,7 @@ class AppController extends Controller {
                     foreach ($filtered_services as $line_items) {
                         foreach ($line_items as $locationId => $items) {
                             $fulfillment = [
+                                'orderId' => $order['gid'],
                                 'trackingNumbers' => implode(', ', $order['tracking_codes']),
                                 'locationId' => $locationId,
                                 'notifyCustomer' => true,
@@ -520,16 +533,7 @@ class AppController extends Controller {
                             ];
 
                             try {
-                                $shopifySession = Utils::loadCurrentSession(
-                                    $request->headers->all(),
-                                    $request->cookies->all(),
-                                    true
-                                );
-
-                                $fulfillmentOrder = new FulfillmentOrder($shopifySession);
-                                $fulfillmentOrder->id = $order['gid'];
-                                $response = $fulfillmentOrder->open([], $fulfillment);
-                                
+                                $response = $this->fullfillOrderNew($shop, $fulfillment);
                                 Log::debug(var_export($response, true));
                             } catch (ShopifyApiException $sae) {
                                 $exceptionData = array(
@@ -583,8 +587,26 @@ class AppController extends Controller {
         ]);
     }
 
+    private function fullfillOrderNew(Shop $shop, $fulfillment_data) {
+        $client = new Graphql($shop->shop_origin, $shop->api_token->access_token);
+        $query_params = $this->buildGraphQLInput($fulfillment_data);
+        $queryString = <<<QUERY
+            mutation CreateFulfillment {
+                fulfillmentCreateV2( fulfillment: $query_params )
+                {
+                    userErrors {
+                        field
+                        message 
+                    }
+                }
+            }
+            QUERY;
+        $data = $client->query($queryString);
+        return json_decode($data->getBody()->getContents(), true);
+    }
+
     public function fulfillmentProcess(Request $request) {
-        Logg::debug(var_export($request->all()));
+        Log::debug(var_export($request->all()));
     }
 
     public function customShipment(Request $request) {
@@ -1243,6 +1265,7 @@ class AppController extends Controller {
                 foreach ($filtered_services as $line_items) {
                     foreach ($line_items as $locationId => $items) {
                         $fulfillment = [
+                            'orderId' => $order['gid'],
                             'trackingNumbers' => implode(', ', $tracking_codes),
                             'locationId' => $locationId,
                             'notifyCustomer' => true,
@@ -1252,15 +1275,7 @@ class AppController extends Controller {
                         ];
 
                         try {
-                            $shopifySession = Utils::loadCurrentSession(
-                                request()->headers->all(),
-                                request()->cookies->all(),
-                                false
-                            );
-
-                            $fulfillmentOrder = new FulfillmentOrder($shopifySession);
-                            $fulfillmentOrder->id = $order['gid'];
-                            $response = $fulfillmentOrder->open([], $fulfillment);
+                            $response = $this->fullfillOrderNew($shop, $fulfillment);
                             Log::debug(var_export($response, true));
                         } catch (ShopifyApiException $sae) {
                             $exceptionData = array(

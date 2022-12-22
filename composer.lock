@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "4482abdd345d383fe1dc876b047ad23e",
+    "content-hash": "25f57fc0e0795504223042f289f0a4d4",
     "packages": [
         {
             "name": "aws/aws-crt-php",
@@ -968,28 +968,23 @@
         },
         {
             "name": "firebase/php-jwt",
-            "version": "v6.3.2",
+            "version": "v5.5.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/firebase/php-jwt.git",
-                "reference": "ea7dda77098b96e666c5ef382452f94841e439cd"
+                "reference": "83b609028194aa042ea33b5af2d41a7427de80e6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/firebase/php-jwt/zipball/ea7dda77098b96e666c5ef382452f94841e439cd",
-                "reference": "ea7dda77098b96e666c5ef382452f94841e439cd",
+                "url": "https://api.github.com/repos/firebase/php-jwt/zipball/83b609028194aa042ea33b5af2d41a7427de80e6",
+                "reference": "83b609028194aa042ea33b5af2d41a7427de80e6",
                 "shasum": ""
             },
             "require": {
-                "php": "^7.1||^8.0"
+                "php": ">=5.3.0"
             },
             "require-dev": {
-                "guzzlehttp/guzzle": "^6.5||^7.4",
-                "phpspec/prophecy-phpunit": "^1.1",
-                "phpunit/phpunit": "^7.5||^9.5",
-                "psr/cache": "^1.0||^2.0",
-                "psr/http-client": "^1.0",
-                "psr/http-factory": "^1.0"
+                "phpunit/phpunit": ">=4.8 <=9"
             },
             "suggest": {
                 "paragonie/sodium_compat": "Support EdDSA (Ed25519) signatures when libsodium is not present"
@@ -1024,9 +1019,9 @@
             ],
             "support": {
                 "issues": "https://github.com/firebase/php-jwt/issues",
-                "source": "https://github.com/firebase/php-jwt/tree/v6.3.2"
+                "source": "https://github.com/firebase/php-jwt/tree/v5.5.1"
             },
-            "time": "2022-12-19T17:10:46+00:00"
+            "time": "2021-11-08T20:18:51+00:00"
         },
         {
             "name": "fruitcake/php-cors",
@@ -3281,30 +3276,30 @@
         },
         {
             "name": "psr/log",
-            "version": "3.0.0",
+            "version": "1.1.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/php-fig/log.git",
-                "reference": "fe5ea303b0887d5caefd3d431c3e61ad47037001"
+                "reference": "d49695b909c3b7628b6289db5479a1c204601f11"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/php-fig/log/zipball/fe5ea303b0887d5caefd3d431c3e61ad47037001",
-                "reference": "fe5ea303b0887d5caefd3d431c3e61ad47037001",
+                "url": "https://api.github.com/repos/php-fig/log/zipball/d49695b909c3b7628b6289db5479a1c204601f11",
+                "reference": "d49695b909c3b7628b6289db5479a1c204601f11",
                 "shasum": ""
             },
             "require": {
-                "php": ">=8.0.0"
+                "php": ">=5.3.0"
             },
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "3.x-dev"
+                    "dev-master": "1.1.x-dev"
                 }
             },
             "autoload": {
                 "psr-4": {
-                    "Psr\\Log\\": "src"
+                    "Psr\\Log\\": "Psr/Log/"
                 }
             },
             "notification-url": "https://packagist.org/downloads/",
@@ -3325,9 +3320,9 @@
                 "psr-3"
             ],
             "support": {
-                "source": "https://github.com/php-fig/log/tree/3.0.0"
+                "source": "https://github.com/php-fig/log/tree/1.1.4"
             },
-            "time": "2021-07-14T16:46:02+00:00"
+            "time": "2021-05-03T11:20:27+00:00"
         },
         {
             "name": "psr/simple-cache",
@@ -3673,26 +3668,24 @@
         },
         {
             "name": "shopify/shopify-api",
-            "version": "v4.1.1",
+            "version": "v1.0.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Shopify/shopify-api-php.git",
-                "reference": "906ad402c58a8cba0527d35bf6faaba421692d34"
+                "reference": "a5238ef6b15e457d6a8c581940f6c74474914041"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Shopify/shopify-api-php/zipball/906ad402c58a8cba0527d35bf6faaba421692d34",
-                "reference": "906ad402c58a8cba0527d35bf6faaba421692d34",
+                "url": "https://api.github.com/repos/Shopify/shopify-api-php/zipball/a5238ef6b15e457d6a8c581940f6c74474914041",
+                "reference": "a5238ef6b15e457d6a8c581940f6c74474914041",
                 "shasum": ""
             },
             "require": {
-                "doctrine/inflector": "^2.0",
-                "ext-json": "*",
-                "firebase/php-jwt": "^5.2 || ^6.2",
+                "firebase/php-jwt": "^5.2",
                 "guzzlehttp/guzzle": "^7.0",
-                "php": "^7.4 || ^8.0 || ^8.1",
+                "php": "^7.3 || ^8.0",
                 "psr/http-client": "^1.0",
-                "psr/log": "^1.1 || ^2.0 || ^3.0",
+                "psr/log": "^1.1",
                 "ramsey/uuid": "^4.1"
             },
             "require-dev": {
@@ -3730,9 +3723,9 @@
             ],
             "support": {
                 "issues": "https://github.com/Shopify/shopify-api-php/issues",
-                "source": "https://github.com/Shopify/shopify-api-php/tree/v4.1.1"
+                "source": "https://github.com/Shopify/shopify-api-php/tree/v1.0.1"
             },
-            "time": "2022-11-07T16:06:05+00:00"
+            "time": "2021-11-30T16:25:06+00:00"
         },
         {
             "name": "symfony/console",
