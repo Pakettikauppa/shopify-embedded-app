@@ -15,6 +15,8 @@ use Pakettikauppa\Client;
 use Pakettikauppa\Shipment;
 use Psy\Exception\FatalErrorException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Shopify\Rest\Admin2022_10\FulfillmentOrder;
+use Shopify\Utils;
 //use Log;
 use Storage;
 
@@ -509,7 +511,6 @@ class AppController extends Controller {
                     foreach ($filtered_services as $line_items) {
                         foreach ($line_items as $locationId => $items) {
                             $fulfillment = [
-                                'orderId' => $order['gid'],
                                 'trackingNumbers' => implode(', ', $order['tracking_codes']),
                                 'locationId' => $locationId,
                                 'notifyCustomer' => true,
@@ -519,39 +520,17 @@ class AppController extends Controller {
                             ];
 
                             try {
-                                /*
-                                  if ($this->client->callsLeft() > 0 and $this->client->callLimit() == $this->client->callsLeft()) {
-                                  sleep(2);
-                                  }
-                                 *
-                                 */
-                                $query_params = $this->buildGraphQLInput($fulfillment);
-                                $query = <<<GQL
-                                mutation CreateFulfillment {
-                                    fulfillmentCreate(
-                                      input: $query_params
-                                    )
-                                    {
-                                        userErrors {
-                                          field
-                                          message
-                                        }
-                                    }
-                                  }
-                                GQL;
-                                $result = $this->client->call($query);
-                                /*
-                                  $result = $this->client->call(
-                                  'POST',
-                                  'admin',
-                                  '/orders/' . $order['id'] . '/fulfillments.json',
-                                  [
-                                  'fulfillment' => $fulfillment
-                                  ]
-                                  );
-                                 *
-                                 */
-                                Log::debug(var_export($result, true));
+                                $shopifySession = Utils::loadCurrentSession(
+                                    $request->headers->all(),
+                                    $request->cookies->all(),
+                                    true
+                                );
+
+                                $fulfillmentOrder = new FulfillmentOrder($shopifySession);
+                                $fulfillmentOrder->id = $order['gid'];
+                                $response = $fulfillmentOrder->open([], $fulfillment);
+                                
+                                Log::debug(var_export($response, true));
                             } catch (ShopifyApiException $sae) {
                                 $exceptionData = array(
                                     var_export($sae->getMethod(), true),
@@ -1264,7 +1243,6 @@ class AppController extends Controller {
                 foreach ($filtered_services as $line_items) {
                     foreach ($line_items as $locationId => $items) {
                         $fulfillment = [
-                            'orderId' => $order['gid'],
                             'trackingNumbers' => implode(', ', $tracking_codes),
                             'locationId' => $locationId,
                             'notifyCustomer' => true,
@@ -1274,22 +1252,16 @@ class AppController extends Controller {
                         ];
 
                         try {
-                            $query_params = $this->buildGraphQLInput($fulfillment);
-                            $query = <<<GQL
-                            mutation CreateFulfillment {
-                                fulfillmentCreate(
-                                  input: $query_params
-                                )
-                                {
-                                    userErrors {
-                                      field
-                                      message
-                                    }
-                                }
-                              }
-                            GQL;
-                            $result = $this->client->call($query);
-                            Log::debug(var_export($result, true));
+                            $shopifySession = Utils::loadCurrentSession(
+                                request()->headers->all(),
+                                request()->cookies->all(),
+                                false
+                            );
+
+                            $fulfillmentOrder = new FulfillmentOrder($shopifySession);
+                            $fulfillmentOrder->id = $order['gid'];
+                            $response = $fulfillmentOrder->open([], $fulfillment);
+                            Log::debug(var_export($response, true));
                         } catch (ShopifyApiException $sae) {
                             $exceptionData = array(
                                 var_export($sae->getMethod(), true),

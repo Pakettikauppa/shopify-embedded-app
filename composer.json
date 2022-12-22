@@ -15,7 +15,8 @@
         "laravel/tinker": "^2.0",
         "league/flysystem-aws-s3-v3": "^3.0",
         "pakettikauppa/api-library": "^2.0",
-        "predis/predis": "^1.1"
+        "predis/predis": "^1.1",
+        "shopify/shopify-api": "^4.1"
     },
     "require-dev": {
         "spatie/laravel-ignition": "^1.0",
