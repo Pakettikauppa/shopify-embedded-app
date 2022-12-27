@@ -899,7 +899,7 @@ class AppController extends Controller {
             $service_id = request()->get('shipping_method');
             // search nearest pickup locations
 
-            $pickupFilterQuery = implode(',', $shop->pickup_filter);
+            $pickupFilterQuery = !empty($shop->pickup_filter) ? implode(',', $shop->pickup_filter) : null;
             $pickupPoints = $pk_client->searchPickupPoints(
                     request()->get('zip'),
                     request()->get('address1'),
