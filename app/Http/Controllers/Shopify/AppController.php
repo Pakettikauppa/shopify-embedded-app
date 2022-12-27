@@ -124,9 +124,15 @@ class AppController extends Controller {
                     'secret' => $shop->api_secret,
                 ];
             }
+            $client = new Client($config);
+            $token = $client->getToken();
+            if (isset($token->access_token)) {
+                $token->expires_in += time();
+                $shop->api_token = json_encode($token);
+                $shop->save();
+            }
+            return $client;
         }
-
-        return new Client($config);
     }
 
     /**
