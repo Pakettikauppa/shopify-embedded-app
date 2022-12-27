@@ -17,7 +17,7 @@
                     <select name="pickup_filter[]" multiple>
                         <option value="">—</option>
                         @foreach($pickup_filter_types as $key => $value)
-                            <option value="{{ $value }}" @if(in_array($value, $shop->pickup_filter ?? [])) selected @endif>
+                            <option value="{{ $value }}" @if(in_array($value, $shop->pickup_filter) || (is_null($value) && empty($shop->pickup_filter))) selected @endif>
                                 {{ trans("app.settings.pickuppoints.$key") }}
                             </option>
                         @endforeach

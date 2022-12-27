@@ -251,6 +251,8 @@ class Shop extends Model
 
     public function getPickupFilterAttribute($value)
     {
+        if(!$value)
+            return [];
         return json_decode($value);
     }
 
