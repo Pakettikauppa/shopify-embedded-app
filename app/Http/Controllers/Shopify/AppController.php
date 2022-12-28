@@ -588,7 +588,7 @@ class AppController extends Controller {
     }
 
     private function fullfillOrderNew(Shop $shop, $fulfillment_data) {
-        $client = new Graphql($shop->shop_origin, $shop->api_token->access_token);
+        $client = new Graphql($shop->shop_origin, $shop->token);
         $query_params = $this->buildGraphQLInput($fulfillment_data);
         $queryString = <<<QUERY
             mutation CreateFulfillment {
