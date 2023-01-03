@@ -522,14 +522,11 @@ class AppController extends Controller {
                 if (!empty($filtered_services)){
                     foreach ($filtered_services as $line_items) {
                         foreach ($line_items as $locationId => $items) {
+
                             $fulfillment = [
-                                'orderId' => $order['gid'],
-                                'trackingNumbers' => implode(', ', $order['tracking_codes']),
-                                'locationId' => $locationId,
-                                'notifyCustomer' => true,
-                                'trackingCompany' => trans('app.settings.company_name_' . $this->type),
-                                'trackingUrls' => $this->tracking_url . end($order['tracking_codes']),
-                                'lineItems' => $items,
+                                'lineItemsByFulfillmentOrder' => [
+                                    'fulfillmentOrderId'=> $order['gid'],
+                                ]
                             ];
 
                             try {
@@ -1264,14 +1261,11 @@ class AppController extends Controller {
             if (!empty($filtered_services)){
                 foreach ($filtered_services as $line_items) {
                     foreach ($line_items as $locationId => $items) {
+
                         $fulfillment = [
-                            'orderId' => $order['gid'],
-                            'trackingNumbers' => implode(', ', $tracking_codes),
-                            'locationId' => $locationId,
-                            'notifyCustomer' => true,
-                            'trackingCompany' => trans('app.settings.company_name_' . $this->type),
-                            'trackingUrls' => $this->tracking_url . end($tracking_codes),
-                            'lineItems' => $items,
+                            'lineItemsByFulfillmentOrder' => [
+                                'fulfillmentOrderId'=> $order['gid'],
+                            ]
                         ];
 
                         try {
