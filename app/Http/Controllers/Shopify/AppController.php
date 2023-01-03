@@ -525,7 +525,7 @@ class AppController extends Controller {
 
                             $fulfillment = [
                                 'lineItemsByFulfillmentOrder' => [
-                                    'fulfillmentOrderId'=> $order['gid'],
+                                    'fulfillmentOrderId'=> $order['id'],
                                 ]
                             ];
 
@@ -1264,7 +1264,7 @@ class AppController extends Controller {
 
                         $fulfillment = [
                             'lineItemsByFulfillmentOrder' => [
-                                'fulfillmentOrderId'=> $order['gid'],
+                                'fulfillmentOrderId'=> $order['id'],
                             ]
                         ];
 
