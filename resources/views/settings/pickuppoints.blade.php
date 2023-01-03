@@ -94,10 +94,10 @@
                     <span class="append">{{trans('app.settings.pickuppoints.limit_pickup_points_by_weight')}}</span>
                     <select name="weight_limit">
                         <option value="1" @if($shop->weight_limit == 1) selected @endif>
-                            {{trans('app.settings.wizard.yes')}}
+                            {{trans('app.settings.pickuppoints.yes')}}
                         </option>
                         <option value="0" @if($shop->weight_limit == 0) selected @endif>
-                            {{trans('app.settings.wizard.no')}}
+                            {{trans('app.settings.pickuppoints.no')}}
                         </option>
                     </select>
                 </div>
