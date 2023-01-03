@@ -140,6 +140,9 @@ return [
             'pickup_points' => 'Pickup Points',
             'agencies' => 'Agency',
             'parcel_lockers' => 'Parcel Lockers',
+            'limit_pickup_points_by_weight' => 'Limit pickup points by weight?',
+            'yes' => 'Yes',
+            'no' => 'No',
         ],
         'wizard' => [
             'is_new_user' => 'Do you have Pakettikauppa API credentials?',
@@ -147,7 +150,6 @@ return [
             'sign_contract' => 'Sign the contract',
             'enter_api_credentials' => 'Enter API credentials',
             'sign_contract_now' => 'Sign contract now',
-            'yes' => 'Yes',
             'no_new' => 'No, I\'m a new user',
             'back_to_settings' => 'Back to settings',
             'next' => 'Next',

@@ -593,7 +593,7 @@ class AppController extends Controller {
                 {
                     userErrors {
                         field
-                        message 
+                        message
                     }
                 }
             }
@@ -888,7 +888,7 @@ class AppController extends Controller {
             $totalWeightInGrams = $order['total_weight'];
             Log::debug('TotalWeight: ' . $totalWeightInGrams);
             //if weight is more than 35kg, do not return
-            if ($totalWeightInGrams > 35000) {
+            if ($shop->weight_limit && $totalWeightInGrams > 35000) {
                 $json = json_encode(['rates' => $rates]);
                 Log::debug($json);
                 echo $json;
