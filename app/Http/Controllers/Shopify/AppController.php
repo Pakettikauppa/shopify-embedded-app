@@ -1204,7 +1204,7 @@ class AppController extends Controller {
         }
 
         if ($fulfil) {
-            Log::debug("Fullfilling order: " . implode(', ', $tracking_codes) . " - {$shipment['gid']}");
+            Log::debug("Fullfilling order: " . implode(', ', $tracking_codes) . " - {$order['gid']}");
 
             $services = [];
             $filtered_services = [];
@@ -1264,7 +1264,7 @@ class AppController extends Controller {
 
                         $fulfillment = [
                             'lineItemsByFulfillmentOrder' => [
-                                'fulfillmentOrderId'=> $shipment['gid'],
+                                'fulfillmentOrderId'=> $order['gid'],
                             ]
                         ];
 
@@ -1292,7 +1292,7 @@ class AppController extends Controller {
             } else {
                 $shipment['status'] = 'not_in_inventory';
             }
-            Log::debug("Fullfilled order: {$order['id']}");
+            Log::debug("Fullfilled order: {$order['gid']}");
         }
 
         return response()->json([
