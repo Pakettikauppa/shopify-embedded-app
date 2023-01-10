@@ -529,6 +529,7 @@ class AppController extends Controller {
                                 ]
                             ];
 
+                            Log::debug(json_encode($fullfilment));
                             try {
                                 $response = $this->fullfillOrderNew($shop, $fulfillment);
                                 Log::debug(var_export($response, true));
@@ -598,6 +599,7 @@ class AppController extends Controller {
                 }
             }
             QUERY;
+        Log::debug($queryString);
         $data = $client->query($queryString);
         return json_decode($data->getBody()->getContents(), true);
     }
