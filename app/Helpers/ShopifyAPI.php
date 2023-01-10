@@ -56,7 +56,7 @@ class ShopifyAPI
             QUERY;
         Log::debug($queryString);
         $data = $this->client->query($queryString);
-        Log::debug($data);
+        Log::debug($data->getBody()->getContents());
         return json_decode($data->getBody()->getContents(), true);
     }
 
