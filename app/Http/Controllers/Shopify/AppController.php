@@ -18,6 +18,7 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Shopify\Clients\Graphql;
 use Shopify\Context;
 use App\Helpers\ShopifySessionStorage;
+use App\Helpers\ShopifyAPI;
 
 //use Log;
 use Storage;
@@ -521,32 +522,7 @@ class AppController extends Controller {
 
                 if (!empty($filtered_services)){
                     foreach ($filtered_services as $line_items) {
-                        foreach ($line_items as $locationId => $items) {
-
-                            $fulfillment = [
-                                'lineItemsByFulfillmentOrder' => [
-                                    'fulfillmentOrderId'=> $order['gid'],
-                                ]
-                            ];
-
-                            Log::debug(json_encode($fullfilment));
-                            try {
-                                $response = $this->fullfillOrderNew($shop, $fulfillment);
-                                Log::debug(var_export($response, true));
-                            } catch (ShopifyApiException $sae) {
-                                $exceptionData = array(
-                                    var_export($sae->getMethod(), true),
-                                    var_export($sae->getPath(), true),
-                                    var_export($sae->getParams(), true),
-                                    var_export($sae->getResponseHeaders(), true),
-                                    var_export($sae->getResponse(), true)
-                                );
-
-                                Log::debug('ShopiApiException: ' . var_export($exceptionData, true));
-                            } catch (\Exception $e) {
-                                Log::debug('Fullfillment Exception: ' . $e->getMessage() . ' on line ' . $e->getLine());
-                            }
-                        }
+                        $this->fulfillLineItems($shop, $order['id']);
                     }
                 } else if ($has_missing_products){
                     $shipments[$orderKey]['status'] = 'product_deleted';
@@ -583,25 +559,6 @@ class AppController extends Controller {
             'tracking_url' => $this->tracking_url,
             'type' => $this->type
         ]);
-    }
-
-    private function fullfillOrderNew(Shop $shop, $fulfillment_data) {
-        $client = new Graphql($shop->shop_origin, $shop->token);
-        $query_params = $this->buildGraphQLInput($fulfillment_data);
-        $queryString = <<<QUERY
-            mutation CreateFulfillment {
-                fulfillmentCreateV2( fulfillment: $query_params )
-                {
-                    userErrors {
-                        field
-                        message
-                    }
-                }
-            }
-            QUERY;
-        Log::debug($queryString);
-        $data = $client->query($queryString);
-        return json_decode($data->getBody()->getContents(), true);
     }
 
     public function fulfillmentProcess(Request $request) {
@@ -1262,32 +1219,7 @@ class AppController extends Controller {
 
             if (!empty($filtered_services)){
                 foreach ($filtered_services as $line_items) {
-                    foreach ($line_items as $locationId => $items) {
-
-                        $fulfillment = [
-                            'lineItemsByFulfillmentOrder' => [
-                                'fulfillmentOrderId'=> $order['gid'],
-                            ]
-                        ];
-
-                        Log::debug(json_encode($fulfillment));
-                        try {
-                            $response = $this->fullfillOrderNew($shop, $fulfillment);
-                            Log::debug(var_export($response, true));
-                        } catch (ShopifyApiException $sae) {
-                            $exceptionData = array(
-                                var_export($sae->getMethod(), true),
-                                var_export($sae->getPath(), true),
-                                var_export($sae->getParams(), true),
-                                var_export($sae->getResponseHeaders(), true),
-                                var_export($sae->getResponse(), true)
-                            );
-
-                            Log::debug('ShopiApiException: ' . var_export($exceptionData, true));
-                        } catch (\Exception $e) {
-                            Log::debug('Fullfillment Exception: ' . $e->getMessage() . ' on line ' . $e->getLine());
-                        }
-                    }
+                    $this->fulfillLineItems($shop, $order['id']);
                 }
             } else if ($has_missing_products){
                 $shipment['status'] = 'product_deleted';
@@ -1310,6 +1242,39 @@ class AppController extends Controller {
                         'type' => $this->type
                     ])->toHtml()
         ]);
+    }
+
+    private function fulfillLineItems($shop, $id_order) {
+        $shopifyApi = new ShopifyAPI($shop); 
+        $response = $shopifyApi->getFulfillmentOrder($id_order);
+        foreach ($response['data']['order']['fulfillmentOrders']['edges'] as $edge) {
+            if (!isset($edge['node']['id'])) {
+                continue;
+            }
+
+            $fulfillment = [
+                'lineItemsByFulfillmentOrder' => [
+                    'fulfillmentOrderId'=> $edge['node']['id']
+                ]
+            ];
+
+            try {
+                $response = $shopifyApi->fullfillOrderNew($fulfillment);
+                Log::debug(var_export($response, true));
+            } catch (ShopifyApiException $sae) {
+                $exceptionData = array(
+                    var_export($sae->getMethod(), true),
+                    var_export($sae->getPath(), true),
+                    var_export($sae->getParams(), true),
+                    var_export($sae->getResponseHeaders(), true),
+                    var_export($sae->getResponse(), true)
+                );
+
+                Log::debug('ShopiApiException: ' . var_export($exceptionData, true));
+            } catch (\Exception $e) {
+                Log::debug('Fullfillment Exception: ' . $e->getMessage() . ' on line ' . $e->getLine());
+            }
+        }
     }
 
     public function latestNews() {
@@ -1486,39 +1451,6 @@ class AppController extends Controller {
         }
 
         return (int) round($pickupPointSettings['base_price'] * 100.0);
-    }
-
-    private function buildGraphQLInput(array $array) {
-        $output_as_array = false;
-        $output = '';
-        $total = count($array);
-        $counter = 0;
-        foreach ($array as $key => $value) {
-            $counter++;
-            if (is_array($value)) {
-                if (is_int($key) ){
-                    $output_as_array = true;
-                    $output .= $this->buildGraphQLInput($value);
-                } else {
-                    $output .= $key . ': ' . $this->buildGraphQLInput($value);
-                }
-            } else {
-                if (gettype($value) == "integer"){
-                    $output .= $key . ': ' . $value . '';
-                } else if (gettype($value) == "boolean"){
-                    $output .= $key . ': ' . ($value?'true':'false') . '';
-                } else {
-                    $output .= $key . ': "' . $value . '"';
-                }
-            }
-            if ($counter != $total) {
-                $output .= ', ';
-            }
-        }
-        if ($output_as_array){
-            return '[' . $output . ']';
-        }
-        return '{' . $output . '}';
     }
 
     private function getGraphId($gid) {
