@@ -56,8 +56,9 @@ class ShopifyAPI
             QUERY;
         Log::debug($queryString);
         $data = $this->client->query($queryString);
-        Log::debug($data->getBody()->getContents());
-        return json_decode($data->getBody()->getContents(), true);
+        $response = $data->getBody()->getContents();
+        Log::debug($response);
+        return json_decode($response, true);
     }
 
     private static function buildGraphQLInput(array $array) {
