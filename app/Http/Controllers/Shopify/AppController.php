@@ -216,7 +216,7 @@ class AppController extends Controller {
             $order = $orderNode['node'];
             //assign to id in case somewhere not changed
             $order['gid'] = $order['id'];
-            $order['id'] = $order['legacyResourceId'];
+            $order['id'] = $order['id'] ?? $order['legacyResourceId'];
             $shipment = [];
             $shipment['fulfillment_status'] = !empty($order['fulfillments']) ? $order['fulfillments'][0]['status'] : '';
             $shipment['line_items'] = [];
@@ -525,7 +525,7 @@ class AppController extends Controller {
 
                             $fulfillment = [
                                 'lineItemsByFulfillmentOrder' => [
-                                    'fulfillmentOrderId'=> $order['gid'],
+                                    'fulfillmentOrderId'=> $order['id'],
                                 ]
                             ];
 
@@ -1056,7 +1056,7 @@ class AppController extends Controller {
 
 
         $order['gid'] = $order['id'];
-        $order['id'] = $order['legacyResourceId'];
+        $order['id'] = $order['id'] ?? $order['legacyResourceId'];
         $shipment = [];
         $shipment['fulfillment_status'] = !empty($order['fulfillments']) ? $order['fulfillments'][0]['status'] : '';
         $shipment['line_items'] = [];
@@ -1264,7 +1264,7 @@ class AppController extends Controller {
 
                         $fulfillment = [
                             'lineItemsByFulfillmentOrder' => [
-                                'fulfillmentOrderId'=> $order['gid'],
+                                'fulfillmentOrderId'=> $order['id'],
                             ]
                         ];
 
