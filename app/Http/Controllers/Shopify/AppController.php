@@ -216,7 +216,7 @@ class AppController extends Controller {
             $order = $orderNode['node'];
             //assign to id in case somewhere not changed
             $order['gid'] = $order['id'];
-            $order['id'] = $order['legacyResourceId'];
+            $order['id'] = $order['id'] ?? $order['legacyResourceId'];
             $shipment = [];
             $shipment['fulfillment_status'] = !empty($order['fulfillments']) ? $order['fulfillments'][0]['status'] : '';
             $shipment['line_items'] = [];
@@ -245,7 +245,7 @@ class AppController extends Controller {
              $shipment = DB::transaction(function () use ($shop, $order, $is_return, $shipment){
                 $lock_index = (int) $order['legacyResourceId'];
                 Log::debug('Using log_index ' . $lock_index);
-                DB::select("select pg_try_advisory_xact_lock($lock_index)");
+                DB::select("select pg_advisory_xact_lock($lock_index)");
 
                 $done_shipment = ShopifyShipment::lockForUpdate()->where('shop_id', $shop->id)
                         ->where('order_id', $order['legacyResourceId'])
@@ -525,7 +525,7 @@ class AppController extends Controller {
 
                             $fulfillment = [
                                 'lineItemsByFulfillmentOrder' => [
-                                    'fulfillmentOrderId'=> $order['gid'],
+                                    'fulfillmentOrderId'=> $order['id'],
                                 ]
                             ];
 
@@ -593,7 +593,7 @@ class AppController extends Controller {
                 {
                     userErrors {
                         field
-                        message 
+                        message
                     }
                 }
             }
@@ -888,7 +888,7 @@ class AppController extends Controller {
             $totalWeightInGrams = $order['total_weight'];
             Log::debug('TotalWeight: ' . $totalWeightInGrams);
             //if weight is more than 35kg, do not return
-            if ($totalWeightInGrams > 35000) {
+            if ($shop->weight_limit && $totalWeightInGrams > 35000) {
                 $json = json_encode(['rates' => $rates]);
                 Log::debug($json);
                 echo $json;
@@ -1056,7 +1056,7 @@ class AppController extends Controller {
 
 
         $order['gid'] = $order['id'];
-        $order['id'] = $order['legacyResourceId'];
+        $order['id'] = $order['id'] ?? $order['legacyResourceId'];
         $shipment = [];
         $shipment['fulfillment_status'] = !empty($order['fulfillments']) ? $order['fulfillments'][0]['status'] : '';
         $shipment['line_items'] = [];
@@ -1264,7 +1264,7 @@ class AppController extends Controller {
 
                         $fulfillment = [
                             'lineItemsByFulfillmentOrder' => [
-                                'fulfillmentOrderId'=> $order['gid'],
+                                'fulfillmentOrderId'=> $order['id'],
                             ]
                         ];
 
