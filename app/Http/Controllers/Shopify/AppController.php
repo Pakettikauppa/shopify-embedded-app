@@ -216,7 +216,7 @@ class AppController extends Controller {
             $order = $orderNode['node'];
             //assign to id in case somewhere not changed
             $order['gid'] = $order['id'];
-            $order['id'] = $order['id'] ?? $order['legacyResourceId'];
+            $order['id'] = $order['legacyResourceId'];
             $shipment = [];
             $shipment['fulfillment_status'] = !empty($order['fulfillments']) ? $order['fulfillments'][0]['status'] : '';
             $shipment['line_items'] = [];
@@ -437,7 +437,7 @@ class AppController extends Controller {
                     continue;
                 }
 
-                Log::debug("Fullfilling order: " . implode(', ', $order['tracking_codes']) . " - {$order['id']}");
+                Log::debug("Fullfilling order: " . implode(', ', $order['tracking_codes']) . " - {$order['gid']}");
 
                 if ($order['fulfillment_status'] == 'fulfilled') {
                     continue;
@@ -525,7 +525,7 @@ class AppController extends Controller {
 
                             $fulfillment = [
                                 'lineItemsByFulfillmentOrder' => [
-                                    'fulfillmentOrderId'=> $order['id'],
+                                    'fulfillmentOrderId'=> $order['gid'],
                                 ]
                             ];
 
@@ -1056,7 +1056,7 @@ class AppController extends Controller {
 
 
         $order['gid'] = $order['id'];
-        $order['id'] = $order['id'] ?? $order['legacyResourceId'];
+        $order['id'] = $order['legacyResourceId'];
         $shipment = [];
         $shipment['fulfillment_status'] = !empty($order['fulfillments']) ? $order['fulfillments'][0]['status'] : '';
         $shipment['line_items'] = [];
@@ -1204,7 +1204,7 @@ class AppController extends Controller {
         }
 
         if ($fulfil) {
-            Log::debug("Fullfilling order: " . implode(', ', $tracking_codes) . " - {$order['id']}");
+            Log::debug("Fullfilling order: " . implode(', ', $tracking_codes) . " - {$order['gid']}");
 
             $services = [];
             $filtered_services = [];
@@ -1264,10 +1264,11 @@ class AppController extends Controller {
 
                         $fulfillment = [
                             'lineItemsByFulfillmentOrder' => [
-                                'fulfillmentOrderId'=> $order['id'],
+                                'fulfillmentOrderId'=> $order['gid'],
                             ]
                         ];
 
+                        Log::debug(json_encode($fullfilment));
                         try {
                             $response = $this->fullfillOrderNew($shop, $fulfillment);
                             Log::debug(var_export($response, true));
@@ -1291,7 +1292,7 @@ class AppController extends Controller {
             } else {
                 $shipment['status'] = 'not_in_inventory';
             }
-            Log::debug("Fullfilled order: {$order['id']}");
+            Log::debug("Fullfilled order: {$order['gid']}");
         }
 
         return response()->json([
