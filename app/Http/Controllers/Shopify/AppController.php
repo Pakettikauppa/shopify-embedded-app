@@ -1270,7 +1270,7 @@ class AppController extends Controller {
                             ]
                         ];
 
-                        Log::debug(json_encode($fullfilment));
+                        Log::debug(json_encode($fulfillment));
                         try {
                             $response = $this->fullfillOrderNew($shop, $fulfillment);
                             Log::debug(var_export($response, true));
