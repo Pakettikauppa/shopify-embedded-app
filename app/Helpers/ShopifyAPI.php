@@ -4,6 +4,7 @@ namespace App\Helpers;
 
 use Shopify\Clients\Graphql;
 use App\Models\Shopify\Shop;
+use Log;
 
 class ShopifyAPI
 {
@@ -53,7 +54,9 @@ class ShopifyAPI
                     }
               }
             QUERY;
+        Log::debug($queryString);
         $data = $this->client->query($queryString);
+        Log::debug($data);
         return json_decode($data->getBody()->getContents(), true);
     }
 
