@@ -1254,13 +1254,13 @@ class AppController extends Controller {
 
             $fulfillment = [
                 'lineItemsByFulfillmentOrder' => [
-                    'trackingCompany'=> trans('app.settings.company_name_' . $this->type),
-                    'trackingInfo' => [
-                        'trackingNumbers' => implode(', ', $order['tracking_codes']),
-                        'trackingUrls' => $this->tracking_url . end($order['tracking_codes']),
-                    ],
                     'fulfillmentOrderId'=> $edge['node']['id'],
-                ]
+                ],
+                'trackingInfo' => [
+                    'company' => trans('app.settings.company_name_' . $this->type),
+                    'numbers' => implode(', ', $order['tracking_codes']),
+                    'urls' => $this->tracking_url . end($order['tracking_codes']),
+                ],
             ];
 
             try {
