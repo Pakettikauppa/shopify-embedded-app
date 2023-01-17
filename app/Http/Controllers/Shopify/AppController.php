@@ -522,7 +522,7 @@ class AppController extends Controller {
 
                 if (!empty($filtered_services)){
                     foreach ($filtered_services as $line_items) {
-                        $this->fulfillLineItems($shop, $order['id']);
+                        $this->fulfillLineItems($shop, $order);
                     }
                 } else if ($has_missing_products){
                     $shipments[$orderKey]['status'] = 'product_deleted';
@@ -1219,7 +1219,7 @@ class AppController extends Controller {
 
             if (!empty($filtered_services)){
                 foreach ($filtered_services as $line_items) {
-                    $this->fulfillLineItems($shop, $order['id']);
+                    $this->fulfillLineItems($shop, $order);
                 }
             } else if ($has_missing_products){
                 $shipment['status'] = 'product_deleted';
@@ -1244,9 +1244,9 @@ class AppController extends Controller {
         ]);
     }
 
-    private function fulfillLineItems($shop, $id_order) {
+    private function fulfillLineItems($shop, $order) {
         $shopifyApi = new ShopifyAPI($shop); 
-        $response = $shopifyApi->getFulfillmentOrder($id_order);
+        $response = $shopifyApi->getFulfillmentOrder($order['id']);
         foreach ($response['data']['order']['fulfillmentOrders']['edges'] as $edge) {
             if (!isset($edge['node']['id'])) {
                 continue;
@@ -1254,7 +1254,12 @@ class AppController extends Controller {
 
             $fulfillment = [
                 'lineItemsByFulfillmentOrder' => [
-                    'fulfillmentOrderId'=> $edge['node']['id']
+                    'trackingCompany'=> trans('app.settings.company_name_' . $this->type),
+                    'trackingInfo' => [
+                        'trackingNumbers' => implode(', ', $order['tracking_codes']),
+                        'trackingUrls' => $this->tracking_url . end($order['tracking_codes']),
+                    ],
+                    'fulfillmentOrderId'=> $edge['node']['id'],
                 ]
             ];
 
