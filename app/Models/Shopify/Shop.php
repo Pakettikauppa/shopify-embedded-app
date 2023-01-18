@@ -124,6 +124,10 @@ class Shop extends Model
             $parcel->setVolume(number_format(($order['totalWeight'] * 0.000001) / $parcel_total_count, 6)); // m3
             $parcel->setContents('');
 
+            if($this->info_code){
+                $parcel->setInfocode($this->info_code);
+            }
+
             foreach ($contents as $item) {
                 $contentLine = new Shipment\ContentLine();
                 $contentLine->currency = 'EUR';
@@ -261,11 +265,11 @@ class Shop extends Model
             $must_matche = [];
             $re = '/900[0-9]{2}|2[0-9]{3}/';
             preg_match($re, $service_code, $must_matche);
-            
+
             $must_not_matche = [];
             $re2 = '/2017|2015|2004|233[0-9]|27[0-9]{2}/';
             preg_match($re2, $service_code, $must_not_matche);
-            
+
             return empty($must_not_matche) && !empty($must_matche);
         }
         return true;
@@ -306,9 +310,9 @@ class Shop extends Model
 
     /**
      * Saves shop test mode parameter
-     * 
+     *
      * @param bool $test_mode - true to enable test mode, false to go production
-     * 
+     *
      * @return bool true on success
      */
     public function saveTestMode($test_mode = true) {
@@ -319,10 +323,10 @@ class Shop extends Model
 
     /**
      * Saves shop api credentials
-     * 
+     *
      * @param string $api_key
      * @param string $api_secret
-     * 
+     *
      * @return bool true on success
      */
     public function saveApiCredentials($api_key = '', $api_secret = '') {
@@ -334,9 +338,9 @@ class Shop extends Model
 
     /**
      * Updates locale setting
-     * 
+     *
      * @param string $locale ISO code for prefered localization
-     * 
+     *
      * @return bool true on success
      */
     public function saveLocale($locale = 'en') {
@@ -347,10 +351,10 @@ class Shop extends Model
 
     /**
      * Builds shipping settings array available providers
-     * 
-     * @param array|null $shipping_methods shiping methods array 
+     *
+     * @param array|null $shipping_methods shiping methods array
      * @param array $productProviderByCode service providers array
-     * 
+     *
      * @return array build shipping settings array
      */
     public function buildShippingSettings($shipping_methods, $productProviderByCode = []) {
@@ -373,10 +377,10 @@ class Shop extends Model
 
     /**
      * Updates shiping settings
-     * 
+     *
      * @param array $settings array of shipping settings settings [shipping_settings, default_service_code, always_create_return_label, create_activation_code]
      * @param array $productProviderByCode product providers array
-     * 
+     *
      * @return bool true on success
      */
     public function saveShippingSettings($settings) {
@@ -388,15 +392,16 @@ class Shop extends Model
         $this->add_additional_label_info = $settings['add_additional_label_info'];
         $this->additional_label_info = $settings['additional_label_info'];
         $this->pickup_filter = $settings['pickup_filter'] ?? [];
+        $this->info_code = $settings['info_code'];
 
         return $this->save();
     }
 
     /**
      * Saves sender information
-     * 
+     *
      * @param array $sender_data sender settings array
-     * 
+     *
      * @return bool true on success
      */
     public function saveSender($sender_data) {
@@ -409,9 +414,9 @@ class Shop extends Model
 
     /**
      * Saves pickup points settings
-     * 
+     *
      * @param array $data pickup points settings array
-     * 
+     *
      * @return bool true on success
      */
     public function savePickupPointsSettings($data) {
@@ -424,7 +429,7 @@ class Shop extends Model
 
     /**
      * Decodes and returns settings as array (if no settings it will be empty array)
-     * 
+     *
      * @return array settings array
      */
     public function getSettings() {
@@ -433,9 +438,9 @@ class Shop extends Model
 
     /**
      * Creates pickup points settings array
-     * 
+     *
      * @param array $products shipping methods array
-     * 
+     *
      * @return array pickup points settings array
      */
     public function getPickupPointSettings($products) {
@@ -462,7 +467,7 @@ class Shop extends Model
     /**
      * @param int|null $carrierServiceId carrier service id from Shopify
      * @param int $pickupPointsCount maximum available pickup points
-     * 
+     *
      * @return bool true on success
      */
     public function saveCarrierServiceId($carrierServiceId = null, $pickupPointsCount = 10) {

@@ -86,6 +86,14 @@
             </div>
             @endif
             @endforeach
+            <div class="row" id ="info_code_row">
+                <div class="columns four rate-name-column">
+                    {{trans('app.settings.info_code')}}
+                </div>
+                <div class="columns eight">
+                    <input type="text" name="info_code" value="{{$shop->info_code}}">
+                </div>
+            </div>
         </div>
     </article>
 
@@ -99,6 +107,7 @@
                 <label>
                     <input type="checkbox" name="add_additional_label_info" onclick ="toggle_div(this, 'addtional_label_info_row');" @if($shop->add_additional_label_info) checked @endif value="1">{{trans('app.settings.add_additional_label_info')}}
                 </label>
+
             </div>
             <div class="row" id = "addtional_label_info_row" @if(!$shop->add_additional_label_info) style="display:none;" @endif>
                 <div class="columns four rate-name-column">
