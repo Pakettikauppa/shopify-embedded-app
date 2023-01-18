@@ -522,7 +522,7 @@ class AppController extends Controller {
 
                 if (!empty($filtered_services)){
                     foreach ($filtered_services as $line_items) {
-                        $this->fulfillLineItems($shop, $order['id']);
+                        $this->fulfillLineItems($shop, $order);
                     }
                 } else if ($has_missing_products){
                     $shipments[$orderKey]['status'] = 'product_deleted';
@@ -1219,7 +1219,7 @@ class AppController extends Controller {
 
             if (!empty($filtered_services)){
                 foreach ($filtered_services as $line_items) {
-                    $this->fulfillLineItems($shop, $order['id']);
+                    $this->fulfillLineItems($shop, $order);
                 }
             } else if ($has_missing_products){
                 $shipment['status'] = 'product_deleted';
@@ -1244,18 +1244,37 @@ class AppController extends Controller {
         ]);
     }
 
-    private function fulfillLineItems($shop, $id_order) {
+    private function fulfillLineItems($shop, $order) {
         $shopifyApi = new ShopifyAPI($shop); 
-        $response = $shopifyApi->getFulfillmentOrder($id_order);
+        $response = $shopifyApi->getFulfillmentOrder($order['id']);
         foreach ($response['data']['order']['fulfillmentOrders']['edges'] as $edge) {
             if (!isset($edge['node']['id'])) {
                 continue;
             }
 
+
+            $trackingInfo = [
+                'company' => trans('app.settings.company_name_' . $this->type),
+            ];
+            if(count($order['tracking_codes']) == 1) {
+                $trackingInfo['number'] = end($order['tracking_codes']);
+                $trackingInfo['url'] = $this->tracking_url . end($order['tracking_codes']);
+            } elseif(count($order['tracking_codes']) > 1) {
+                $trackingInfo['numbers'] = $order['tracking_codes'];
+                $tracking_url = $this->tracking_url;
+
+                $closure = function($code) use ($tracking_url) {
+                    return $tracking_url . $code;
+                };
+                
+                $trackingInfo['urls'] = array_map($closure, $order['tracking_codes']);
+            }
+
             $fulfillment = [
                 'lineItemsByFulfillmentOrder' => [
-                    'fulfillmentOrderId'=> $edge['node']['id']
-                ]
+                    'fulfillmentOrderId'=> $edge['node']['id'],
+                ],
+                'trackingInfo' => $trackingInfo,
             ];
 
             try {
