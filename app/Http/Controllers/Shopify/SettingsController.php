@@ -623,6 +623,7 @@ class SettingsController extends Controller {
             'create_activation_code' => (bool) request()->get('create_activation_code'),
             'add_additional_label_info' => (bool) request()->get('add_additional_label_info'),
             'additional_label_info' => request()->get('additional_label_info'),
+            'info_code' => request()->get('info_code'),
         );
 
         $isSaved = $shop->saveShippingSettings($shop_shipping_settings);

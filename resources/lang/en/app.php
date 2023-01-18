@@ -128,6 +128,7 @@ return [
         'setup_wizard' => 'Wizard setup',
         'print_return_labels' => 'Always create shipping label for return. Tracking in Shopify does not include return shipment.',
         'include_discounted_price_in_trigger' => 'Use discounted price for trigger price.',
+        'info_code' => 'Info code for shipments',
         'pickuppoints' => [
             'title' => 'Pickup point settings',
             'provider' => 'Provider',
