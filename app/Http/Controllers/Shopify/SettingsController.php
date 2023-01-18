@@ -623,6 +623,7 @@ class SettingsController extends Controller {
             'create_activation_code' => (bool) request()->get('create_activation_code'),
             'add_additional_label_info' => (bool) request()->get('add_additional_label_info'),
             'additional_label_info' => request()->get('additional_label_info'),
+            'info_code' => request()->get('info_code'),
         );
 
         $isSaved = $shop->saveShippingSettings($shop_shipping_settings);
@@ -725,6 +726,7 @@ class SettingsController extends Controller {
         $data = array(
             'pickup_filter' => json_encode(request()->get('pickup_filter')),
             'pickuppoints_count' => (int) request()->get('pickuppoints_count'),
+            'weight_limit' => (int) request()->get('weight_limit'),
             'include_discounted_price_in_trigger' => (bool) request()->get('include_discounted_price_in_trigger'),
             'settings' => json_encode($this->prepPickupPointsData(request()->get('pickuppoint'))),
         );

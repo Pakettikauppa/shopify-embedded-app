@@ -127,6 +127,7 @@ return [
         'save_failed' => 'Failed to save changes',
         'print_return_labels' => 'Always create shipping label for return. Tracking in Shopify does not include return shipment.',
         'include_discounted_price_in_trigger' => 'Use discounted price for trigger price.',
+        'info_code' => 'Info code for shipments',
         'pickuppoints' => [
             'title' => 'Pickup point settings',
             'provider' => 'Provider',
@@ -139,6 +140,9 @@ return [
             'pickup_points' => 'Pickup Points',
             'agencies' => 'Agency',
             'parcel_lockers' => 'Parcel Lockers',
+            'limit_pickup_points_by_weight' => 'Limit pickup points by weight?',
+            'yes' => 'Yes',
+            'no' => 'No',
         ],
         'support' => 'Support',
     ],
