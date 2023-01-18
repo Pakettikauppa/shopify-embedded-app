@@ -1252,15 +1252,29 @@ class AppController extends Controller {
                 continue;
             }
 
+
+            $trackingInfo = [
+                'company' => trans('app.settings.company_name_' . $this->type),
+            ];
+            if(count($order['tracking_codes']) == 1) {
+                $trackingInfo['number'] = end($order['tracking_codes']);
+                $trackingInfo['url'] = $this->tracking_url . end($order['tracking_codes']);
+            } elseif(count($order['tracking_codes']) > 1) {
+                $trackingInfo['numbers'] = $order['tracking_codes'];
+                $tracking_url = $this->tracking_url;
+
+                $closure = function($code) use ($tracking_url) {
+                    return $tracking_url . $code;
+                };
+                
+                $trackingInfo['urls'] = array_map($closure, $order['tracking_codes']);
+            }
+
             $fulfillment = [
                 'lineItemsByFulfillmentOrder' => [
                     'fulfillmentOrderId'=> $edge['node']['id'],
                 ],
-                'trackingInfo' => [
-                    'company' => trans('app.settings.company_name_' . $this->type),
-                    'numbers' => implode(', ', $order['tracking_codes']),
-                    'urls' => $this->tracking_url . end($order['tracking_codes']),
-                ],
+                'trackingInfo' => $trackingInfo,
             ];
 
             try {
