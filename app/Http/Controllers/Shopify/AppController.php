@@ -56,7 +56,7 @@ class AppController extends Controller {
             config('shopify.scope'),
             config('shopify.app_host_name'),
             new ShopifySessionStorage(storage_path('shopify/sessions')),
-            '2022-10',
+            '2023-01',
             true,
             false,
     );
