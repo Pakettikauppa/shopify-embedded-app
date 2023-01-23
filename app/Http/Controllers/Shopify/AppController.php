@@ -521,8 +521,12 @@ class AppController extends Controller {
                 }
 
                 if (!empty($filtered_services)){
-                    foreach ($filtered_services as $line_items) {
+                    try {
                         $this->fulfillLineItems($shop, $order);
+                    } catch (\Exception $e) {
+                        if ($e->getMessage() == 'ACCESS_DENIED') {
+                            return redirect()->route('install-link', request()->all());
+                        }
                     }
                 } else if ($has_missing_products){
                     $shipments[$orderKey]['status'] = 'product_deleted';
@@ -1218,8 +1222,12 @@ class AppController extends Controller {
             }
 
             if (!empty($filtered_services)){
-                foreach ($filtered_services as $line_items) {
+                try {
                     $this->fulfillLineItems($shop, $order);
+                } catch (\Exception $e) {
+                    if ($e->getMessage() == 'ACCESS_DENIED') {
+                        return redirect()->route('install-link', request()->all());
+                    }
                 }
             } else if ($has_missing_products){
                 $shipment['status'] = 'product_deleted';
@@ -1247,11 +1255,15 @@ class AppController extends Controller {
     private function fulfillLineItems($shop, $order) {
         $shopifyApi = new ShopifyAPI($shop); 
         $response = $shopifyApi->getFulfillmentOrder($order['id']);
+
+        $error = $response['data']['errors'][0]['extensions']['code'] ?? null;
+        if ($error == 'ACCESS_DENIED') {
+            throw new \Exception('ACCESS_DENIED');
+        }
         foreach ($response['data']['order']['fulfillmentOrders']['edges'] as $edge) {
             if (!isset($edge['node']['id'])) {
                 continue;
             }
-
 
             $trackingInfo = [
                 'company' => trans('app.settings.company_name_' . $this->type),
