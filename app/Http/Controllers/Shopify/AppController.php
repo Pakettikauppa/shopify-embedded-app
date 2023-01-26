@@ -1202,24 +1202,24 @@ class AppController extends Controller {
 
 
             //filter services to check if found all available quantities in one warehouse
-            foreach ($services as $fullfilment => $line_items) {
-                foreach ($line_items as $locationId => $items) {
-                    if (count($items) == count($shipment['line_items'])){
-                        $filtered_services[$fullfilment][$locationId] = $items;
-                        break;
-                    }
+            // foreach ($services as $fullfilment => $line_items) {
+            //     foreach ($line_items as $locationId => $items) {
+            //         if (count($items) == count($shipment['line_items'])){
+            //             $filtered_services[$fullfilment][$locationId] = $items;
+            //             break;
+            //         }
+            //     }
+            // }
+
+            try {
+                $this->fulfillLineItems($shop, $order);
+            } catch (\Exception $e) {
+                if ($e->getMessage() == 'ACCESS_DENIED') {
+                    return redirect()->route('install-link', request()->all());
                 }
             }
 
-            if (!empty($filtered_services)){
-                try {
-                    $result = $this->fulfillLineItems($shop, $order);
-                } catch (\Exception $e) {
-                    if ($e->getMessage() == 'ACCESS_DENIED') {
-                        return redirect()->route('install-link', request()->all());
-                    }
-                }
-            } else if ($has_missing_products){
+            if ($has_missing_products){
                 $shipment['status'] = 'product_deleted';
             } else {
                 $shipment['status'] = 'not_in_inventory';
