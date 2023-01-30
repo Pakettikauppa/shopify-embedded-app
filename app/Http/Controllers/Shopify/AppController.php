@@ -1287,6 +1287,7 @@ class AppController extends Controller {
                     'fulfillmentOrderId'=> $edge['node']['id'],
                 ],
                 'trackingInfo' => $trackingInfo,
+                'notifyCustomer' => true,
             ];
 
             try {
