@@ -56,7 +56,7 @@ class AppController extends Controller {
             config('shopify.scope'),
             config('shopify.app_host_name'),
             new ShopifySessionStorage(storage_path('shopify/sessions')),
-            '2022-10',
+            '2023-01',
             true,
             false,
     );
@@ -155,6 +155,7 @@ class AppController extends Controller {
     }
 
     public function printLabels(Request $request) {
+        $result = [];
         if (!isset($request->ids) && !isset($request->id)) {
             Log::debug('No id found');
             throw new NotFoundHttpException();
@@ -246,7 +247,7 @@ class AppController extends Controller {
              $shipment = DB::transaction(function () use ($shop, $order, $is_return, $shipment){
                 $lock_index = (int) $order['legacyResourceId'];
                 Log::debug('Using log_index ' . $lock_index);
-                DB::select("select pg_advisory_xact_lock($lock_index)");
+                //DB::select("select pg_advisory_xact_lock($lock_index)");
 
                 $done_shipment = ShopifyShipment::lockForUpdate()->where('shop_id', $shop->id)
                         ->where('order_id', $order['legacyResourceId'])
@@ -522,7 +523,7 @@ class AppController extends Controller {
 
                 if (!empty($filtered_services)){
                     try {
-                        $this->fulfillLineItems($shop, $order);
+                        $result = $this->fulfillLineItems($shop, $order);
                     } catch (\Exception $e) {
                         if ($e->getMessage() == 'ACCESS_DENIED') {
                             return redirect()->route('install-link', request()->all());
@@ -561,7 +562,8 @@ class AppController extends Controller {
             'page_title' => $page_title,
             'is_return' => $is_return,
             'tracking_url' => $this->tracking_url,
-            'type' => $this->type
+            'type' => $this->type,
+            'error_messages' => $result['error'] ?? ''
         ]);
     }
 
@@ -950,6 +952,7 @@ class AppController extends Controller {
     }
 
     public function createCustomShipment() {
+        $result = [];
         $order_id = request()->get('order_id');
         if (!$order_id) {
             Log::debug('No id found');
@@ -1223,7 +1226,7 @@ class AppController extends Controller {
 
             if (!empty($filtered_services)){
                 try {
-                    $this->fulfillLineItems($shop, $order);
+                    $result = $this->fulfillLineItems($shop, $order);
                 } catch (\Exception $e) {
                     if ($e->getMessage() == 'ACCESS_DENIED') {
                         return redirect()->route('install-link', request()->all());
@@ -1247,18 +1250,22 @@ class AppController extends Controller {
                         'page_title' => $page_title,
                         'is_return' => false,
                         'tracking_url' => $this->tracking_url,
-                        'type' => $this->type
+                        'type' => $this->type,
+                        'error_messages' => $result['error'] ?? '',
                     ])->toHtml()
         ]);
     }
 
     private function fulfillLineItems($shop, $order) {
-        $shopifyApi = new ShopifyAPI($shop); 
+        $result = [];
+        $shopifyApi = new ShopifyAPI($shop);
         $response = $shopifyApi->getFulfillmentOrder($order['id']);
-
-        $error = $response['data']['errors'][0]['extensions']['code'] ?? null;
+        $error = $response['errors'][0]['extensions']['code'] ?? null;
         if ($error == 'ACCESS_DENIED') {
-            throw new \Exception('ACCESS_DENIED');
+            return ['error' => trans('app.messages.access_denied')];
+            //throw new \Exception('ACCESS_DENIED');
+        } else {
+            $result['error'] = $response['errors'][0]['message'] ?? null;
         }
         foreach ($response['data']['order']['fulfillmentOrders']['edges'] as $edge) {
             if (!isset($edge['node']['id'])) {
@@ -1278,7 +1285,7 @@ class AppController extends Controller {
                 $closure = function($code) use ($tracking_url) {
                     return $tracking_url . $code;
                 };
-                
+
                 $trackingInfo['urls'] = array_map($closure, $order['tracking_codes']);
             }
 
@@ -1292,6 +1299,8 @@ class AppController extends Controller {
 
             try {
                 $response = $shopifyApi->fullfillOrderNew($fulfillment);
+                $result['error'] = $response['errors'][0]['message'] ?? null;
+
                 Log::debug(var_export($response, true));
             } catch (ShopifyApiException $sae) {
                 $exceptionData = array(
@@ -1307,6 +1316,8 @@ class AppController extends Controller {
                 Log::debug('Fullfillment Exception: ' . $e->getMessage() . ' on line ' . $e->getLine());
             }
         }
+
+        return $result;
     }
 
     public function latestNews() {

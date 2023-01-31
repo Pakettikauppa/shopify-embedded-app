@@ -2,6 +2,17 @@
 
 @section('content')
 
+@if($error_messages)
+    <section>
+        <div class="column">
+            <div class="card" style="margin-top: 1em">
+                <div class="row">
+                    <span class="tag red">{{$error_messages}}</span>
+                </div>
+            </div>
+        </div>
+    </section>
+@endif
 <section id="custom-page">
     <div class="column">
         <div class="card" style="margin-top: 1em">
@@ -34,7 +45,7 @@
                                 @elseif($order['status'] == 'not_in_inventory')
                                     <span class="tag red">{{trans('app.print_labels.statuses.not_in_inventory')}}</span>
                                 @elseif($order['status'] == 'product_deleted')
-                                    <span class="tag red">{{trans('app.print_labels.statuses.product_deleted')}}</span>    
+                                    <span class="tag red">{{trans('app.print_labels.statuses.product_deleted')}}</span>
                                 @elseif($order['status'] == 'custom_error')
                                     @php
                                         $custom_error = true
