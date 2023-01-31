@@ -165,6 +165,7 @@ return [
         'in-testing' => 'Your integration is now in test mode!',
         'in-production' => 'Your integration is now in production mode!',
         'failed-test-mode' => 'Could not switch Test Mode',
+        'access_denied' => 'Access denied. Go to Apps setting page'
     ],
     'tracking_info' => [
         'transaction' => 'Transaction',
