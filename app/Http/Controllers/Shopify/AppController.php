@@ -1262,8 +1262,10 @@ class AppController extends Controller {
         $response = $shopifyApi->getFulfillmentOrder($order['id']);
         $error = $response['errors'][0]['extensions']['code'] ?? null;
         if ($error == 'ACCESS_DENIED') {
-            return ['error' => $response['errors'][0]['message']];
+            return ['error' => trans('app.messages.access_denied')];
             //throw new \Exception('ACCESS_DENIED');
+        } else {
+            $result['error'] = $response['errors'][0]['message'] ?? null;
         }
         foreach ($response['data']['order']['fulfillmentOrders']['edges'] as $edge) {
             if (!isset($edge['node']['id'])) {
@@ -1297,7 +1299,7 @@ class AppController extends Controller {
 
             try {
                 $response = $shopifyApi->fullfillOrderNew($fulfillment);
-                $result['error'] = $response['data']['errors'][0]['extensions']['code'] ?? null;
+                $result['error'] = $response['errors'][0]['message'] ?? null;
 
                 Log::debug(var_export($response, true));
             } catch (ShopifyApiException $sae) {
