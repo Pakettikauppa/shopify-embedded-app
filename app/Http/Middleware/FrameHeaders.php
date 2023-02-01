@@ -18,7 +18,7 @@ class FrameHeaders
     {
         $shop_domain = $request->get('shop');
         $response = $next($request);
-        $response->header('Content-Security-Policy', "frame-ancestors {$shop_domain} https://admin.shopify.com");
+        $response->header('Content-Security-Policy', "frame-ancestors {$shop_domain} admin.shopify.com");
         return $response;
     }
 }
