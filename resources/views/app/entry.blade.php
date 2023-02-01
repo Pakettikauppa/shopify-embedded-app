@@ -51,7 +51,7 @@
             });
 
 //            Redirect.create(app).dispatch(Redirect.Action.REMOTE, permissionUrl);
-            const redirect = Actions.Redirect.create(ShopifyApp);
+            const redirect = Actions.Redirect.create(app);
             redirect.subscribe(
                 Actions.Redirect.Action.REMOTE,
                 (payload) => {
