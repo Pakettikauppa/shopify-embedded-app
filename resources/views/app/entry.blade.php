@@ -23,6 +23,7 @@
 //        var createApp = AppBridge.createApp;
         var createApp = AppBridge.default;
         //var actions = AppBridge.actions;
+        var Actions = AppBridge.actions;
         var Redirect = AppBridge.actions.Redirect;
 
         var permissionUrl = '{{ $install_url }}';
