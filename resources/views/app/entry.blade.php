@@ -31,9 +31,11 @@
         const urlParams = new URLSearchParams(queryString);
         var host = urlParams.get('host');
 
+        console.log("Host = " + host);
         if(!host || host == ''){
             host = '{{$shopOrigin}}';
         }
+        console.log("Host = " + host);
 
         // If the current window is the 'parent', change the URL by setting location.href       
         if (window.top == window.self) {
