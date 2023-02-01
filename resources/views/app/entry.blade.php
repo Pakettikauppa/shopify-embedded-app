@@ -20,7 +20,8 @@
             document.cookie = "redirect_back_url={{$redirect_back_url}}"+expires+"; path=/;SameSite=None; Secure";
         @endif
         var AppBridge = window['app-bridge'];
-        var createApp = AppBridge.createApp;
+//        var createApp = AppBridge.createApp;
+        var createApp = AppBridge.default;
         //var actions = AppBridge.actions;
         var Redirect = AppBridge.actions.Redirect;
 
@@ -43,10 +44,21 @@
             var app = createApp({
                 apiKey: '{{ $api_key }}',
                 shopOrigin: '{{ $shopOrigin }}',
-                host: host
+                host: host,
+                debug: true,
+                forceRedirect: true
             });
 
-            Redirect.create(app).dispatch(Redirect.Action.REMOTE, permissionUrl);
+//            Redirect.create(app).dispatch(Redirect.Action.REMOTE, permissionUrl);
+            const redirect = Actions.Redirect.create(ShopifyApp);
+            redirect.subscribe(
+                Actions.Redirect.Action.REMOTE,
+                (payload) => {
+                    // Do something with the redirect
+                    return true;
+                }
+            );
+
         }
 
     </script>
