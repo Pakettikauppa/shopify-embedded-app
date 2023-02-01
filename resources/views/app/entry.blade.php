@@ -20,10 +20,8 @@
             document.cookie = "redirect_back_url={{$redirect_back_url}}"+expires+"; path=/;SameSite=None; Secure";
         @endif
         var AppBridge = window['app-bridge'];
-//        var createApp = AppBridge.createApp;
-        var createApp = AppBridge.default;
+        var createApp = AppBridge.createApp;
         //var actions = AppBridge.actions;
-        var Actions = AppBridge.actions;
         var Redirect = AppBridge.actions.Redirect;
 
         var permissionUrl = '{{ $install_url }}';
@@ -33,9 +31,11 @@
         const urlParams = new URLSearchParams(queryString);
         var host = urlParams.get('host');
 
+        console.log("Host = " + host);
         if(!host || host == ''){
             host = '{{$shopOrigin}}';
         }
+        console.log("Host = " + host);
 
         // If the current window is the 'parent', change the URL by setting location.href       
         if (window.top == window.self) {
@@ -45,21 +45,10 @@
             var app = createApp({
                 apiKey: '{{ $api_key }}',
                 shopOrigin: '{{ $shopOrigin }}',
-                host: host,
-                debug: true,
-                forceRedirect: true
+                host: host
             });
 
-//            Redirect.create(app).dispatch(Redirect.Action.REMOTE, permissionUrl);
-            const redirect = Actions.Redirect.create(app);
-            redirect.subscribe(
-                Actions.Redirect.Action.REMOTE,
-                (payload) => {
-                    // Do something with the redirect
-                    return true;
-                }
-            );
-
+            Redirect.create(app).dispatch(Redirect.Action.REMOTE, permissionUrl);
         }
 
     </script>
