@@ -15,9 +15,6 @@ use Pakettikauppa\Client;
 use Pakettikauppa\Shipment;
 use Psy\Exception\FatalErrorException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
-use Shopify\Clients\Graphql;
-use Shopify\Context;
-use App\Helpers\ShopifySessionStorage;
 use App\Helpers\ShopifyAPI;
 
 //use Log;
@@ -50,16 +47,6 @@ class AppController extends Controller {
         $this->type = config('shopify.type');
         $this->test_mode = config('shopify.test_mode');
         $this->tracking_url = config('shopify.tracking_url');
-        Context::initialize(
-            config('shopify.api_key'),
-            config('shopify.secret'),
-            config('shopify.scope'),
-            config('shopify.app_host_name'),
-            new ShopifySessionStorage(storage_path('shopify/sessions')),
-            '2023-01',
-            true,
-            false,
-    );
     }
 
     /**
