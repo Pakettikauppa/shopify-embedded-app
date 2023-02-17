@@ -4,6 +4,8 @@ namespace App\Providers;
 
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
+use Shopify\Context;
+use App\Helpers\ShopifySessionStorage;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -16,6 +18,16 @@ class AppServiceProvider extends ServiceProvider
     {
         URL::forceScheme('https');
         URL::forceRootUrl(config('app.url'));
+        Context::initialize(
+            config('shopify.api_key'),
+            config('shopify.secret'),
+            config('shopify.scope'),
+            config('shopify.app_host_name'),
+            new ShopifySessionStorage(storage_path('shopify/sessions')),
+            '2023-01',
+            true,
+            false,
+        );
     }
 
     /**

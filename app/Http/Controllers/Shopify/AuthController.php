@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Shopify;
 
 use App\Exceptions\ShopifyDomainException;
 use App\Http\Controllers\Controller;
+use App\Lib\AuthRedirection;
 use Illuminate\Http\Request;
 use App\Models\Shopify\Shop;
 use Illuminate\Support\Str;
@@ -23,27 +24,7 @@ class AuthController extends Controller
     
     public function index(Request $request)
     {
-        // Check that shopdomain is valid
-        $shop_domain = $request->input('shop', '');
-        if (!$this->isValidShopDomain($shop_domain)) {
-            throw new ShopifyDomainException('Shop domain is not valid. Must be like - shopname.myshopify.com');
-        }
-        $redirect_back_url = $request->input('shopify_redirect_url', false);
-        $api_key = config('shopify.api_key');
-        $scopes = config('shopify.scope');
-        $redirect_uri = route('shopify.auth.callback');
-
-        // Build install/approval URL to redirect to
-        $install_url = "https://" . $shop_domain . "/admin/oauth/authorize?client_id=" . $api_key . "&scope=" . $scopes . "&redirect_uri=" . urlencode($redirect_uri);
-
-        // Due to how shopify works redirection must be done on shopify end (as app is loaded inside iframe)
-        
-        return view('app.entry', [
-            'shopOrigin' => $shop_domain,
-            'api_key' => $api_key,
-            'install_url' => $install_url,
-            'redirect_back_url' => $redirect_back_url ? urlencode($redirect_back_url) : false
-        ]);
+        return AuthRedirection::redirect($request);
     }
 
     private function isValidShopDomain($shop)

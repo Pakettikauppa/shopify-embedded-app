@@ -1,5 +1,8 @@
 <?php
 
+use Illuminate\Http\Request;
+use Shopify\Utils;
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -12,10 +15,11 @@
 */
 
 Route::group(['namespace' => 'Shopify'], function () {
-    Route::get('/auth', 'AuthController@index')->name('install-link');
+
+    Route::get('/auth', 'AuthController@index')->name('install-link')->middleware('shopify.installed');
     Route::get('/auth/callback', 'AuthController@callback')->name('shopify.auth.callback');
 
-    Route::group(['middleware' => ['shopify', 'shopify.shop', 'shopify.localize']], function () {
+    Route::group(['middleware' => ['shopify', 'shopify.shop', 'shopify.localize', 'shopify.auth']], function () {
         Route::get('/latest-news', 'AppController@latestNews')->name('shopify.latest-news');
 
         Route::get('/settings/shipping', 'SettingsController@shipping')->name('shopify.settings.shipping-link');

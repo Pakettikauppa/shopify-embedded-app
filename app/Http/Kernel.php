@@ -60,5 +60,7 @@ class Kernel extends HttpKernel
         'shopify' => \App\Http\Middleware\VerifyShopify::class,
         'shopify.shop' => \App\Http\Middleware\SelectShop::class,
         'shopify.localize' => \App\Http\Middleware\Localize::class,
+        'shopify.installed' => \App\Http\Middleware\EnsureShopifyInstalled::class,
+        'shopify.auth' => \App\Http\Middleware\EnsureShopifySession::class,
     ];
 }
