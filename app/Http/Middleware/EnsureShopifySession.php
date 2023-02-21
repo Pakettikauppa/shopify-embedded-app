@@ -65,6 +65,7 @@ class EnsureShopifySession
 
             if ($proceed) {
                 $request->attributes->set('shopifySession', $session);
+                $request->attributes->add(['shop' => $session->getShop()]);
                 return $next($request);
             }
         }
@@ -81,6 +82,6 @@ class EnsureShopifySession
             }
         }
 
-        return TopLevelRedirection::redirect($request, "/auth?shop=$shop");
+        return TopLevelRedirection::redirect($request, "/api/auth?shop=$shop");
     }
 }

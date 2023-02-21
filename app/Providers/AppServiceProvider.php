@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 use Shopify\Context;
 use App\Helpers\ShopifySessionStorage;
+use App\Lib\DbSessionStorage;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -16,14 +17,15 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
+        $host = str_replace('https://', '', config('shopify.app_host_name','not_defined'));
         URL::forceScheme('https');
         URL::forceRootUrl(config('app.url'));
         Context::initialize(
             config('shopify.api_key'),
             config('shopify.secret'),
             config('shopify.scope'),
-            config('shopify.app_host_name'),
-            new ShopifySessionStorage(storage_path('shopify/sessions')),
+            $host,
+            new DbSessionStorage(),
             '2023-01',
             true,
             false,
