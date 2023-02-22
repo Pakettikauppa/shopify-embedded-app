@@ -9,7 +9,12 @@ use Illuminate\Http\Request;
 use App\Models\Shopify\Shop;
 use Illuminate\Support\Str;
 use App\Models\Shopify\ShopifyClient;
+use App\Models\Shopify\Session;
 use Log;
+use Shopify\Context;
+use Shopify\Utils;
+use Storage;
+use Shopify\Auth\OAuth;
 
 class AuthController extends Controller
 {
@@ -24,7 +29,17 @@ class AuthController extends Controller
     
     public function index(Request $request)
     {
-        return AuthRedirection::redirect($request);
+        if (Context::$IS_EMBEDDED_APP &&  $request->query("embedded", false) === "1") {
+            $shop = Shop::where('shop_origin', $request->query("shop", null))->firstOrNew();
+            \App::setLocale($shop ? $shop->locale : 'en');
+            return view('layouts.app', [
+               'shop' => $shop,
+               'host' => $request->query('host')
+            ]);
+        } else {
+            return redirect(Utils::getEmbeddedAppUrl($request->query("host", null)) . "/" . $request->path());
+        }
+        //return AuthRedirection::redirect($request);
     }
 
     private function isValidShopDomain($shop)
@@ -122,17 +137,49 @@ class AuthController extends Controller
             // In case HMAC is invalid redirect to installation
             return redirect()->route('install-link', ['shop' => $request->get('shop')]);
         }
-
         // Since HMAC is validated we can assume to have valid information in the URL
+        
+        $session = OAuth::callback(
+            $request->cookie(),
+            $request->query(),
+            ['\App\Lib\CookieHandler', 'saveShopifyCookie'],
+        );
+    
+        $host = $request->query('host');
+        //$shop = Utils::sanitizeShopDomain($request->query('shop'));
+        /*
+        $response = Registry::register('/api/webhooks', Topics::APP_UNINSTALLED, $shop, $session->getAccessToken());
+        if ($response->isSuccess()) {
+            Log::debug("Registered APP_UNINSTALLED webhook for shop $shop");
+        } else {
+            Log::error(
+                "Failed to register APP_UNINSTALLED webhook for shop $shop with response body: " .
+                    print_r($response->getBody(), true)
+            );
+        }*/
+
         $shop = Shop::where('shop_origin', $request->shop)->first();
         if ($shop && $shop->token && $this->tokenIsValid($request->shop, $shop->token)) {
             //
         } else {
-            $token = $this->getAccessToken($request->shop, config('shopify.api_key'), config('shopify.secret'), $request->code);
+            $session = Session::where('shop', $request->shop)->first();
+            $token = $session ? $session->access_token : '';
 
             $shop = $this->saveShop($shop, $request->shop, $token);
         }
-
+    
+        $redirectUrl = Utils::getEmbeddedAppUrl($host);
+        /*
+        if (Config::get('shopify.billing.required')) {
+            list($hasPayment, $confirmationUrl) = EnsureBilling::check($session, Config::get('shopify.billing'));
+    
+            if (!$hasPayment) {
+                $redirectUrl = $confirmationUrl;
+            }
+        }
+        */
+        return redirect($redirectUrl);
+        /*
         // Set default locale (this is required to get correct localization upon initial app load) - Default to english
         \App::setLocale($shop ? $shop->locale : 'en');
         
@@ -140,6 +187,7 @@ class AuthController extends Controller
             'shop' => $shop,
             'type' => $this->type
         ]);
+        */
     }
 
     private function saveShop($shop, $shop_origin, $token)
@@ -198,5 +246,15 @@ class AuthController extends Controller
         );
 
         return $this->shopifyClient;
+    }
+
+    public function exitIframe(Request $request)
+    {
+        $shop = Shop::where('shop_origin', $request->input('shop', ''))->first();
+        return view('layouts.exit-iframe', [
+            'shop' => $shop,
+            'domain' => $request->input('shop', ''),
+            'redirectUrl' => urldecode($request->input('redirectUri', ''))
+        ]);
     }
 }

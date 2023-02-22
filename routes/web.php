@@ -2,6 +2,8 @@
 
 use Illuminate\Http\Request;
 use Shopify\Utils;
+use App\Lib\AuthRedirection;
+use Shopify\Auth\OAuth;
 
 /*
 |--------------------------------------------------------------------------
@@ -15,11 +17,23 @@ use Shopify\Utils;
 */
 
 Route::group(['namespace' => 'Shopify'], function () {
+    
+    // ExitIframe
+    Route::get('/ExitIframe', 'AuthController@exitIframe')->name('shopify.exitiframe');
+    Route::get('/auth', 'AuthController@index')->middleware('shopify.installed');
+    Route::get('/api/auth/callback', 'AuthController@callback')->name('shopify.auth.callback');
 
-    Route::get('/auth', 'AuthController@index')->name('install-link')->middleware('shopify.installed');
-    Route::get('/auth/callback', 'AuthController@callback')->name('shopify.auth.callback');
+    Route::get('/api/auth', function (Request $request) {
+        $shop = Utils::sanitizeShopDomain($request->query('shop'));
+    
+        // Delete any previously created OAuth sessions that were not completed (don't have an access token)
+        //Session::where('shop', $shop)->where('access_token', null)->delete();
+    
+        return AuthRedirection::redirect($request);
+    })->name('install-link');
 
-    Route::group(['middleware' => ['shopify', 'shopify.shop', 'shopify.localize', 'shopify.auth']], function () {
+
+    Route::group(['middleware' => ['shopify', 'shopify.localize', 'shopify.auth', 'shopify.shop']], function () {
         Route::get('/latest-news', 'AppController@latestNews')->name('shopify.latest-news');
 
         Route::get('/settings/shipping', 'SettingsController@shipping')->name('shopify.settings.shipping-link');
@@ -41,5 +55,6 @@ Route::group(['namespace' => 'Shopify'], function () {
         Route::post('/get-labels', 'AppController@getLabels')->name('shopify.get_labels');
 
         Route::get('/track-shipment', 'AppController@trackShipment')->name('shopify.track-shipment');
+
     });
 });

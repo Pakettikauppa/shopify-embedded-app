@@ -16,8 +16,7 @@ class SelectShop
      */
     public function handle($request, Closure $next)
     {
-        $request->attributes->add(['shop' => Shop::where('shop_origin', $request->get('shopOrigin'))->first()]);
-        
+        $request->attributes->add(['shop' => Shop::where('shop_origin', $request->get('shop'))->first()]);
         return $next($request);
     }
 }

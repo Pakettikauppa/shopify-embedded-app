@@ -642,7 +642,7 @@ class SettingsController extends Controller {
     public function updateLocale() {
         $shop = request()->get('shop');
         $locale = request()->get('language');
-
+        
         if (!$shop || !$locale || !$shop->saveLocale($locale)) {
 
             return response()->json([
