@@ -34,7 +34,7 @@ Route::group(['namespace' => 'Shopify'], function () {
     })->name('install-link');
 
 
-    Route::group(['middleware' => ['shopify', 'shopify.localize', 'shopify.auth', 'shopify.shop']], function () {
+    Route::group(['middleware' => ['shopify', 'shopify.auth', 'shopify.shop', 'shopify.localize']], function () {
         Route::get('/latest-news', 'AppController@latestNews')->name('shopify.latest-news');
 
         Route::get('/settings/shipping', 'SettingsController@shipping')->name('shopify.settings.shipping-link');
