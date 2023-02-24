@@ -27,7 +27,7 @@ Route::group(['namespace' => 'Shopify'], function () {
         $shop = Utils::sanitizeShopDomain($request->query('shop'));
     
         // Delete any previously created OAuth sessions that were not completed (don't have an access token)
-        //Session::where('shop', $shop)->where('access_token', null)->delete();
+        Session::where('shop', $shop)->where('access_token', null)->delete();
     
         return AuthRedirection::redirect($request);
     })->name('install-link');
