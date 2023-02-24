@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Shopify\Utils;
 use App\Lib\AuthRedirection;
 use Shopify\Auth\OAuth;
+use App\Models\Shopify\Session;
 
 /*
 |--------------------------------------------------------------------------
