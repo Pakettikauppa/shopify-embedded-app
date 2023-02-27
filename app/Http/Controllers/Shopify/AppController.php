@@ -216,7 +216,7 @@ class AppController extends Controller {
             }
             $shipment['id'] = $order['legacyResourceId'];
             $shipment['gid'] = $order['gid'];
-            $shipment['admin_order_url'] = 'https://' . $shop->shop_origin . '/admin/orders/' . $order['legacyResourceId'];
+            $shipment['admin_order_url'] = $this->builAdminOrderUrl($shop->shop_origin, $order['legacyResourceId']);
             $url_params = [
                 'shop' => $shop->shop_origin,
                 'is_return' => $is_return ? '1' : '0',
@@ -544,7 +544,7 @@ class AppController extends Controller {
         return view('app.print-labels', [
             'shop' => $shop,
             'orders' => $shipments,
-            'orders_url' => 'https://' . $shop->shop_origin . '/admin/orders',
+            'orders_url' => $this->builAdminOrderUrl($shop->shop_origin),
             'print_all_params' => $hmac_print_all_url,
             'page_title' => $page_title,
             'is_return' => $is_return,
@@ -1051,7 +1051,7 @@ class AppController extends Controller {
 
         $shipment['id'] = $order['legacyResourceId'];
         $shipment['gid'] = $order['gid'];
-        $shipment['admin_order_url'] = 'https://' . $shop->shop_origin . '/admin/orders/' . $order['legacyResourceId'];
+        $shipment['admin_order_url'] = $this->builAdminOrderUrl($shop->shop_origin, $order['legacyResourceId']);
         $url_params = [
             'shop' => $shop->shop_origin,
         ];
@@ -1232,7 +1232,7 @@ class AppController extends Controller {
                         'shop' => $shop,
                         'shipment' => $shipment,
                         'tracking_codes' => $tracking_codes,
-                        'orders_url' => 'https://' . $shop->shop_origin . '/admin/orders',
+                        'orders_url' => $this->builAdminOrderUrl($shop->shop_origin),
                         'print_all_params' => $hmac_print_all_url,
                         'page_title' => $page_title,
                         'is_return' => false,
@@ -1456,8 +1456,8 @@ class AppController extends Controller {
             ]);
         }
 
-        $admin_order_url = 'https://' . $shop->shop_origin . '/admin/orders/' . $shipment->order_id;
-        $admin_orders_url = 'https://' . $shop->shop_origin . '/admin/orders';
+        $admin_order_url = $this->builAdminOrderUrl($shop->shop_origin, $shipment->order_id);
+        $admin_orders_url = $this->builAdminOrderUrl($shop->shop_origin);
 
         return view('app.shipment-status', [
             'shop' => $shop,
@@ -1526,6 +1526,12 @@ class AppController extends Controller {
                     'data' => [],
                     'status' => 'ok',
         ]);
+    }
+
+    private function builAdminOrderUrl($shop_domain, $order_id = '')
+    {
+        $shop_name = str_ireplace('.myshopify.com', '', $shop_domain);
+        return 'https://admin.shopify.com/store/' . $shop_name . '/orders/' . $order_id;
     }
 
 }
