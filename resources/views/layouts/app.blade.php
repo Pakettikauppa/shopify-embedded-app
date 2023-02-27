@@ -43,7 +43,7 @@
         var ShopifyApp = createApp({
             apiKey: '{{config('shopify.api_key')}}',
             shopOrigin: '{{$shop->shop_origin}}',
-            host: '{{$host}}',
+            host: host,
             debug: true,
             forceRedirect: true
         });
