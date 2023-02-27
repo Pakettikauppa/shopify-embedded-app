@@ -13,6 +13,8 @@ use App\Models\Shopify\Session;
 use Log;
 use Shopify\Context;
 use Shopify\Utils;
+use Shopify\Webhooks\Registry;
+use Shopify\Webhooks\Topics;
 use Storage;
 use Shopify\Auth\OAuth;
 
@@ -146,17 +148,17 @@ class AuthController extends Controller
         );
     
         $host = $request->query('host');
-        //$shop = Utils::sanitizeShopDomain($request->query('shop'));
-        /*
-        $response = Registry::register('/api/webhooks', Topics::APP_UNINSTALLED, $shop, $session->getAccessToken());
+
+        $shop_domain = Utils::sanitizeShopDomain($request->get('shop'));
+        $response = Registry::register('/api/webhooks', Topics::APP_UNINSTALLED, $shop_domain, $session->getAccessToken());
         if ($response->isSuccess()) {
-            Log::debug("Registered APP_UNINSTALLED webhook for shop $shop");
+            Log::debug("Registered APP_UNINSTALLED webhook for shop $shop_domain with token " . $session->getAccessToken());
         } else {
             Log::error(
-                "Failed to register APP_UNINSTALLED webhook for shop $shop with response body: " .
+                "Failed to register APP_UNINSTALLED webhook for shop $shop_domain with response body: " .
                     print_r($response->getBody(), true)
             );
-        }*/
+        }
 
         $shop = Shop::where('shop_origin', $request->shop)->first();
         if ($shop && $shop->token && $this->tokenIsValid($request->shop, $shop->token)) {

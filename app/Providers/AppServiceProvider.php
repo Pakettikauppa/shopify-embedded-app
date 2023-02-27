@@ -7,6 +7,9 @@ use Illuminate\Support\ServiceProvider;
 use Shopify\Context;
 use App\Helpers\ShopifySessionStorage;
 use App\Lib\DbSessionStorage;
+use App\Lib\Handlers\AppUninstalled;
+use Shopify\Webhooks\Registry;
+use Shopify\Webhooks\Topics;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -30,6 +33,8 @@ class AppServiceProvider extends ServiceProvider
             true,
             false,
         );
+
+        Registry::addHandler(Topics::APP_UNINSTALLED, new AppUninstalled());
     }
 
     /**
