@@ -6,6 +6,7 @@ use App\Lib\AuthRedirection;
 use Shopify\Auth\OAuth;
 use App\Models\Shopify\Session;
 
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -59,4 +60,7 @@ Route::group(['namespace' => 'Shopify'], function () {
         Route::get('/track-shipment', 'AppController@trackShipment')->name('shopify.track-shipment');
 
     });
+
+    Route::post('/api/webhooks', 'WebhooksController@callback');
+
 });
