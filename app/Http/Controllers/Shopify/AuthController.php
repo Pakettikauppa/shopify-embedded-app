@@ -36,7 +36,8 @@ class AuthController extends Controller
             \App::setLocale($shop ? $shop->locale : 'en');
             return view('layouts.app', [
                'shop' => $shop,
-               'host' => $request->query('host')
+               'host' => $request->query('host'),
+               'type' => $this->type
             ]);
         } else {
             return redirect(Utils::getEmbeddedAppUrl($request->query("host", null)) . "/" . $request->path());
