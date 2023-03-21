@@ -435,10 +435,25 @@
                         callback();
                     }
                     stopLoading();
+                    checkHeadersForReauthorization(response.headers);
                 })
                 .catch(error => {
+                    if (error.response) {
+                        checkHeadersForReauthorization(error.response.headers);
+                    }
                     stopLoading();
                 });
+        }
+
+        // Redirect for authorization
+        function checkHeadersForReauthorization(headers) {
+            if (headers['x-shopify-api-request-failure-reauthorize'] === "1") {
+                const authUrlHeader = headers['x-shopify-api-request-failure-reauthorize-url'] || '/api/auth';
+                redirect.dispatch(
+                    Actions.Redirect.Action.REMOTE,
+                    authUrlHeader.startsWith("/") ? `https://${window.location.host}${authUrlHeader}` : authUrlHeader
+                );
+            }
         }
 
         // Replaces targets inner html with supplied html, evaling javascript code
