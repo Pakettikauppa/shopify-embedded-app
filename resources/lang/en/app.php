@@ -112,7 +112,7 @@ return [
         'country' => 'Country',
         'email' => 'Email',
         'phone' => 'Phone',
-        'enable_carrier_api' => 'Pickup points functionality need Carrier Services API. API is not available to Shopify Lite. API for Shopify Basic is 20 USD/month or free if using annual subscriptions. To turn on annual subscriptions click settings > Account > Compare plan > Choose a plan > Choose ANNUAL. For other than Shopify Lite and Shopify Basic plans, API is free. After this, contact Shopify Customer Service to enable Carrier Service API.',
+        'enable_carrier_api' => 'Pickup points functionality need Carrier Services API. API is avaialble only to Shopify and Shopify Plus Plan. Contact Shopify Customer Service to enable Carrier Service API.',
         'pickuppoint_providers' => 'Which service providers are used?',
         'pickuppoints_count' => 'How many pickup points are shown as result?',
         'pickuppoints_count_0' => 'Don\'t show pickup points',
