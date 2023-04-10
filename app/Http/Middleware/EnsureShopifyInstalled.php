@@ -25,7 +25,7 @@ class EnsureShopifyInstalled
         $token = Session::where('shop', $shop)->where('access_token', '<>', null)->first();
         $tokenValid = false;
         if($token) {
-            $tokenValid = $this->tokenIsValid($shop, $token);
+            $tokenValid = $this->tokenIsValid($shop, $token->access_token);
         }
 
         // If token is invalid (invalidated after uninstalling the app), we direct to installation authflow.
