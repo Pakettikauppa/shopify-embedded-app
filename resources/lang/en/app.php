@@ -112,7 +112,7 @@ return [
         'country' => 'Country',
         'email' => 'Email',
         'phone' => 'Phone',
-        'enable_carrier_api' => 'Pickup points functionality need Carrier Services API. API is avaialble only to Shopify and Shopify Plus Plan. Contact Shopify Customer Service to enable Carrier Service API.',
+        'enable_carrier_api' => 'Enabling pickup points requires the activation of the <a style="font-weight:bold" href="https://shopify.dev/docs/api/admin-rest/2023-01/resources/carrierservice" target="_blank">CarrierService API</a>. The API is automatically enabled on the Advanced Shopify and Shopify Plus plans. <a style="font-weight:bold" href="https://help.shopify.com/en/messages" target="_blank">By contacting Shopify Support</a>, the API can also be activated on the Shopify Plan. This will cost 17 EUR per month on the monthly Shopify plan, but it is included in the price of the annual Shopify plan. You can switch plans from <b>Admin > Settings > Plan</b>. </a>. The CarrierService API is not available on the Basic Shopify or Shopify Starter plan. For more information, <a href="https://help.shopify.com/en/manual/shipping/setting-up-and-managing-your-shipping/enabling-shipping-carriers" target="_blank">click here</a>'.
         'pickuppoint_providers' => 'Which service providers are used?',
         'pickuppoints_count' => 'How many pickup points are shown as result?',
         'pickuppoints_count_0' => 'Don\'t show pickup points',
