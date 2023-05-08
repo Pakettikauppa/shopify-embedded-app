@@ -81,6 +81,7 @@ return [
         'language' => 'Kieli',
         'shipment_settings' => 'Lähetysasetukset',
         'default_shipping_method' => 'Oletuslähetystapa',
+        'pickup_filter' => 'Näytettävät noutopisteet',
         'shopify_method' => 'Toimitustapa Shopifystä',
         'pk_method' => 'Pakettikaupan toimitustavat',
         'pakettikauppa_method' => 'Pakettikaupan toimitustavat',
@@ -116,6 +117,7 @@ return [
         'save_failed' => 'Failed to save changes',
         'print_return_labels' => 'Luo aina palautuslähetys lähetyksen yhteyssä. Huom! Shopifyssä oleva seuranta toimii vain alkuperäiselle lähetykselle.',
         'include_discounted_price_in_trigger' => 'Ota hintarajan laskennassa mukaan tuotteiden alennukset.',
+        'info_code' => 'Info-koodi lähetyksille',
         'pickuppoints' => [
             'title' => 'Noutopisteiden asetukset',
             'provider' => 'Kuljetusyhtiö',
@@ -126,6 +128,7 @@ return [
             'private_lockers' => 'Yksityiset automaatit',
             'outdoor_lockers' => 'Ulkoautomaatit',
             'pickup_points' => 'Noutopiste',
+            'limit_pickup_points_by_weight' => 'Huomio tuotteiden paino noutopistehaussa?',
             'agencies' => 'Noutopisteet',
             'parcel_lockers' => 'Pakettiautomaatti',
         ],
