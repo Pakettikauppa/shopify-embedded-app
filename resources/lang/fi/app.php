@@ -81,6 +81,7 @@ return [
         'language' => 'Kieli',
         'shipment_settings' => 'Lähetysasetukset',
         'default_shipping_method' => 'Oletuslähetystapa',
+        'pickup_filter' => 'Suodattimen noutopisteet',
         'shopify_method' => 'Toimitustapa Shopifystä',
         'pk_method' => 'Pakettikaupan toimitustavat',
         'pakettikauppa_method' => 'Pakettikaupan toimitustavat',
@@ -117,6 +118,7 @@ return [
         'print_return_labels' => 'Luo aina palautuslähetys lähetyksen yhteyssä. Huom! Shopifyssä oleva seuranta toimii vain alkuperäiselle lähetykselle.',
         'include_discounted_price_in_trigger' => 'Ota hintarajan laskennassa mukaan tuotteiden alennukset.',
         'pickuppoints' => [
+            'show' => 'Näytä',
             'title' => 'Noutopisteiden asetukset',
             'provider' => 'Kuljetusyhtiö',
             'base_price' => 'Perushinta (€)',
