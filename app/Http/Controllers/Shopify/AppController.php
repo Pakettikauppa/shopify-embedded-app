@@ -466,7 +466,12 @@ class AppController extends Controller {
                         $makeNull = true;
                         //producte deleted and variant null, skip
                         if ($item['variant'] === null){
-                            $has_missing_products = true;
+                            // If no variant, check if product itself has stock
+                            $productData = $this->client->getProduct($item['id']);
+                            $qty = $productData['products']['edges'][0]['node']['totalInventory'] ?? 0;
+                            if($qty < 1) {
+                                $has_missing_products = true;
+                            }
                             continue;
                         }
                         $inventoryLevels = $item['variant']['inventoryItem']['inventoryLevels']['edges'];
@@ -1019,7 +1024,6 @@ class AppController extends Controller {
         if($fulfil)
         {
             // Get unfulfiled items.
-            $unfulfiled_items = [];
             $quantities_unfulfiled = request()->get('quantity');
             foreach ($order['lineItems']['edges'] as $line_item) {
                 $node = $line_item['node'];
@@ -1167,7 +1171,12 @@ class AppController extends Controller {
                 try {
                     $makeNull = true;
                     if ($item['variant'] === null){
-                        $has_missing_products = true;
+                        // If no variant, check if product itself has stock
+                        $productData = $this->client->getProduct($item['id']);
+                        $qty = $productData['products']['edges'][0]['node']['totalInventory'] ?? 0;
+                        if($qty < 1) {
+                            $has_missing_products = true;
+                        }
                         continue;
                     }
                     $inventoryLevels = $item['variant']['inventoryItem']['inventoryLevels']['edges'];
