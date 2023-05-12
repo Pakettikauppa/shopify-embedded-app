@@ -466,12 +466,7 @@ class AppController extends Controller {
                         $makeNull = true;
                         //producte deleted and variant null, skip
                         if ($item['variant'] === null){
-                            // If no variant, check if product itself has stock
-                            $productData = $this->client->getProduct($item['id']);
-                            $qty = $productData['products']['edges'][0]['node']['totalInventory'] ?? 0;
-                            if($qty < 1) {
-                                $has_missing_products = true;
-                            }
+                            $has_missing_products = true;
                             continue;
                         }
                         $inventoryLevels = $item['variant']['inventoryItem']['inventoryLevels']['edges'];
@@ -1171,12 +1166,7 @@ class AppController extends Controller {
                 try {
                     $makeNull = true;
                     if ($item['variant'] === null){
-                        // If no variant, check if product itself has stock
-                        $productData = $this->client->getProduct($item['id']);
-                        $qty = $productData['products']['edges'][0]['node']['totalInventory'] ?? 0;
-                        if($qty < 1) {
-                            $has_missing_products = true;
-                        }
+                        $has_missing_products = true;
                         continue;
                     }
                     $inventoryLevels = $item['variant']['inventoryItem']['inventoryLevels']['edges'];
@@ -1211,24 +1201,24 @@ class AppController extends Controller {
 
 
             //filter services to check if found all available quantities in one warehouse
-            // foreach ($services as $fullfilment => $line_items) {
-            //     foreach ($line_items as $locationId => $items) {
-            //         if (count($items) == count($shipment['line_items'])){
-            //             $filtered_services[$fullfilment][$locationId] = $items;
-            //             break;
-            //         }
-            //     }
-            // }
-
-            try {
-                $this->fulfillLineItems($shop, $order);
-            } catch (\Exception $e) {
-                if ($e->getMessage() == 'ACCESS_DENIED') {
-                    return redirect()->route('install-link', request()->all());
+            foreach ($services as $fullfilment => $line_items) {
+                foreach ($line_items as $locationId => $items) {
+                    if (count($items) == count($shipment['line_items'])){
+                        $filtered_services[$fullfilment][$locationId] = $items;
+                        break;
+                    }
                 }
             }
 
-            if ($has_missing_products){
+            if (!empty($filtered_services)) {
+                try {
+                    $result = $this->fulfillLineItems($shop, $order);
+                } catch (\Exception $e) {
+                    if ($e->getMessage() == 'ACCESS_DENIED') {
+                        return redirect()->route('install-link', request()->all());
+                    }
+                }
+            } else if ($has_missing_products){
                 $shipment['status'] = 'product_deleted';
             } else {
                 $shipment['status'] = 'not_in_inventory';
