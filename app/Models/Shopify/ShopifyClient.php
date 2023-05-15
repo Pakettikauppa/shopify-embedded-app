@@ -455,4 +455,20 @@ class ShopifyClient {
         return $query;    
     }
 
+    public function getProduct($id){
+        $query = <<<GQL
+        query {
+            products(first : 1, query: "id:$id") {
+              edges {
+                node {
+                  totalInventory
+                }
+              }
+            }
+          }
+        GQL;
+        $data = $this->callGraphQL($query);
+        return $data;
+    }
+
 }
