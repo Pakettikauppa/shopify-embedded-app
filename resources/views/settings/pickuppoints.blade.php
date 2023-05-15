@@ -10,18 +10,17 @@
             {{trans('app.settings.enable_carrier_api')}}
             @else
             <div class="row">
-                <div class="columns four">
+                <div class="columns twelve">
                     <h5>{{trans('app.settings.pickup_filter')}}</h5>
                 </div>
-                <div class="columns eight">
-                    <select name="pickup_filter[]" multiple>
-                        @foreach($pickup_filter_types as $key => $value)
-                            <option value="{{ $value }}" @if((is_null($value) && empty($shop->pickup_filter)) || in_array($value, $shop->pickup_filter ?? [])) selected @endif>
-                                {{ trans("app.settings.pickuppoints.$key") }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
+                    @foreach($pickup_filter_types as $key => $value)
+                        <div class="columns two">
+                            {{ trans("app.settings.pickuppoints.show") }} {{ strtolower(trans("app.settings.pickuppoints.$key")) }}
+                            <label>
+                                <input id="pickup-filter-{{ $key }}" class="pickup-filter" type="checkbox" name="pickup_filter[]" value="{{ $value }}" @if((is_null($value) && empty($shop->pickup_filter)) || in_array($value, $shop->pickup_filter ?? [])) checked @endif>
+                            </label>
+                        </div>
+                    @endforeach
             </div>
             <div class="row">
                 <div class="input-group">
@@ -109,3 +108,32 @@
 </form>
 
 @endsection
+
+<script type='text/javascript'>
+    $("#pickup-filter-all").on('click', function(event) {
+        if(!$(this).prop('checked')) {
+            $(this).prop('checked', true);
+            return true;
+        }
+
+        $(".pickup-filter").each(function() {
+            if($(this).attr('id') == 'pickup-filter-all') {
+                return true;
+            }
+            else {
+                $(this).removeAttr('checked');
+            }
+        });
+    });
+
+    $(".pickup-filter").on('click', function() {
+        if($(this).attr('id') == 'pickup-filter-all' && !$("#pickup-filter-all").prop('checked')) {
+            return true;
+        }
+
+        // If this is not "all" checkbox and "all" is checked, uncheck "all".
+        if($(this).attr('id') != 'pickup-filter-all' && $("#pickup-filter-all").prop('checked')) {
+            $("#pickup-filter-all").removeAttr('checked');
+        }
+    });
+</script>
