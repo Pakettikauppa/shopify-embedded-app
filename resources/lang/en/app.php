@@ -129,6 +129,7 @@ return [
         'include_discounted_price_in_trigger' => 'Use discounted price for trigger price.',
         'info_code' => 'Info code for shipments',
         'pickuppoints' => [
+            'show' => 'Show',
             'title' => 'Pickup point settings',
             'provider' => 'Provider',
             'base_price' => 'Base price (€)',
