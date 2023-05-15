@@ -119,6 +119,7 @@ return [
         'include_discounted_price_in_trigger' => 'Ota hintarajan laskennassa mukaan tuotteiden alennukset.',
         'info_code' => 'Info-koodi lähetyksille',
         'pickuppoints' => [
+            'show' => 'Näytä',
             'title' => 'Noutopisteiden asetukset',
             'provider' => 'Kuljetusyhtiö',
             'base_price' => 'Perushinta (€)',

@@ -142,11 +142,18 @@ class AuthController extends Controller
         }
         // Since HMAC is validated we can assume to have valid information in the URL
         
-        $session = OAuth::callback(
-            $request->cookie(),
-            $request->query(),
-            ['\App\Lib\CookieHandler', 'saveShopifyCookie'],
-        );
+        try {
+            $session = OAuth::callback(
+                $request->cookie(),
+                $request->query(),
+                ['\App\Lib\CookieHandler', 'saveShopifyCookie'],
+            );
+        } catch (\Exception $e) {
+            Log::debug($e->getMessage());
+            Log::debug($e->getTraceAsString());
+
+            $session = Utils::loadCurrentSession($request->header(), $request->cookie(), 'online');
+        }
     
         $host = $request->query('host');
 
