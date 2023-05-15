@@ -85,7 +85,7 @@
                                 </div>
                             </div>
                         @endforeach
-                        <input type="checkbox" name="fulfil">Fulfil shipment
+                        <input type="checkbox" name="fulfil">Fulfill shipment
                     </div>
                 </div>
                 <div class="row" style="margin-bottom: 2em">

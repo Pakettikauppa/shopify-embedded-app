@@ -35,7 +35,7 @@ return [
     ],
     'custom_shipment' => [
         'title' => 'Mukautettu lähetys',
-        'service_title' => 'Toitmisutapa',
+        'service_title' => 'Toimitustapa',
         'additional_service_title' => 'Lisäpalvelut',
         'address_title' => 'Toimitusosoite',
         'create_button' => 'Luo lähetys',
