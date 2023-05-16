@@ -132,6 +132,8 @@ return [
             'limit_pickup_points_by_weight' => 'Huomio tuotteiden paino noutopistehaussa?',
             'agencies' => 'Noutopisteet',
             'parcel_lockers' => 'Pakettiautomaatit',
+            'yes' => 'Kyllä, älä näytä liian painaville ostoskoreille noutopisteitä',
+            'no' => 'Ei, näytä noutopisteet riippumatta painosta',
         ],
         'support' => 'Tuki',
     ],
