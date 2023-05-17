@@ -1261,7 +1261,10 @@ class AppController extends Controller {
             $trackingInfo = [
                 'company' => trans('app.settings.company_name_' . $this->type),
             ];
-            if(count($order['tracking_codes']) == 1) {
+            if(!isset($order['tracking_codes'])) {
+                $trackingInfo = [];
+            }
+            elseif(count($order['tracking_codes']) == 1) {
                 $trackingInfo['number'] = end($order['tracking_codes']);
                 $trackingInfo['url'] = $this->tracking_url . end($order['tracking_codes']);
             } elseif(count($order['tracking_codes']) > 1) {
@@ -1285,6 +1288,7 @@ class AppController extends Controller {
 
             try {
                 $response = $shopifyApi->fullfillOrderNew($fulfillment);
+                dd($response);
                 $result['error'] = $response['errors'][0]['message'] ?? null;
 
                 Log::debug(var_export($response, true));
