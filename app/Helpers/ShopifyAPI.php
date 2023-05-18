@@ -48,6 +48,16 @@ class ShopifyAPI
                         edges {
                             node {
                               id
+                              status
+                                lineItems(first: 10) {
+                                    edges {
+                                        node {
+                                            id
+                                            sku
+                                            totalQuantity
+                                        }
+                                    }
+                                }
                             }
                         }
                       }

@@ -1020,22 +1020,24 @@ class AppController extends Controller {
         {
             // Get unfulfiled items.
             $quantities_unfulfiled = request()->get('quantity');
+            $lineItemsToFulfil = [];
             foreach ($order['lineItems']['edges'] as $line_item) {
                 $node = $line_item['node'];
                 $item = explode("/", $node['id']);
                 $itemID = end($item);
-                if ($node['requiresShipping'] && isset($quantities_unfulfiled[$itemID])) {
+                if ($node['requiresShipping']) {
 
-                    $qty_to_fulfil = $quantities_unfulfiled[$itemID];
+                    $qty_to_fulfil = $quantities_unfulfiled[$itemID] ?? 0;
                     // Set the unfulfiled quantity selected. Check if it is not zero or exceeds maximum, in case client decides to play around..
                     $order_quantity = $node['quantity'];
                     if($qty_to_fulfil > $order_quantity)
                         $qty_to_fulfil = $order_quantity;
                     if($qty_to_fulfil < 1)
-                        continue;
+                        $qty_to_fulfil = 0;
 
                     $node['quantity'] = $qty_to_fulfil;
                     $shipment['line_items'][] = $node;
+                    $lineItemsToFulfil[] = $qty_to_fulfil;
                 }
             }
         }
@@ -1212,7 +1214,7 @@ class AppController extends Controller {
 
             if (!empty($filtered_services)) {
                 try {
-                    $result = $this->fulfillLineItems($shop, $order);
+                    $result = $this->fulfillSpecificLineItems($shop, $order, $lineItemsToFulfil);
                 } catch (\Exception $e) {
                     if ($e->getMessage() == 'ACCESS_DENIED') {
                         return redirect()->route('install-link', request()->all());
@@ -1240,6 +1242,88 @@ class AppController extends Controller {
                         'error_messages' => $result['error'] ?? '',
                     ])->toHtml()
         ]);
+    }
+
+    private function fulfillSpecificLineItems($shop, $order, $lineItemsToFulfil) {        
+        if(empty($lineItemsToFulfil)) {
+            return false;
+        }
+        $result = [];
+        $shopifyApi = new ShopifyAPI($shop);
+
+        $fulfillmentOrders = $shopifyApi->getFulfillmentOrder($order['id']);
+        
+        //Find OPEN fulfillment
+        $fulfillmentOrder = null;
+
+        foreach($fulfillmentOrders['data']['order']['fulfillmentOrders']['edges'] as $fulfillmentOrderTmp) {
+            if(in_array($fulfillmentOrderTmp['node']['status'], ['OPEN', 'IN_PROGRESS'])) {
+                $fulfillmentOrder = $fulfillmentOrderTmp;
+                break;
+            }
+        }
+        $fulfillmentOrderID = $fulfillmentOrder['node']['id'];
+
+        $fulfillmentOrderLineItems = [];
+        foreach ($fulfillmentOrder['node']['lineItems']['edges'] as $i => $line_item) {
+            $itemToFulfillQty = $lineItemsToFulfil[$i] ?? 0;
+            if($itemToFulfillQty <= 0) {
+                continue;
+            }
+            $fulfillmentOrderLineItems[] = [
+                "id" => $line_item['node']['id'],
+                "quantity" => (int) $itemToFulfillQty,
+            ];
+        }
+        if(empty($fulfillmentOrderLineItems)) {
+            return false;
+        }
+
+        $trackingInfo = [];
+        if(!isset($order['tracking_codes'])) {
+            $trackingInfo = [];
+        }
+        elseif(count($order['tracking_codes']) == 1) {
+            $trackingInfo['number'] = end($order['tracking_codes']);
+            $trackingInfo['url'] = $this->tracking_url . end($order['tracking_codes']);
+        } elseif(count($order['tracking_codes']) > 1) {
+            $trackingInfo['numbers'] = $order['tracking_codes'];
+            $tracking_url = $this->tracking_url;
+
+            $closure = function($code) use ($tracking_url) {
+                return $tracking_url . $code;
+            };
+
+            $trackingInfo['urls'] = array_map($closure, $order['tracking_codes']);
+        }
+
+        $fulfillment = [
+            'lineItemsByFulfillmentOrder' => [
+                'fulfillmentOrderId'=> $fulfillmentOrderID,
+                "fulfillmentOrderLineItems" => $fulfillmentOrderLineItems,
+            ],
+            'trackingInfo' => $trackingInfo,
+            'notifyCustomer' => true,
+        ];
+
+        try {
+            $response = $shopifyApi->fullfillOrderNew($fulfillment);
+            $result['error'] = $response['errors'][0]['message'] ?? null;
+
+            Log::debug(var_export($response, true));
+        } catch (ShopifyApiException $sae) {
+            $exceptionData = array(
+                var_export($sae->getMethod(), true),
+                var_export($sae->getPath(), true),
+                var_export($sae->getParams(), true),
+                var_export($sae->getResponseHeaders(), true),
+                var_export($sae->getResponse(), true)
+            );
+
+            Log::debug('ShopiApiException: ' . var_export($exceptionData, true));
+        } catch (\Exception $e) {
+            Log::debug('Fullfillment Exception: ' . $e->getMessage() . ' on line ' . $e->getLine());
+        }
     }
 
     private function fulfillLineItems($shop, $order) {
