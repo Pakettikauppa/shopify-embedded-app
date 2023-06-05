@@ -55,6 +55,9 @@ class ShopifyAPI
                                             id
                                             sku
                                             totalQuantity
+                                            lineItem {
+                                                id
+                                            }
                                         }
                                     }
                                 }

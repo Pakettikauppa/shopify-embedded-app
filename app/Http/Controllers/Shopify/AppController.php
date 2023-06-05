@@ -1037,7 +1037,7 @@ class AppController extends Controller {
 
                     $node['quantity'] = $qty_to_fulfil;
                     $shipment['line_items'][] = $node;
-                    $lineItemsToFulfil[] = $qty_to_fulfil;
+                    $lineItemsToFulfil[$node['id']] = (int) $qty_to_fulfil;
                 }
             }
         }
@@ -1214,7 +1214,7 @@ class AppController extends Controller {
 
             if (!empty($filtered_services)) {
                 try {
-                    $result = $this->fulfillSpecificLineItems($shop, $order, $lineItemsToFulfil);
+                    $result = $this->fulfillSpecificLineItems($shop, $order['id'], $lineItemsToFulfil);
                 } catch (\Exception $e) {
                     if ($e->getMessage() == 'ACCESS_DENIED') {
                         return redirect()->route('install-link', request()->all());
@@ -1244,14 +1244,14 @@ class AppController extends Controller {
         ]);
     }
 
-    private function fulfillSpecificLineItems($shop, $order, $lineItemsToFulfil) {        
+    private function fulfillSpecificLineItems($shop, $orderID, $lineItemsToFulfil) {        
         if(empty($lineItemsToFulfil)) {
             return false;
         }
         $result = [];
         $shopifyApi = new ShopifyAPI($shop);
 
-        $fulfillmentOrders = $shopifyApi->getFulfillmentOrder($order['id']);
+        $fulfillmentOrders = $shopifyApi->getFulfillmentOrder($orderID);
         
         //Find OPEN fulfillment
         $fulfillmentOrder = null;
@@ -1265,8 +1265,10 @@ class AppController extends Controller {
         $fulfillmentOrderID = $fulfillmentOrder['node']['id'];
 
         $fulfillmentOrderLineItems = [];
-        foreach ($fulfillmentOrder['node']['lineItems']['edges'] as $i => $line_item) {
-            $itemToFulfillQty = $lineItemsToFulfil[$i] ?? 0;
+
+        foreach ($fulfillmentOrder['node']['lineItems']['edges'] as $line_item) {
+            $lineItemID = $line_item['node']['lineItem']['id'] ?? '';
+            $itemToFulfillQty = $lineItemsToFulfil[$lineItemID] ?? 0;
             if($itemToFulfillQty <= 0) {
                 continue;
             }
@@ -1372,7 +1374,6 @@ class AppController extends Controller {
 
             try {
                 $response = $shopifyApi->fullfillOrderNew($fulfillment);
-                dd($response);
                 $result['error'] = $response['errors'][0]['message'] ?? null;
 
                 Log::debug(var_export($response, true));
