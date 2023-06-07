@@ -1251,8 +1251,26 @@ class AppController extends Controller {
         $result = [];
         $shopifyApi = new ShopifyAPI($shop);
 
-        $fulfillmentOrders = $shopifyApi->getFulfillmentOrder($orderID);
         
+        try {
+            $fulfillmentOrders = $shopifyApi->getFulfillmentOrder($orderID);
+        } catch (ShopifyApiException $sae) {
+            $exceptionData = array(
+                var_export($sae->getMethod(), true),
+                var_export($sae->getPath(), true),
+                var_export($sae->getParams(), true),
+                var_export($sae->getResponseHeaders(), true),
+                var_export($sae->getResponse(), true)
+            );
+
+            Log::debug('Fullfillment Exception: ' . var_export($exceptionData, true));
+            return;
+        } catch (\Exception $e) {
+            Log::debug('Fullfillment Exception: ' . $e->getMessage() . ' on line ' . $e->getLine());
+            return;
+        }
+
+
         //Find OPEN fulfillment
         $fulfillmentOrder = null;
 
