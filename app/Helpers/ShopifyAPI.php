@@ -68,7 +68,14 @@ class ShopifyAPI
               }
             QUERY;
         Log::debug($queryString);
-        $data = $this->client->query($queryString);
+
+        try {
+            $data = $this->client->query($queryString);
+        }
+        catch (\Exception $e) {
+            Log::debug('GraphQL exception: ' . $e->getMessage());
+            return null;
+        }
         $response = $data->getBody()->getContents();
         Log::debug($response);
         return json_decode($response, true);
