@@ -17,6 +17,7 @@ use Shopify\Webhooks\Registry;
 use Shopify\Webhooks\Topics;
 use Storage;
 use Shopify\Auth\OAuth;
+use Shopify\Exception\CookieNotFoundException;
 
 class AuthController extends Controller
 {
@@ -148,11 +149,10 @@ class AuthController extends Controller
                 $request->query(),
                 ['\App\Lib\CookieHandler', 'saveShopifyCookie'],
             );
-        } catch (\Exception $e) {
-            Log::debug($e->getMessage());
-            Log::debug($e->getTraceAsString());
-
-            $session = Utils::loadCurrentSession($request->header(), $request->cookie(), 'online');
+        } catch (CookieNotFoundException $e) {
+            Session::where('shop', $request->get('shop'))->delete();
+            Log::error("Authentication callback exception : " . $e->getMessage());
+            return redirect()->route('install-link', ['shop' => $request->get('shop')]);
         }
     
         $host = $request->query('host');
