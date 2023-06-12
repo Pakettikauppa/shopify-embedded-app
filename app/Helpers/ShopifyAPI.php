@@ -103,6 +103,8 @@ class ShopifyAPI
                     $output .= $key . ': ' . $value . '';
                 } else if (gettype($value) == "boolean"){
                     $output .= $key . ': ' . ($value?'true':'false') . '';
+                } else if (gettype($key) == 'integer'){
+                    $output .= '"' . $value . '"';
                 } else {
                     $output .= $key . ': "' . $value . '"';
                 }
