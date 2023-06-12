@@ -29,7 +29,10 @@ class ShopifyAPI
             }
             QUERY;
         $data = $this->client->query($queryString);
-        return json_decode($data->getBody()->getContents(), true);
+
+        $response = json_decode($data->getBody()->getContents(), true);
+        Log::debug('GraphQL: ' . var_export($queryString,true) . "\nResponse: " . var_export($response, true));
+        return $response;
     }
 
     public function getFulfillmentOrder($order_id) {
