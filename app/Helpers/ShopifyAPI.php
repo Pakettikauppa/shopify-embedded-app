@@ -28,10 +28,11 @@ class ShopifyAPI
                 }
             }
             QUERY;
+        Log::debug('GraphQL: ' . $query_params);
         $data = $this->client->query($queryString);
 
         $response = json_decode($data->getBody()->getContents(), true);
-        Log::debug('GraphQL: ' . var_export($queryString,true) . "\nResponse: " . var_export($response, true));
+        Log::debug("Response: " . var_export($response, true));
         return $response;
     }
 
@@ -84,7 +85,7 @@ class ShopifyAPI
         return json_decode($response, true);
     }
 
-    private static function buildGraphQLInput(array $array) {
+    private static function buildGraphQLInput(array $array, $parentKey = '') {
         $output_as_array = false;
         $output = '';
         $total = count($array);
@@ -96,7 +97,7 @@ class ShopifyAPI
                     $output_as_array = true;
                     $output .= self::buildGraphQLInput($value);
                 } else {
-                    $output .= $key . ': ' . self::buildGraphQLInput($value);
+                    $output .= $key . ': ' . self::buildGraphQLInput($value, $key);
                 }
             } else {
                 if (gettype($value) == "integer"){
@@ -113,9 +114,11 @@ class ShopifyAPI
                 $output .= ', ';
             }
         }
-        if ($output_as_array){
+        if ($output_as_array || $parentKey == 'numbers' || $parentKey == 'urls'){
             return '[' . $output . ']';
+
         }
+
         return '{' . $output . '}';
     }
 }
