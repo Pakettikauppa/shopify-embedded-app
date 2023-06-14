@@ -1159,7 +1159,7 @@ class AppController extends Controller {
             $tracking_codes[] = $_shipment['tracking_code'];
         }
 
-        if ($fulfil) {
+        if ($fulfil && !empty($tracking_codes)) {
             Log::debug("Fullfilling order: " . implode(', ', $tracking_codes) . " - {$order['gid']}");
 
             $services = [];
@@ -1216,7 +1216,7 @@ class AppController extends Controller {
 
             if (!empty($filtered_services)) {
                 try {
-                    $result = $this->fulfillSpecificLineItems($shop, $order['id'], $lineItemsToFulfil);
+                    $result = $this->fulfillSpecificLineItems($shop, $order['id'], $lineItemsToFulfil, $tracking_codes);
                 } catch (\Exception $e) {
                     if ($e->getMessage() == 'ACCESS_DENIED') {
                         return redirect()->route('install-link', request()->all());
@@ -1246,7 +1246,7 @@ class AppController extends Controller {
         ]);
     }
 
-    private function fulfillSpecificLineItems($shop, $orderID, $lineItemsToFulfil) {        
+    private function fulfillSpecificLineItems($shop, $orderID, $lineItemsToFulfil, $tracking_codes) {        
         if(empty($lineItemsToFulfil)) {
             return false;
         }
@@ -1302,21 +1302,21 @@ class AppController extends Controller {
         }
 
         $trackingInfo = [];
-        if(!isset($order['tracking_codes'])) {
+        if(empty($tracking_codes)) {
             $trackingInfo = [];
         }
-        elseif(count($order['tracking_codes']) == 1) {
-            $trackingInfo['number'] = end($order['tracking_codes']);
-            $trackingInfo['url'] = $this->tracking_url . end($order['tracking_codes']);
-        } elseif(count($order['tracking_codes']) > 1) {
-            $trackingInfo['numbers'] = $order['tracking_codes'];
+        elseif(count($tracking_codes) == 1) {
+            $trackingInfo['number'] = end($tracking_codes);
+            $trackingInfo['url'] = $this->tracking_url . end($tracking_codes);
+        } elseif(count($tracking_codes) > 1) {
+            $trackingInfo['numbers'] = $tracking_codes;
             $tracking_url = $this->tracking_url;
 
             $closure = function($code) use ($tracking_url) {
                 return $tracking_url . $code;
             };
 
-            $trackingInfo['urls'] = array_map($closure, $order['tracking_codes']);
+            $trackingInfo['urls'] = array_map($closure, $tracking_codes);
         }
 
         $fulfillment = [
@@ -1328,6 +1328,7 @@ class AppController extends Controller {
             'notifyCustomer' => true,
         ];
 
+        Log::debug("Fulfilment data : " . json_encode($fulfillment, JSON_PRETTY_PRINT));
         try {
             $response = $shopifyApi->fullfillOrderNew($fulfillment);
             $result['error'] = $response['errors'][0]['message'] ?? null;
