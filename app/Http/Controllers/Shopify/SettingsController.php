@@ -450,6 +450,7 @@ class SettingsController extends Controller {
             if (isset($token->access_token)) {
                 $client->setAccessToken($token->access_token);
             }
+            $client->setSenderSystemName('Shopify');
             return $client;
         } else {
             $config = [
@@ -463,7 +464,9 @@ class SettingsController extends Controller {
             }
         }
 
-        return new Client($config, $use_config);
+        $client = new Client($config, $use_config);
+        $client->setSenderSystemName('Shopify');
+        return $client;
     }
 
     /**
