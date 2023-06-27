@@ -73,6 +73,8 @@ class PickupPointsController extends Controller {
         }
 
         $pk_client = new Client($pk_client_params, $pk_use_config);
+        $pk_client->setSenderSystemName('Shopify');
+
         if ($pk_use_config == "posti_config") {
             $token = $pk_client->getToken();
             if (isset($token->access_token)) {

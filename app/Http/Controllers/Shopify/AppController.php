@@ -101,6 +101,7 @@ class AppController extends Controller {
             if (isset($token->access_token)) {
                 $client->setAccessToken($token->access_token);
             }
+            $client->setSenderSystemName('Shopify');
             return $client;
         } else {
             $config = [
@@ -113,8 +114,9 @@ class AppController extends Controller {
                 ];
             }
         }
-
-        return new Client($config);
+        $client = new Client($config);
+        $client->setSenderSystemName('Shopify');
+        return $client;
     }
 
     /**
