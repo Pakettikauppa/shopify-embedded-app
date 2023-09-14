@@ -235,7 +235,7 @@ class PickupPointsController extends Controller {
 
         $customCarrierServices = array('rates' => $rates);
 
-        if (!(in_array($destination->country,['LV','LT', 'FI', 'AX', 'EE', 'SE', 'DK']))) {
+        if (!(in_array($destination->country,['LV', 'LT', 'FI', 'AX', 'EE', 'SE', 'DK']))) {
             $customCarrierServices = array('rates' => []);
         }
 
