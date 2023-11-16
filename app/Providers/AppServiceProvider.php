@@ -29,7 +29,7 @@ class AppServiceProvider extends ServiceProvider
             config('shopify.scope'),
             $host,
             new DbSessionStorage(),
-            '2023-01',
+            '2023-07',
             true,
             false,
         );
