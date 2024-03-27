@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Shopify;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Shopify\Shop;
-use Pakettikauppa\Client;
+use App\Helpers\PakettikauppaAPI;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 use Psy\Exception\FatalErrorException;
 use Log;
@@ -72,7 +72,7 @@ class PickupPointsController extends Controller {
             throw new FatalErrorException();
         }
 
-        $pk_client = new Client($pk_client_params, $pk_use_config);
+        $pk_client = new PakettikauppaAPI($pk_client_params, $pk_use_config);
         $pk_client->setSenderSystemName('Shopify');
 
         if ($pk_use_config == "posti_config") {
@@ -148,7 +148,8 @@ class PickupPointsController extends Controller {
                     $destination->country,
                     $pickupPointProviders,
                     $shop->pickuppoints_count,
-                    $pickupFilterQuery
+                    $pickupFilterQuery,
+                    5
             );
 
             if (empty($pickupPoints) && ($destination->country == 'LT' || $destination->country == 'AX' || $destination->country == 'FI')) {
@@ -168,7 +169,8 @@ class PickupPointsController extends Controller {
                         'FI',
                         $pickupPointProviders,
                         $shop->pickuppoints_count,
-                        $pickupFilterQuery
+                        $pickupFilterQuery,
+                        5
                 );
             }
             
