@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 use App\Models\Shopify\Shop;
 use App\Models\Shopify\Shipment as ShopifyShipment;
-use Pakettikauppa\Client;
+use App\Helpers\PakettikauppaAPI;
 use Pakettikauppa\Shipment;
 use Psy\Exception\FatalErrorException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -33,7 +33,7 @@ class AppController extends Controller {
     private $client;
 
     /**
-     * @var Client
+     * @var PakettikauppaAPI
      */
     private $pk_client;
     private $shopifyClient;
@@ -72,7 +72,7 @@ class AppController extends Controller {
      *
      * @param \App\Models\Shopify\Shop $shop
      *
-     * @return \Pakettikauppa\Client
+     * @return PakettikauppaAPI
      */
     public function getPakketikauppaClient($shop) {
 
@@ -87,7 +87,7 @@ class AppController extends Controller {
                 ]
             ];
             $use_config = 'posti_config';
-            $client = new Client($config, $use_config);
+            $client = new PakettikauppaAPI($config, $use_config);
             if (!is_object($shop->api_token) || !$shop->api_token || $shop->api_token->expires_in < time()) {
                 $token = $client->getToken();
                 if (isset($token->access_token)) {
@@ -114,7 +114,7 @@ class AppController extends Controller {
                 ];
             }
         }
-        $client = new Client($config);
+        $client = new PakettikauppaAPI($config);
         $client->setSenderSystemName('Shopify');
         return $client;
     }
@@ -858,7 +858,8 @@ class AppController extends Controller {
                     request()->get('country'),
                     $service_id,
                     $shop->pickuppoints_count,
-                    $pickupFilterQuery
+                    $pickupFilterQuery,
+                    5
             );
 
             if (empty($pickupPoints) && (request()->get('country') == 'LT' || request()->get('country') == 'AX' || request()->get('country') == 'FI')) {
@@ -869,7 +870,8 @@ class AppController extends Controller {
                         'FI',
                         $service_id,
                         $shop->pickuppoints_count,
-                        $pickupFilterQuery
+                        $pickupFilterQuery,
+                        5
                 );
             }
             // generate custom carrier service response
