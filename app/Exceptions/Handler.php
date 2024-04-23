@@ -24,6 +24,7 @@ class Handler extends ExceptionHandler
         \Illuminate\Database\Eloquent\ModelNotFoundException::class,
         \Illuminate\Session\TokenMismatchException::class,
         \Illuminate\Validation\ValidationException::class,
+        ShopifyException::class
     ];
 
     /**
@@ -51,6 +52,10 @@ class Handler extends ExceptionHandler
     {
         if ($exception instanceof NotFoundHttpException) {
             return response()->view('errors.404', [], 404);
+        }
+
+        if ($exception instanceof ShopifyException) {
+            return response()->view('errors.shopifyApi', [], 500);
         }
 
         if (ENV('APP_ENV') == 'production') {
