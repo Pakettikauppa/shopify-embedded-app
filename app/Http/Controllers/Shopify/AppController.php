@@ -26,6 +26,10 @@ use Storage;
 class AppController extends Controller {
 
     const SKIP_FULFILL_STATUSES = ['on_hold', 'custom_error', 'need_shipping_address'];
+    const PICKUP_POINTS_EXCEPTIONS = [
+        '2711' => ['FI'], //If sender country == FI, then parcel Connect should not display any pickup points ever.
+        '2331' => ['EE', 'LT', 'LV'], //if sender country == EE, LT, LV we should not search for Postipaketti Baltia pickup points.
+    ];
 
     /**
      * @var ShopifyClient
@@ -852,6 +856,16 @@ class AppController extends Controller {
             // search nearest pickup locations
 
             $pickupFilterQuery = !empty($shop->pickup_filter) ? implode(',', $shop->pickup_filter) : null;
+
+            //check for exceptions
+            if (array_key_exists($service_id, static::PICKUP_POINTS_EXCEPTIONS) && (in_array(request()->get('country'), static::PICKUP_POINTS_EXCEPTIONS[$service_id]))) {
+
+                return response()->json([
+                    'pickups' => [],
+                    'selected_pickup' => null
+                ]);
+            }
+
             $pickupPoints = $pk_client->searchPickupPoints(
                     request()->get('zip'),
                     request()->get('address1'),
