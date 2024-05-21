@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Shopify;
 
 use App\Exceptions\ShopifyApiException;
+use App\Exceptions\ShopifyException;
 use App\Http\Controllers\Controller;
 use App\Models\Shopify\ShopifyClient;
 use App\Http\Middleware\ShopifyTokenMiddleware;
@@ -207,6 +208,8 @@ class SettingsController extends Controller {
             } else {
                 // we just don't know why it failed
             }
+        } catch (ShopifyException $se) {
+            throw $se;
         }
         return null;
     }
