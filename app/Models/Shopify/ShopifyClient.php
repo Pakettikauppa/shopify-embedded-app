@@ -28,6 +28,7 @@ namespace App\Models\Shopify;
 
 use App\Exceptions\ShopifyApiException;
 use App\Exceptions\ShopifyCurlException;
+use App\Exceptions\ShopifyException;
 use Exception;
 use Log;
 use Illuminate\Support\Facades\Http;
@@ -133,14 +134,27 @@ class ShopifyClient {
 
     public function callGraphQL($query) {
         $url = "https://{$this->shop_domain}/admin/api/{$this->api_version}/graphql.json";
+        try {
+
 
         $response = Http::withHeaders([
                     'Content-Type' => 'application/graphql',
                     'X-Shopify-Access-Token' => $this->token
                 ])->withBody($query, 'application/graphql')
+                ->throw()
                 ->post($url);
-        $response = json_decode($response, true);
+
+        } catch (Illuminate\Http\Client\RequestException $requestException) {
+            Log::error('GraphQL call to ' . $url . "\n" . $query . "\n error: " . $requestException->getMessage());
+            throw new \Exception("GraphQL errors: " . $requestException->getMessage());
+        } catch (\Exception $exception) {
+            throw new ShopifyException($exception->getMessage());
+        }
+
         Log::debug('GraphQL call to ' . $url . "\n" . $query . "\nResponse: " . var_export($response, true));
+
+        $response = json_decode($response, true);
+
         if (isset($response['errors'])) {
             $cost = $response['errors'][0]['extensions']['cost'] ?? 0;
             Log::debug("Cost " . $cost);

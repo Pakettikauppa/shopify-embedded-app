@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Shopify;
 
 use App\Exceptions\ShopifyApiException;
+use App\Exceptions\ShopifyException;
 use App\Http\Controllers\Controller;
 use App\Models\Shopify\ShopifyClient;
 use Illuminate\Http\Request;
@@ -26,6 +27,10 @@ use Storage;
 class AppController extends Controller {
 
     const SKIP_FULFILL_STATUSES = ['on_hold', 'custom_error', 'need_shipping_address'];
+    const PICKUP_POINTS_EXCEPTIONS = [
+        '2711' => ['FI'], //If sender country == FI, then parcel Connect should not display any pickup points ever.
+        '2331' => ['EE', 'LT', 'LV'], //if sender country == EE, LT, LV we should not search for Postipaketti Baltia pickup points.
+    ];
 
     /**
      * @var ShopifyClient
@@ -144,6 +149,7 @@ class AppController extends Controller {
     }
 
     public function printLabels(Request $request) {
+        Log::debug('Print labels');
         $result = [];
         if (!isset($request->ids) && !isset($request->id)) {
             Log::debug('No id found');
@@ -193,8 +199,10 @@ class AppController extends Controller {
             $params = request()->all();
             $params['shopify_redirect_url'] = $request->getRequestUri();
             return redirect()->route('install-link', $params);
-        } catch (\Exception $sae) {
-            Log::debug($sae->getMessage());
+        } catch (ShopifyException $se) {
+             throw $se;
+        }
+        catch (\Exception $sae) {
             $params = request()->all();
             $params['shopify_redirect_url'] = $request->getRequestUri();
             return redirect()->route('install-link', $params);
@@ -285,6 +293,8 @@ class AppController extends Controller {
                         $shipment['status'] = 'on_hold';
                         return $shipment;
                     }
+                } catch (ShopifyException $se) {
+                    throw $se;
                 } catch (\Exception $e) {
                     Log::debug($e->getMessage());
                     Log::debug($e->getTraceAsString());
@@ -403,6 +413,9 @@ class AppController extends Controller {
                                 }
                                 GQL;
                         $this->client->call($query);
+
+                    } catch (ShopifyException $se) {
+                        throw $se;
                     } catch (\Exception $e) {
                         Log::debug($e->getMessage());
                         Log::debug($e->getTraceAsString());
@@ -419,7 +432,7 @@ class AppController extends Controller {
 
             $shipments[] = $shipment;
 
-            Log::debug("Processed order: " . implode(', ', $shipment['tracking_codes']) . " - {$order['id']}");
+            Log::debug("Processed order: " . ((array_key_exists('tracking_codes', $shipment)) ? implode(', ', $shipment['tracking_codes']) : '') . " - {$order['id']}");
         }
 
         if ($fulfill_order) {
@@ -495,6 +508,9 @@ class AppController extends Controller {
                         );
 
                         Log::debug('ShopiApiException: ' . var_export($exceptionData, true));
+                    } catch (ShopifyException $se) {
+                        throw $se;
+
                     } catch (\Exception $e) {
                         Log::debug(var_export($item, true));
                         Log::debug('Fullfillment Exception: ' . $e->getMessage() . ' on line ' . $e->getLine());
@@ -581,6 +597,8 @@ class AppController extends Controller {
                     'admin',
                     "/orders/{$order_id}.json",
             );
+        } catch (ShopifyException $se) {
+            throw $se;
         } catch (ShopifyApiException $sae) {
             Log::debug('Unauthorized.');
             return redirect()->route('install-link', request()->all());
@@ -672,6 +690,8 @@ class AppController extends Controller {
         } catch (ShopifyApiException $sae) {
             Log::debug('Unauthorized.');
             return redirect()->route('install-link', request()->all());
+        } catch (ShopifyException $se) {
+            throw $se;
         }
 
         $fulfillments = [];
@@ -833,6 +853,8 @@ class AppController extends Controller {
         } catch (ShopifyApiException $sae) {
             Log::debug('Unauthorized.');
             return redirect()->route('install-link', request()->all());
+        } catch (ShopifyException $se) {
+            throw $se;
         }
 
         $rates = [];
@@ -852,6 +874,16 @@ class AppController extends Controller {
             // search nearest pickup locations
 
             $pickupFilterQuery = !empty($shop->pickup_filter) ? implode(',', $shop->pickup_filter) : null;
+
+            //check for exceptions
+            if (array_key_exists($service_id, static::PICKUP_POINTS_EXCEPTIONS) && (in_array(request()->get('country'), static::PICKUP_POINTS_EXCEPTIONS[$service_id]))) {
+
+                return response()->json([
+                    'pickups' => [],
+                    'selected_pickup' => null
+                ]);
+            }
+
             $pickupPoints = $pk_client->searchPickupPoints(
                     request()->get('zip'),
                     request()->get('address1'),
@@ -973,6 +1005,8 @@ class AppController extends Controller {
         } catch (ShopifyApiException $sae) {
             Log::debug('Unauthorized thingie');
             return redirect()->route('install-link', request()->all());
+        } catch (ShopifyException $se) {
+            throw $se;
         }
 
         $service_name = 'unnamed service';
@@ -1199,6 +1233,8 @@ class AppController extends Controller {
                     );
 
                     Log::debug('ShopiApiException: ' . var_export($exceptionData, true));
+                } catch (ShopifyException $se) {
+                    throw $se;
                 } catch (\Exception $e) {
                     Log::debug(var_export($item, true));
                     Log::debug('Fullfillment Exception: ' . $e->getMessage() . ' on line ' . $e->getLine());
@@ -1269,6 +1305,8 @@ class AppController extends Controller {
 
             Log::debug('Fullfillment Exception: ' . var_export($exceptionData, true));
             return;
+        } catch (ShopifyException $se) {
+            throw $se;
         } catch (\Exception $e) {
             Log::debug('Fullfillment Exception: ' . $e->getMessage() . ' on line ' . $e->getLine());
             return;
@@ -1344,7 +1382,8 @@ class AppController extends Controller {
                 var_export($sae->getResponseHeaders(), true),
                 var_export($sae->getResponse(), true)
             );
-
+        } catch (ShopifyException $se) {
+            throw $se;
             Log::debug('ShopiApiException: ' . var_export($exceptionData, true));
         } catch (\Exception $e) {
             Log::debug('Fullfillment Exception: ' . $e->getMessage() . ' on line ' . $e->getLine());
@@ -1410,6 +1449,8 @@ class AppController extends Controller {
                 );
 
                 Log::debug('ShopiApiException: ' . var_export($exceptionData, true));
+            } catch (ShopifyException $se) {
+                throw $se;
             } catch (\Exception $e) {
                 Log::debug('Fullfillment Exception: ' . $e->getMessage() . ' on line ' . $e->getLine());
             }
