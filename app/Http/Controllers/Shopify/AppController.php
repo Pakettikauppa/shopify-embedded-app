@@ -244,7 +244,7 @@ class AppController extends Controller {
              $shipment = DB::transaction(function () use ($shop, $order, $is_return, $shipment){
                 $lock_index = (int) $order['legacyResourceId'];
                 Log::debug('Using log_index ' . $lock_index);
-//                DB::select("select pg_advisory_xact_lock($lock_index)");
+                DB::select("select pg_advisory_xact_lock($lock_index)");
 
                 $done_shipment = ShopifyShipment::lockForUpdate()->where('shop_id', $shop->id)
                         ->where('order_id', $order['legacyResourceId'])
