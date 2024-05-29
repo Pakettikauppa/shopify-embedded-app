@@ -41,7 +41,11 @@
 <div class="container">
     <div class="content">
         <div class="title">{{ trans('http.500.title') }}</div>
-        <p>{{ trans('http.500.description') }}</p>
+        @php
+            $shopifyType = Config::get('shopify.type');
+            $description = trans('http.500.description_'.$shopifyType);
+        @endphp
+        <p>{!! $description !!}</p>
     </div>
 </div>
 </body>

@@ -28,7 +28,8 @@ return [
 
     '500' => [
         'title' => 'Be right back.',
-        'description'   => 'Internal server error. If problem persists contact support@pakettikauppa.fi'
+        'description_pakettikauppa'   => 'Internal server error. If problem persists contact support@pakettikauppa.fi',
+        'description_posti'   => 'Internal server error. If problem persists contact our customer service in <a href="https://www.posti.fi/en/for-businesses/parcels-and-logistics/tools-and-interfaces/omaposti-pro" target="_blank"> OmaPosti Pro</a> chat.'
     ],
 
 ];
