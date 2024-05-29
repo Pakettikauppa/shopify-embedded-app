@@ -133,12 +133,13 @@ class Shop extends Model
                 $contentLine->currency = 'EUR';
                 $contentLine->country_of_origin = $item['variant']['inventoryItem']['countryCodeOfOrigin'] ?? 'FI';
                 $contentLine->description = $item['name'];
-                $contentLine->quantity = $item['quantity'];
+                $quantity = $item['quantity'];
+                $contentLine->quantity = $quantity;
                 //graphql does not support grams, so convert to grams manually
                 //$contentLine->netweight = $item['grams'];
                 $contentLine->netweight = $this->toGrams((($item['quantity'] ?? 1)* ($item['variant']['weight'] ?? 0)) / $parcel_total_count, $item['variant']['weightUnit'] ?? 'GRAMS');
                 $contentLine->tariff_code = $item['variant']['inventoryItem']['harmonizedSystemCode'] ?? '';
-                $contentLine->value = $item['variant']['price'] ?? 0;
+                $contentLine->value = ($item['variant']['price'] ?? 0) * $quantity; //multiply price by quantity to avoid this: https://postinext.atlassian.net/browse/EP-186
                 $parcel->addContentLine($contentLine);
             }
             $shipment->addParcel($parcel);
