@@ -309,6 +309,10 @@ class SettingsController extends Controller {
         $shipping_settings = unserialize($shop->shipping_settings);
 
         $result_rates = [];
+        $label_sizes = [
+            'A5' => trans('app.settings.label_sizes.a5'),
+            '107x225' => trans('app.settings.label_sizes.107x225')
+        ];
         foreach ($shipping_zones as $shipping_zone) {
             $shipping_rates = $shipping_zone['weight_based_shipping_rates'];
             $shipping_rates = array_merge($shipping_rates, $shipping_zone['price_based_shipping_rates']);
@@ -413,7 +417,8 @@ class SettingsController extends Controller {
             'shipping_rates' => $result_rates,
             'pickuppoint_providers' => explode(";", $shop->pickuppoint_providers),
             'type' => $this->type,
-            'additional_info_keys' => $this->additional_info_keys
+            'additional_info_keys' => $this->additional_info_keys,
+            'label_sizes' => $label_sizes,
         ]);
     }
 
@@ -630,6 +635,7 @@ class SettingsController extends Controller {
             'add_additional_label_info' => (bool) request()->get('add_additional_label_info'),
             'additional_label_info' => request()->get('additional_label_info'),
             'info_code' => request()->get('info_code'),
+            'label_size' => request()->get('label_size'),
         );
 
         $isSaved = $shop->saveShippingSettings($shop_shipping_settings);

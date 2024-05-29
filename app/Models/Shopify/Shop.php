@@ -2,6 +2,7 @@
 
 namespace App\Models\Shopify;
 
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Shopify\Shipment as ShopifyShipment;
 use Illuminate\Support\Facades\Log;
@@ -394,6 +395,7 @@ class Shop extends Model
         $this->additional_label_info = $settings['additional_label_info'];
         $this->pickup_filter = $settings['pickup_filter'] ?? [];
         $this->info_code = $settings['info_code'];
+        $this->label_size = $settings['label_size'];
 
         return $this->save();
     }
@@ -579,6 +581,15 @@ class Shop extends Model
             return $default;
         }
         return null;
+    }
+
+    public function getLabelSize(): string
+    {
+       if ($this->label_size) {
+           return $this->label_size;
+       }
+
+       return 'A5';
     }
 
 }

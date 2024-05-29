@@ -100,6 +100,24 @@
     <article>
         <div class="card">
 
+            <div class="row" id ="label_size_row">
+                <div class="columns four rate-name-column">
+                    {{trans('app.settings.label_size')}}
+                </div>
+                <div class="columns eight">
+                    <select name="label_size">
+                        @foreach($label_sizes as $size =>$label)
+                        <option value="{{ $size }}" @if($size == $shop->getLabelSize()) selected @endif >{{ $label }}</option>
+                        @endforeach
+                    </select>
+                </div>
+            </div>
+        </div>
+    </article>
+
+    <article>
+        <div class="card">
+
             <div class="row">
                 <label><input type="checkbox" name="print_return_labels" @if($shop->always_create_return_label) checked @endif value="1">{{trans('app.settings.print_return_labels')}}</label>
                 <label><input type="checkbox" name="create_activation_code" @if($shop->create_activation_code) checked @endif value="1">{{trans('app.settings.create_activation_code')}}</label>

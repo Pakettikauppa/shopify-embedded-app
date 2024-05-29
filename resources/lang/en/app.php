@@ -146,6 +146,11 @@ return [
             'no' => 'No',
         ],
         'support' => 'Support',
+        'label_size' => 'Shipping label size',
+        'label_sizes' => [
+            'a5' => 'A5',
+            '107x225' => '107x225',
+        ],
     ],
 
     'messages' => [
