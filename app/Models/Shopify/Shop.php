@@ -2,6 +2,7 @@
 
 namespace App\Models\Shopify;
 
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Shopify\Shipment as ShopifyShipment;
 use Illuminate\Support\Facades\Log;
@@ -133,12 +134,13 @@ class Shop extends Model
                 $contentLine->currency = 'EUR';
                 $contentLine->country_of_origin = $item['variant']['inventoryItem']['countryCodeOfOrigin'] ?? 'FI';
                 $contentLine->description = $item['name'];
-                $contentLine->quantity = $item['quantity'];
+                $quantity = $item['quantity'];
+                $contentLine->quantity = $quantity;
                 //graphql does not support grams, so convert to grams manually
                 //$contentLine->netweight = $item['grams'];
                 $contentLine->netweight = $this->toGrams((($item['quantity'] ?? 1)* ($item['variant']['weight'] ?? 0)) / $parcel_total_count, $item['variant']['weightUnit'] ?? 'GRAMS');
                 $contentLine->tariff_code = $item['variant']['inventoryItem']['harmonizedSystemCode'] ?? '';
-                $contentLine->value = $item['variant']['price'] ?? 0;
+                $contentLine->value = ($item['variant']['price'] ?? 0) * $quantity; //multiply price by quantity to avoid this: https://postinext.atlassian.net/browse/EP-186
                 $parcel->addContentLine($contentLine);
             }
             $shipment->addParcel($parcel);
@@ -393,6 +395,7 @@ class Shop extends Model
         $this->additional_label_info = $settings['additional_label_info'];
         $this->pickup_filter = $settings['pickup_filter'] ?? [];
         $this->info_code = $settings['info_code'];
+        $this->label_size = $settings['label_size'];
 
         return $this->save();
     }
@@ -578,6 +581,15 @@ class Shop extends Model
             return $default;
         }
         return null;
+    }
+
+    public function getLabelSize(): string
+    {
+       if ($this->label_size) {
+           return $this->label_size;
+       }
+
+       return 'A5';
     }
 
 }

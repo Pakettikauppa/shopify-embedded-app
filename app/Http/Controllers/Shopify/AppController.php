@@ -1498,7 +1498,7 @@ class AppController extends Controller {
                 $tracking_codes = explode(', ', $tracking_codes[0]);
             }
             Log::debug('Fetching labels for ' . json_encode($tracking_codes));
-            $xml = $this->pk_client->fetchShippingLabels($tracking_codes);
+            $xml = $this->pk_client->fetchShippingLabels($tracking_codes, $shop->getLabelSize());
 
             $pdf = base64_decode($xml->{'response.file'});
 
@@ -1552,7 +1552,7 @@ class AppController extends Controller {
             Log::debug('Fetching label for ' . $pk_shipment->getTrackingCode());
             $pk_shipment->setReference($shipment->reference);
 
-            $this->pk_client->fetchShippingLabel($pk_shipment);
+            $this->pk_client->fetchShippingLabel($pk_shipment, $shop->getLabelSize());
 
             $pdf_content = base64_decode($pk_shipment->getPdf());
 

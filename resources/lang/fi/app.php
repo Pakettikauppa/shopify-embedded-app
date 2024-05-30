@@ -136,6 +136,11 @@ return [
             'no' => 'Ei, näytä noutopisteet riippumatta painosta',
         ],
         'support' => 'Tuki',
+        'label_size' => 'Pakettikortin koko',
+        'label_sizes' => [
+            'a5' => 'A5',
+            '107x225' => '107x225',
+        ],
     ],
 
     'messages' => [
